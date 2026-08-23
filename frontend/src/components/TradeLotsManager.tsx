@@ -180,26 +180,23 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative text-slate-900">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Package className="w-5 h-5 text-emerald-600" />
                 {lang === "mr" ? "व्यापार लॉट तयार करा (Create Trade Lot)" : "Create Trade Lot"}
               </h3>
               {cropName.toLowerCase().includes("onion") && (
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  Step 1 of 2
-                </span>
+                <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white shadow-xs">
+                    1. Lot Details
+                  </span>
+                  <span className="text-slate-300 font-bold">→</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                    2. Quality Assessment
+                  </span>
+                </div>
               )}
             </div>
-
-            {cropName.toLowerCase().includes("onion") && (
-              <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-900 text-[11px] flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>
-                  <strong>Quality Passport:</strong> Onion lots require completing the standard quality questionnaire to evaluate Grade, Quality Score, and Confidence.
-                </span>
-              </div>
-            )}
 
             {formError && (
               <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
@@ -330,59 +327,53 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
               </div>
 
               {/* Crop Quality Assessment Trigger */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Quality Assessment)" : "Crop-Specific Quality Assessment"}
-                  </span>
+              {cropName.toLowerCase().includes("onion") && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Quality Assessment)" : "Crop-Specific Quality Assessment"}
+                    </span>
+                    {qualityResult ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white shadow-xs">
+                        ATTACHED
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300/80 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        {lang === "mr" ? "कांद्यासाठी आवश्यक (REQUIRED)" : "REQUIRED FOR ONION LOTS"}
+                      </span>
+                    )}
+                  </div>
+
                   {qualityResult ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white">
-                      ATTACHED
-                    </span>
+                    <div className="p-2.5 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs">
+                      <div className="space-y-0.5">
+                        <div className="font-black text-emerald-900 flex items-center gap-2">
+                          <span>{qualityResult.provisionalGrade}</span>
+                          <span className="text-[10px] text-slate-400 font-normal">•</span>
+                          <span className="text-emerald-700">Score: {qualityResult.qualityScore}/100</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500">
+                          Evidence Confidence: {qualityResult.evidenceConfidence}% • Quality Passport Linked
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setQualityWizardOpen(true)}
+                        className="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer"
+                      >
+                        {lang === "mr" ? "बदला" : "Edit"}
+                      </button>
+                    </div>
                   ) : (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                      OPTIONAL / RECOMMENDED
-                    </span>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {lang === "mr"
+                        ? "खरेदीदारांसाठी गुणवत्ता पासपोर्ट (Quality Passport) तयार करण्यासाठी मानक कांदा प्रश्नावली पूर्ण करा."
+                        : "Complete the standard Onion questionnaire to generate a Quality Passport for buyers."}
+                    </p>
                   )}
                 </div>
-
-                {qualityResult ? (
-                  <div className="p-2.5 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs">
-                    <div className="space-y-0.5">
-                      <div className="font-black text-emerald-900 flex items-center gap-2">
-                        <span>{qualityResult.provisionalGrade}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">•</span>
-                        <span className="text-emerald-700">Score: {qualityResult.qualityScore}/100</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500">
-                        Evidence Confidence: {qualityResult.evidenceConfidence}% • Ready to link
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setQualityWizardOpen(true)}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
-                    >
-                      {lang === "mr" ? "बदला" : "Edit"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-slate-600">
-                      Complete standard Onion questionnaire to generate an official Quality Passport for buyers.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setQualityWizardOpen(true)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>{lang === "mr" ? "मूल्यांकन सुरू करा" : "Start Assessment"}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
@@ -391,7 +382,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                     setCreateOpen(false);
                     setQualityResult(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   {lang === "mr" ? "रद्द करा" : "Cancel"}
                 </button>
@@ -399,7 +390,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                 >
                   {cropName.toLowerCase().includes("onion") && !qualityResult ? (
                     <>
@@ -420,7 +411,10 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                       </span>
                     </>
                   ) : (
-                    <span>{submitting ? "Creating..." : lang === "mr" ? "लॉट जतन करा" : "Create Trade Lot"}</span>
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{submitting ? (lang === "mr" ? "तयार करत आहे..." : "Creating...") : (lang === "mr" ? "लॉट तयार करा" : "Create Trade Lot")}</span>
+                    </>
                   )}
                 </button>
               </div>

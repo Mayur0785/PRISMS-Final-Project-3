@@ -234,14 +234,25 @@ export function QualityAssessmentWizard({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
-            title="Close Quality Assessment"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2.5">
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                1. Lot Details
+              </span>
+              <span className="text-slate-300 font-bold">→</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white shadow-xs">
+                2. Quality Assessment
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+              title="Close Quality Assessment"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Loading State */}
