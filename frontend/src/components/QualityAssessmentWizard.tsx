@@ -49,6 +49,17 @@ export function QualityAssessmentWizard({
   const [evaluationResult, setEvaluationResult] = useState<QualityAssessmentResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Lock background body scroll while wizard is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -196,26 +207,38 @@ export function QualityAssessmentWizard({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-3xl border border-slate-200 max-w-xl w-full p-6 sm:p-7 space-y-6 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+      {/* Full Viewport Dark/Blur Backdrop */}
+      <div
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      {/* Sharp, Centered Wizard Card */}
+      <div
+        className="relative z-[110] bg-white rounded-3xl border border-slate-200/90 max-w-2xl sm:max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl shadow-black/30 animate-in zoom-in-95 max-h-[88vh] overflow-y-auto flex flex-col justify-between text-slate-900"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-emerald-100 text-emerald-800 font-bold">
-              <ShieldCheck className="w-5 h-5" />
+        <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-800 font-bold shadow-xs">
+              <ShieldCheck className="w-6 h-6" />
             </span>
             <div>
-              <h3 className="font-extrabold text-lg text-slate-900">
-                {lang === "mr" ? "गुणवत्ता मूल्यांकन आणि पासपोर्ट" : "Crop Quality Assessment"}
+              <h3 className="font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Crop Quality Assessment)" : "Crop Quality Assessment"}
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
                 {cropName} {variety ? `• ${variety}` : ""} • Dynamic Quality Scoring Engine
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+            title="Close Quality Assessment"
           >
             <X className="w-5 h-5" />
           </button>

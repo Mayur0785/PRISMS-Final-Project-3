@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -30,6 +30,17 @@ export function QualityPassportModal({
   lotId,
   onMakeOffer,
 }: QualityPassportModalProps) {
+  // Lock background body scroll while passport is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen || !assessment) return null;
 
   const summary = assessment.passportSummary || (assessment as any).evaluation?.passportSummary || {};
@@ -39,31 +50,43 @@ export function QualityPassportModal({
   const score = assessment.qualityScore || 85;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-6 sm:p-7 space-y-6 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+      {/* Dark/blur Backdrop */}
+      <div
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      {/* Sharp, Centered Passport Card */}
+      <div
+        className="relative z-[130] bg-white rounded-3xl border border-slate-200/90 max-w-2xl sm:max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl shadow-black/30 animate-in zoom-in-95 max-h-[88vh] overflow-y-auto text-slate-900"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-100 pb-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-emerald-100 text-emerald-800 font-bold">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-800 font-bold shadow-xs">
+                <ShieldCheck className="w-6 h-6" />
               </span>
               <div>
-                <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2">
+                <h3 className="font-extrabold text-xl sm:text-2xl text-slate-900 flex items-center gap-2">
                   PRISMS Quality Passport
                   <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                     Provisional
                   </span>
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
                   {summary.crop || assessment.cropName} • {lotId ? `Lot ${lotId}` : `ID: ${assessment.assessmentId}`}
                 </p>
               </div>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+            title="Close Quality Passport"
           >
             <X className="w-5 h-5" />
           </button>
