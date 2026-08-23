@@ -35,6 +35,7 @@ apiRouter.use('/advisor', advisorRouter);
 apiRouter.use('/news', newsRouter);
 apiRouter.use('/crops', cropRouter);
 apiRouter.use('/buyers', buyerRouter);
+apiRouter.use('/buyers/demands', buyerDemandRouter);
 apiRouter.use('/buyer-demands', buyerDemandRouter);
 apiRouter.use('/lots', lotRouter);
 apiRouter.use('/offers', offerRouter);

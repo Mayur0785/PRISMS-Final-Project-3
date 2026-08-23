@@ -482,6 +482,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       paymentMode: 'DEMO_BANK_TRANSFER',
       dueDate,
       paymentStatus: 'PENDING',
+      referenceId: `REF-ESCROW-${pmtHex}`,
       notes: `Escrow payment initialized for ${offer.commodity} • Deal ${deliveryId}`,
     });
 
