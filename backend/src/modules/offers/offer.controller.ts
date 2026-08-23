@@ -17,33 +17,39 @@ export async function ensureDemoOffersForLot(lot: any) {
   const existingCount = await Offer.countDocuments({ lotId: lot._id });
   if (existingCount > 0) return;
 
+  // Try to find matching buyer demands (case-insensitive, partial crop name match)
+  const cropName = (lot.cropName || '').trim();
   const demands = await BuyerDemand.find({
-    commodity: new RegExp(`^${lot.cropName}$`, 'i'),
+    $or: [
+      { commodity: new RegExp(`^${cropName}$`, 'i') },
+      { commodity: new RegExp(cropName, 'i') },
+    ],
     demandStatus: 'ACTIVE',
-  });
+  }).limit(6);
 
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + 7);
 
-  const seededOffers = [];
-  const buyerIds = [...new Set(demands.map(d => d.buyerId))];
+  const seededOffers: any[] = [];
+  const buyerIds = [...new Set(demands.map((d: any) => d.buyerId))];
   const buyers = await Buyer.find({ buyerId: { $in: buyerIds } });
-  const buyersMap = new Map(buyers.map(b => [b.buyerId, b]));
+  const buyersMap = new Map(buyers.map((b: any) => [b.buyerId, b]));
 
   for (let i = 0; i < demands.length && i < 3; i++) {
-    const demand = demands[i];
-    const buyer = buyersMap.get(demand.buyerId);
+    const demand = demands[i] as any;
+    const buyer = buyersMap.get(demand.buyerId) as any;
     if (!buyer) continue;
 
     const offerId = await generateOfferId();
-    // Deterministic prices around expected price
     const priceVariance = i === 0 ? 100 : i === 1 ? 250 : -100;
-    const pricePerQtl = Math.min(demand.targetPriceMax, Math.max(demand.targetPriceMin, lot.expectedPricePerQtl + priceVariance));
-    const qty = lot.quantityQtl;
+    const pricePerQtl = Math.min(
+      demand.targetPriceMax,
+      Math.max(demand.targetPriceMin, (lot.expectedPricePerQtl || 3000) + priceVariance)
+    );
+    const qty = lot.quantityQtl || 25;
     const grossValue = Math.round(pricePerQtl * qty);
-    
-    // Distances
-    const distKm = buyer.district.toLowerCase() === (lot.district || 'nashik').toLowerCase() ? 20 : 185;
+    const distKm = buyer.district && lot.district &&
+      buyer.district.toLowerCase() === (lot.district || 'nashik').toLowerCase() ? 20 : 185;
     const estimatedTransportCost = Math.round(distKm * 1.35 * qty);
     const estimatedMarketHandlingCharges = Math.round(grossValue * 0.005);
     const estimatedSpoilage = Math.round(grossValue * 0.015);
@@ -75,6 +81,52 @@ export async function ensureDemoOffersForLot(lot: any) {
     });
   }
 
+  // Fallback: If no matching demands found, generate generic offers using the first available buyers
+  if (seededOffers.length === 0) {
+    const fallbackBuyers = await Buyer.find({ isDemo: true }).limit(3);
+    const basePrice = lot.expectedPricePerQtl || 3000;
+    const qty = lot.quantityQtl || 25;
+
+    for (let i = 0; i < fallbackBuyers.length; i++) {
+      const buyer = fallbackBuyers[i] as any;
+      const offerId = await generateOfferId();
+      const priceVariance = [100, 250, -100][i] || 0;
+      const pricePerQtl = Math.round(basePrice + priceVariance);
+      const grossValue = Math.round(pricePerQtl * qty);
+      const distKm = buyer.district && lot.district &&
+        buyer.district.toLowerCase() === (lot.district || 'nashik').toLowerCase() ? 20 : 185;
+      const estimatedTransportCost = Math.round(distKm * 1.35 * qty);
+      const estimatedMarketHandlingCharges = Math.round(grossValue * 0.005);
+      const estimatedSpoilage = Math.round(grossValue * 0.015);
+      const estimatedNetRealization = grossValue - estimatedTransportCost - estimatedMarketHandlingCharges - estimatedSpoilage;
+
+      seededOffers.push({
+        offerId,
+        lotId: lot._id,
+        buyerId: buyer.buyerId,
+        sellerUserId: lot.userId,
+        commodity: lot.cropName,
+        variety: lot.variety || 'Standard',
+        grade: lot.grade || 'Grade A',
+        quantityQtl: qty,
+        pricePerQtl,
+        grossValue,
+        estimatedTransportCost,
+        estimatedLabourCost: 0,
+        estimatedSpoilage,
+        estimatedMarketHandlingCharges,
+        estimatedNetRealization,
+        paymentTerms: buyer.paymentTerms || 'T+1 Direct Bank Transfer (Simulated Escrow)',
+        deliveryTerms: buyer.deliveryPreference || 'Buyer Pickup',
+        pickupLocation: lot.origin || 'Farm Gate',
+        deliveryLocation: `${buyer.location || 'Market Yard'}, ${buyer.district || 'Nashik'}`,
+        expiresAt: expiryDate,
+        offerStatus: 'PENDING',
+        isDemo: true,
+      });
+    }
+  }
+
   if (seededOffers.length > 0) {
     await Offer.insertMany(seededOffers);
   }
@@ -97,12 +149,24 @@ export const getUserOffers = async (req: Request, res: Response, next: NextFunct
 
 export const getOffersForLot = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { lotId } = req.params;
 
     const lot = await Lot.findOne({
-      $or: [{ _id: mongoose.isValidObjectId(lotId) ? lotId : null }, { lotId }],
-      userId,
+      $or: [
+        { _id: mongoose.isValidObjectId(lotId) ? lotId : null },
+        { lotId },
+      ],
+      $and: [{
+        $or: [
+          { userId: rawUserId },
+          { userId: userIdObj },
+          { userId: String(rawUserId) },
+        ]
+      }],
     });
 
     if (!lot) {
