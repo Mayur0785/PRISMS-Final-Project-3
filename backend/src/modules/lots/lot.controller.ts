@@ -3,11 +3,20 @@ import { Lot } from './lot.model';
 import { computeBuyerMatchesForLot } from './matching.service';
 import mongoose from 'mongoose';
 
-// Generate human readable Lot ID: LOT-2026-XXXX
-async function generateLotId(): Promise<string> {
-  const count = await Lot.countDocuments();
-  const hex = (count + 101).toString(16).toUpperCase().padStart(4, '0');
-  return `LOT-2026-${hex}`;
+// Generate collision-safe human readable Lot ID: LOT-2026-XXXX
+async function generateUniqueLotId(): Promise<string> {
+  const maxAttempts = 20;
+  for (let i = 0; i < maxAttempts; i++) {
+    const randomHex = Math.floor(Math.random() * 0xffff).toString(16).toUpperCase().padStart(4, '0');
+    const candidate = `LOT-2026-${randomHex}`;
+
+    const exists = await Lot.exists({ lotId: candidate });
+    if (!exists) {
+      return candidate;
+    }
+  }
+  const nowHex = (Date.now() % 0xffff).toString(16).toUpperCase().padStart(4, '0');
+  return `LOT-2026-${nowHex}`;
 }
 
 export const getUserLots = async (req: Request, res: Response, next: NextFunction) => {
@@ -81,30 +90,66 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
       });
     }
 
-    const lotId = await generateLotId();
+    let createdLot = null;
+    let attempts = 0;
+    const maxRetries = 3;
 
-    const lot = await Lot.create({
-      lotId,
-      userId,
-      cropBatchId: (cropBatchId && mongoose.isValidObjectId(cropBatchId)) ? new mongoose.Types.ObjectId(cropBatchId) : (cropBatchId || undefined),
-      cropName,
-      variety: variety || 'Standard',
-      grade: grade || 'Grade A',
-      quantityQtl: numQuantity,
-      qualityScore: Number(qualityScore) || 85,
-      origin: origin || 'Farm Gate',
-      district: district || 'Nashik',
-      targetMarket,
-      expectedPricePerQtl: numExpectedPrice,
-      minimumAcceptablePrice: numMinPrice,
-      buyerVisibility: buyerVisibility || 'MATCHED_BUYERS_ONLY',
-      lotStatus: lotStatus || 'PUBLISHED',
-      notes,
-    });
+    while (attempts < maxRetries) {
+      attempts++;
+      const lotId = await generateUniqueLotId();
+
+      try {
+        createdLot = await Lot.create({
+          lotId,
+          userId,
+          cropBatchId: (cropBatchId && mongoose.isValidObjectId(cropBatchId)) ? new mongoose.Types.ObjectId(cropBatchId) : (cropBatchId || undefined),
+          cropName,
+          variety: variety || 'Standard',
+          grade: grade || 'Grade A',
+          quantityQtl: numQuantity,
+          qualityScore: Number(qualityScore) || 85,
+          origin: origin || 'Farm Gate',
+          district: district || 'Nashik',
+          targetMarket,
+          expectedPricePerQtl: numExpectedPrice,
+          minimumAcceptablePrice: numMinPrice,
+          buyerVisibility: buyerVisibility || 'MATCHED_BUYERS_ONLY',
+          lotStatus: lotStatus || 'PUBLISHED',
+          notes,
+        });
+
+        break;
+      } catch (err: any) {
+        if (err?.code === 11000 && err?.keyPattern?.lotId) {
+          console.warn(`[Lot Creation Retry] Collision on lotId. Attempt ${attempts}/${maxRetries}...`);
+          if (attempts >= maxRetries) {
+            return res.status(500).json({
+              success: false,
+              error: {
+                code: 'LOT_CREATION_FAILED',
+                message: 'Unable to create a unique trade lot ID. Please try again.',
+              },
+            });
+          }
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!createdLot) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'LOT_CREATION_FAILED',
+          message: 'Unable to create a unique trade lot ID. Please try again.',
+        },
+      });
+    }
 
     res.status(201).json({
       success: true,
-      data: lot,
+      data: createdLot,
     });
   } catch (err) {
     console.error('Error creating trade lot on backend:', err);
