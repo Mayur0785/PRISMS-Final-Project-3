@@ -329,7 +329,11 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
     }
 
     const offers = await Offer.find({
-      $or: [{ lotId: lot._id }, { lotId: lot.lotId }],
+      $or: [
+        { lotId: lot._id },
+        { lotId: String(lot._id) },
+        { lotId: lot.lotId },
+      ],
     }).sort({ estimatedNetRealization: -1 });
 
     const buyerIds = [...new Set(offers.map(o => o.buyerId))];
