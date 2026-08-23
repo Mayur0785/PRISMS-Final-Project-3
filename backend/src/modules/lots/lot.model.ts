@@ -5,8 +5,8 @@ export type BuyerVisibility = 'PUBLIC' | 'MATCHED_BUYERS_ONLY' | 'PRIVATE';
 
 export interface ILot extends Document {
   lotId: string;
-  userId: Schema.Types.ObjectId;
-  cropBatchId?: Schema.Types.ObjectId;
+  userId: any;
+  cropBatchId?: any;
   cropName: string;
   variety?: string;
   grade: string;
@@ -27,8 +27,8 @@ export interface ILot extends Document {
 const LotSchema = new Schema<ILot>(
   {
     lotId: { type: String, required: true, unique: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    cropBatchId: { type: Schema.Types.ObjectId, ref: 'CropBatch' },
+    userId: { type: Schema.Types.Mixed, required: true, index: true },
+    cropBatchId: { type: Schema.Types.Mixed },
     cropName: { type: String, required: true, index: true },
     variety: { type: String, default: 'Standard' },
     grade: { type: String, required: true, default: 'Grade A' },

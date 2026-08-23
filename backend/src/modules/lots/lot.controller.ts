@@ -12,8 +12,22 @@ async function generateLotId(): Promise<string> {
 
 export const getUserLots = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
-    const lots = await Lot.find({ userId }).sort({ createdAt: -1 });
+    const rawUserId = (req as any).user?._id || (req as any).user?.id || (req as any).user;
+    if (!rawUserId) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
+    const lots = await Lot.find({
+      $or: [
+        { userId: rawUserId },
+        { userId: userIdObj },
+        { userId: String(rawUserId) }
+      ]
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -27,7 +41,18 @@ export const getUserLots = async (req: Request, res: Response, next: NextFunctio
 
 export const createLot = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user?._id || (req as any).user?.id || (req as any).user;
+    if (!rawUserId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'User identity not found on request.' },
+      });
+    }
+
+    const userId = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
     const {
       cropBatchId,
       cropName,
@@ -45,7 +70,11 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
       notes,
     } = req.body;
 
-    if (!quantityQtl || quantityQtl <= 0) {
+    const numQuantity = Number(quantityQtl);
+    const numExpectedPrice = Number(expectedPricePerQtl);
+    const numMinPrice = Number(minimumAcceptablePrice) || Math.round(numExpectedPrice * 0.9);
+
+    if (!numQuantity || numQuantity <= 0) {
       return res.status(400).json({
         success: false,
         error: { code: 'INVALID_QUANTITY', message: 'Lot quantity must be greater than 0.' },
@@ -57,17 +86,17 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
     const lot = await Lot.create({
       lotId,
       userId,
-      cropBatchId: (cropBatchId && mongoose.isValidObjectId(cropBatchId)) ? (new mongoose.Types.ObjectId(cropBatchId) as any) : undefined,
+      cropBatchId: (cropBatchId && mongoose.isValidObjectId(cropBatchId)) ? new mongoose.Types.ObjectId(cropBatchId) : (cropBatchId || undefined),
       cropName,
       variety: variety || 'Standard',
       grade: grade || 'Grade A',
-      quantityQtl,
-      qualityScore: qualityScore || 85,
+      quantityQtl: numQuantity,
+      qualityScore: Number(qualityScore) || 85,
       origin: origin || 'Farm Gate',
       district: district || 'Nashik',
       targetMarket,
-      expectedPricePerQtl,
-      minimumAcceptablePrice: minimumAcceptablePrice || Math.round(expectedPricePerQtl * 0.9),
+      expectedPricePerQtl: numExpectedPrice,
+      minimumAcceptablePrice: numMinPrice,
       buyerVisibility: buyerVisibility || 'MATCHED_BUYERS_ONLY',
       lotStatus: lotStatus || 'PUBLISHED',
       notes,
@@ -78,6 +107,7 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
       data: lot,
     });
   } catch (err) {
+    console.error('Error creating trade lot on backend:', err);
     next(err);
   }
 };
