@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tag, CheckCircle2, XCircle, ArrowRightLeft, Building2, MapPin, Clock, ShieldCheck, Scale, AlertCircle, FileText } from 'lucide-react';
-import { TradeLot, Offer, fetchUserLots, fetchOffersForLot, acceptOfferApi, rejectOfferApi, recordOfferAcceptance, getAcceptedOfferForLot } from '../lib/prisms';
+import { TradeLot, Offer, fetchUserLots, fetchOffersForLot, acceptOfferApi, createDeliveryOrderApi, rejectOfferApi, recordOfferAcceptance, getAcceptedOfferForLot, getAuthMode } from '../lib/prisms';
 import { OfferComparisonModal, generateDemoOffers } from './OfferComparisonModal';
 import { t } from '../lib/i18n';
 
@@ -95,10 +95,9 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
     setSubmitting(true);
     setAcceptError("");
 
-    const token = localStorage.getItem("prisms_token");
-    const isProductionAuth = Boolean(token && !token.startsWith("demo_token_"));
+    const isBackendMode = getAuthMode() === 'BACKEND';
 
-    if (isProductionAuth) {
+    if (isBackendMode) {
       try {
         const acceptRes = await acceptOfferApi(offer._id || offer.offerId);
         const acceptedOfferId = acceptRes?.offer?._id || offer._id || offer.offerId;

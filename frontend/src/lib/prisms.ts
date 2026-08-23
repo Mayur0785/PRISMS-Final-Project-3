@@ -1789,14 +1789,23 @@ function isRecordOwnedByUser(recordFarmerId: any, activeUserId: string, activeUs
   return rId === aId || (Boolean(aEmail) && rId === aEmail);
 }
 
+export function getAuthMode(): 'BACKEND' | 'DEMO' {
+  const token = localStorage.getItem("prisms_token");
+  if (token && !token.startsWith("demo_token_")) {
+    return 'BACKEND';
+  }
+  return 'DEMO';
+}
+
 export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
   const activeUser = getCurrentUser();
   const activeUserId = activeUser?.id || "user_demo_001";
   const activeUserEmail = activeUser?.email;
 
+  const isBackendMode = getAuthMode() === "BACKEND";
+
   let apiDeliveries: DeliveryOrder[] = [];
-  const token = localStorage.getItem("prisms_token");
-  if (token && !token.startsWith("demo_token_")) {
+  if (isBackendMode) {
     try {
       const res = await apiClient.get(`${API_URL}/deliveries`);
       apiDeliveries = res.data?.data || [];
@@ -1827,47 +1836,49 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
     });
   });
 
-  // 2. Process local demo records WITH isRecordOwnedByUser()
-  localDeliveries.forEach(d => {
-    if (!isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
+  // 2. Process local demo records WITH isRecordOwnedByUser() only in DEMO mode
+  if (!isBackendMode) {
+    localDeliveries.forEach(d => {
+      if (!isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail)) {
+        return;
+      }
 
-    const key = d.deliveryId || d._id;
-    if (!key) return;
+      const key = d.deliveryId || d._id;
+      if (!key) return;
 
-    if (!apiMap.has(key)) {
-      apiMap.set(key, {
-        ...d,
-        crop: d.crop && d.crop !== "Produce" ? d.crop : "Red Onion (Nashik)",
-        agreedPricePerQtl: d.agreedPricePerQtl || 3200,
-        vehicleType: d.vehicleType || "Medium Pickup (Bolero MaxiTruck)",
-        freightRate: d.freightRate || "₹1.35/km/Qtl",
-        estimatedFreight: d.estimatedFreight || Math.round(1.35 * 35 * (d.quantityQtl || 30)),
-      });
-    } else {
-      const existing = apiMap.get(key)!;
-      const rankExisting = getStatusRank(existing.deliveryStatus);
-      const rankNew = getStatusRank(d.deliveryStatus);
-      const winner = rankNew >= rankExisting ? d : existing;
-      const mergedTimeline = (existing.timeline && existing.timeline.length >= (d.timeline?.length || 0))
-        ? existing.timeline
-        : (d.timeline || existing.timeline);
+      if (!apiMap.has(key)) {
+        apiMap.set(key, {
+          ...d,
+          crop: d.crop && d.crop !== "Produce" ? d.crop : "Red Onion (Nashik)",
+          agreedPricePerQtl: d.agreedPricePerQtl || 3200,
+          vehicleType: d.vehicleType || "Medium Pickup (Bolero MaxiTruck)",
+          freightRate: d.freightRate || "₹1.35/km/Qtl",
+          estimatedFreight: d.estimatedFreight || Math.round(1.35 * 35 * (d.quantityQtl || 30)),
+        });
+      } else {
+        const existing = apiMap.get(key)!;
+        const rankExisting = getStatusRank(existing.deliveryStatus);
+        const rankNew = getStatusRank(d.deliveryStatus);
+        const winner = rankNew >= rankExisting ? d : existing;
+        const mergedTimeline = (existing.timeline && existing.timeline.length >= (d.timeline?.length || 0))
+          ? existing.timeline
+          : (d.timeline || existing.timeline);
 
-      apiMap.set(key, {
-        ...existing,
-        ...winner,
-        deliveryStatus: winner.deliveryStatus as any,
-        actualDeliveryDate: winner.actualDeliveryDate || existing.actualDeliveryDate,
-        timeline: mergedTimeline,
-        crop: (winner.crop && winner.crop !== "Produce") ? winner.crop : existing.crop,
-        agreedPricePerQtl: winner.agreedPricePerQtl || existing.agreedPricePerQtl,
-        vehicleType: winner.vehicleType || existing.vehicleType,
-        freightRate: winner.freightRate || existing.freightRate,
-        estimatedFreight: winner.estimatedFreight || existing.estimatedFreight,
-      });
-    }
-  });
+        apiMap.set(key, {
+          ...existing,
+          ...winner,
+          deliveryStatus: winner.deliveryStatus as any,
+          actualDeliveryDate: winner.actualDeliveryDate || existing.actualDeliveryDate,
+          timeline: mergedTimeline,
+          crop: (winner.crop && winner.crop !== "Produce") ? winner.crop : existing.crop,
+          agreedPricePerQtl: winner.agreedPricePerQtl || existing.agreedPricePerQtl,
+          vehicleType: winner.vehicleType || existing.vehicleType,
+          freightRate: winner.freightRate || existing.freightRate,
+          estimatedFreight: winner.estimatedFreight || existing.estimatedFreight,
+        });
+      }
+    });
+  }
 
   return Array.from(apiMap.values());
 }
@@ -1887,9 +1898,10 @@ export async function fetchUserPayments(): Promise<PaymentLedger[]> {
   const activeUserId = activeUser?.id || "user_demo_001";
   const activeUserEmail = activeUser?.email;
 
+  const isBackendMode = getAuthMode() === "BACKEND";
+
   let apiPayments: PaymentLedger[] = [];
-  const token = localStorage.getItem("prisms_token");
-  if (token && !token.startsWith("demo_token_")) {
+  if (isBackendMode) {
     try {
       const res = await apiClient.get(`${API_URL}/payments`);
       apiPayments = res.data?.data || [];
@@ -1910,24 +1922,26 @@ export async function fetchUserPayments(): Promise<PaymentLedger[]> {
     apiMap.set(key, p);
   });
 
-  // 2. Process local demo records WITH isRecordOwnedByUser()
-  localPayments.forEach(p => {
-    if (!isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
+  // 2. Process local demo records WITH isRecordOwnedByUser() only in DEMO mode
+  if (!isBackendMode) {
+    localPayments.forEach(p => {
+      if (!isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail)) {
+        return;
+      }
 
-    const key = p.paymentId || p._id;
-    if (!key) return;
+      const key = p.paymentId || p._id;
+      if (!key) return;
 
-    if (!apiMap.has(key)) {
-      apiMap.set(key, p);
-    } else {
-      const existing = apiMap.get(key)!;
-      const isPaidNew = p.paymentStatus === 'PAID' || p.paymentStatus === 'RELEASED' || Boolean(p.paidDate);
-      const winner = isPaidNew ? p : existing;
-      apiMap.set(key, { ...existing, ...winner });
-    }
-  });
+      if (!apiMap.has(key)) {
+        apiMap.set(key, p);
+      } else {
+        const existing = apiMap.get(key)!;
+        const isPaidNew = p.paymentStatus === 'PAID' || p.paymentStatus === 'RELEASED' || Boolean(p.paidDate);
+        const winner = isPaidNew ? p : existing;
+        apiMap.set(key, { ...existing, ...winner });
+      }
+    });
+  }
 
   return Array.from(apiMap.values());
 }
@@ -1942,9 +1956,10 @@ export async function fetchUserTransactions(): Promise<TransactionItem[]> {
   const activeUserId = activeUser?.id || "user_demo_001";
   const activeUserEmail = activeUser?.email;
 
+  const isBackendMode = getAuthMode() === "BACKEND";
+
   let apiTxns: TransactionItem[] = [];
-  const token = localStorage.getItem("prisms_token");
-  if (token && !token.startsWith("demo_token_")) {
+  if (isBackendMode) {
     try {
       const res = await apiClient.get(`${API_URL}/transactions`);
       apiTxns = res.data?.data || [];
@@ -1966,17 +1981,19 @@ export async function fetchUserTransactions(): Promise<TransactionItem[]> {
     }
   });
 
-  // 2. Process local demo records WITH isRecordOwnedByUser()
-  localTxns.forEach(t => {
-    if (!isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
+  // 2. Process local demo records WITH isRecordOwnedByUser() only in DEMO mode
+  if (!isBackendMode) {
+    localTxns.forEach(t => {
+      if (!isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail)) {
+        return;
+      }
 
-    const key = t.transactionId || t._id;
-    if (key && !apiMap.has(key)) {
-      apiMap.set(key, t);
-    }
-  });
+      const key = t.transactionId || t._id;
+      if (key && !apiMap.has(key)) {
+        apiMap.set(key, t);
+      }
+    });
+  }
 
   return Array.from(apiMap.values());
 }
