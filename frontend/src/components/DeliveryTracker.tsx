@@ -78,11 +78,66 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
     try {
       setStatusMessage(`Updating delivery ${targetDelivery.deliveryId} to ${getStatusLabel(next)}...`);
       const nowIso = new Date().toISOString();
+      const isBackendMode = localStorage.getItem("prisms_token") && !localStorage.getItem("prisms_token")?.startsWith("demo_token_");
 
-      // 1. Immediately update React state immutably for the matching delivery order ONLY
-      setDeliveries(prevDeliveries =>
-        prevDeliveries.map(d => {
+      if (isBackendMode) {
+        // Strict Backend Flow: API MUST succeed first
+        await updateDeliveryStatusApi(targetDelivery.deliveryId, next);
+        
+        setDeliveries(prevDeliveries =>
+          prevDeliveries.map(d => {
+            if (d.deliveryId === dId || d._id === dId) {
+              const updatedTimeline = d.timeline ? [...d.timeline] : [];
+              if (!updatedTimeline.some(t => t.status === next)) {
+                updatedTimeline.push({
+                  status: next,
+                  label: getStatusLabel(next),
+                  timestamp: nowIso,
+                });
+              }
+              return {
+                ...d,
+                deliveryStatus: next as any,
+                updatedAt: nowIso,
+                actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
+                timeline: updatedTimeline,
+              };
+            }
+            return d;
+          })
+        );
+      } else {
+        // DEMO Flow: Update React state and localStorage
+        setDeliveries(prevDeliveries =>
+          prevDeliveries.map(d => {
+            if (d.deliveryId === dId || d._id === dId) {
+              const updatedTimeline = d.timeline ? [...d.timeline] : [];
+              if (!updatedTimeline.some(t => t.status === next)) {
+                updatedTimeline.push({
+                  status: next,
+                  label: getStatusLabel(next),
+                  timestamp: nowIso,
+                });
+              }
+              return {
+                ...d,
+                deliveryStatus: next as any,
+                updatedAt: nowIso,
+                actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
+                timeline: updatedTimeline,
+              };
+            }
+            return d;
+          })
+        );
+
+        const rawLocal = localStorage.getItem("prisms_demo_deliveries");
+        let localDeliveries: DeliveryOrder[] = rawLocal ? JSON.parse(rawLocal) : [];
+        let foundInLocal = false;
+
+        localDeliveries = localDeliveries.map(d => {
           if (d.deliveryId === dId || d._id === dId) {
+            foundInLocal = true;
             const updatedTimeline = d.timeline ? [...d.timeline] : [];
             if (!updatedTimeline.some(t => t.status === next)) {
               updatedTimeline.push({
@@ -100,18 +155,10 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
             };
           }
           return d;
-        })
-      );
+        });
 
-      // 2. Persist update in demo localStorage atomically
-      const rawLocal = localStorage.getItem("prisms_demo_deliveries");
-      let localDeliveries: DeliveryOrder[] = rawLocal ? JSON.parse(rawLocal) : [];
-      let foundInLocal = false;
-
-      localDeliveries = localDeliveries.map(d => {
-        if (d.deliveryId === dId || d._id === dId) {
-          foundInLocal = true;
-          const updatedTimeline = d.timeline ? [...d.timeline] : [];
+        if (!foundInLocal) {
+          const updatedTimeline = targetDelivery.timeline ? [...targetDelivery.timeline] : [];
           if (!updatedTimeline.some(t => t.status === next)) {
             updatedTimeline.push({
               status: next,
@@ -119,46 +166,21 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
               timestamp: nowIso,
             });
           }
-          return {
-            ...d,
+          localDeliveries.unshift({
+            ...targetDelivery,
             deliveryStatus: next as any,
             updatedAt: nowIso,
-            actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
+            actualDeliveryDate: next === 'DELIVERED' ? nowIso : targetDelivery.actualDeliveryDate,
             timeline: updatedTimeline,
-          };
-        }
-        return d;
-      });
-
-      if (!foundInLocal) {
-        const updatedTimeline = targetDelivery.timeline ? [...targetDelivery.timeline] : [];
-        if (!updatedTimeline.some(t => t.status === next)) {
-          updatedTimeline.push({
-            status: next,
-            label: getStatusLabel(next),
-            timestamp: nowIso,
           });
         }
-        localDeliveries.unshift({
-          ...targetDelivery,
-          deliveryStatus: next as any,
-          updatedAt: nowIso,
-          actualDeliveryDate: next === 'DELIVERED' ? nowIso : targetDelivery.actualDeliveryDate,
-          timeline: updatedTimeline,
-        });
-      }
-      localStorage.setItem("prisms_demo_deliveries", JSON.stringify(localDeliveries));
-
-      // 3. Call API if present
-      try {
-        await updateDeliveryStatusApi(targetDelivery.deliveryId, next);
-      } catch (e) {
-        // Fallback to local state if backend route is in demo mode
+        localStorage.setItem("prisms_demo_deliveries", JSON.stringify(localDeliveries));
       }
 
       setStatusMessage(`Delivery status updated to ${getStatusLabel(next)}!`);
     } catch (err: any) {
-      setStatusMessage(`Error: ${err.response?.data?.error?.message || err.message}`);
+      console.error("Delivery advance failed", err);
+      setStatusMessage(`Error: ${err.response?.data?.error?.message || err.message || "Failed to update delivery status"}`);
     } finally {
       setAdvancingId(null);
     }

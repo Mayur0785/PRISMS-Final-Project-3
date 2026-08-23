@@ -9,10 +9,19 @@ import mongoose from 'mongoose';
 
 export const getUserTransactions = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { crop, status } = req.query;
 
-    const query: any = { farmerId: userId };
+    const query: any = {
+      $or: [
+        { farmerId: rawUserId },
+        { farmerId: userIdObj },
+        { farmerId: String(rawUserId) }
+      ]
+    };
     if (crop) {
       query.crop = new RegExp(crop as string, 'i');
     }
@@ -51,12 +60,21 @@ export const getUserTransactions = async (req: Request, res: Response, next: Nex
 
 export const getTransactionById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const transaction = await Transaction.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { transactionId: id }],
-      farmerId: userId,
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!transaction) {
@@ -92,12 +110,21 @@ export const getTransactionById = async (req: Request, res: Response, next: Next
 
 export const getTransactionSummary = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const transaction = await Transaction.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { transactionId: id }],
-      farmerId: userId,
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!transaction) {

@@ -63,11 +63,46 @@ export const PaymentTracker: React.FC = () => {
     try {
       setStatusMessage(`Releasing simulated bank payout for ${payment.paymentId}...`);
       const nowIso = new Date().toISOString();
+      const isBackendMode = localStorage.getItem("prisms_token") && !localStorage.getItem("prisms_token")?.startsWith("demo_token_");
 
-      // 2. Immediately update live React state immutably
-      setPayments(prevPayments =>
-        prevPayments.map(p => {
+      if (isBackendMode) {
+        // Strict Backend Flow: API MUST succeed first
+        await updatePaymentStatusApi(payment.paymentId, 'PAID');
+        
+        setPayments(prevPayments =>
+          prevPayments.map(p => {
+            if (p.paymentId === pId || p._id === pId) {
+              return {
+                ...p,
+                paymentStatus: 'RELEASED' as any,
+                paidDate: nowIso,
+              };
+            }
+            return p;
+          })
+        );
+      } else {
+        // DEMO Flow: Update React state and localStorage
+        setPayments(prevPayments =>
+          prevPayments.map(p => {
+            if (p.paymentId === pId || p._id === pId) {
+              return {
+                ...p,
+                paymentStatus: 'RELEASED' as any,
+                paidDate: nowIso,
+              };
+            }
+            return p;
+          })
+        );
+
+        const rawLocal = localStorage.getItem("prisms_demo_payments");
+        let localPayments: PaymentLedger[] = rawLocal ? JSON.parse(rawLocal) : [];
+        let foundInLocal = false;
+
+        localPayments = localPayments.map(p => {
           if (p.paymentId === pId || p._id === pId) {
+            foundInLocal = true;
             return {
               ...p,
               paymentStatus: 'RELEASED' as any,
@@ -75,58 +110,34 @@ export const PaymentTracker: React.FC = () => {
             };
           }
           return p;
-        })
-      );
+        });
 
-      // 3. Update localStorage demo payments
-      const rawLocal = localStorage.getItem("prisms_demo_payments");
-      let localPayments: PaymentLedger[] = rawLocal ? JSON.parse(rawLocal) : [];
-      let foundInLocal = false;
-
-      localPayments = localPayments.map(p => {
-        if (p.paymentId === pId || p._id === pId) {
-          foundInLocal = true;
-          return {
-            ...p,
+        if (!foundInLocal) {
+          localPayments.unshift({
+            ...payment,
             paymentStatus: 'RELEASED' as any,
             paidDate: nowIso,
-          };
+          });
         }
-        return p;
-      });
+        localStorage.setItem("prisms_demo_payments", JSON.stringify(localPayments));
 
-      if (!foundInLocal) {
-        localPayments.unshift({
-          ...payment,
-          paymentStatus: 'RELEASED' as any,
-          paidDate: nowIso,
-        });
-      }
-      localStorage.setItem("prisms_demo_payments", JSON.stringify(localPayments));
-
-      // 4. Also update localStorage demo transactions
-      const rawTxns = localStorage.getItem("prisms_demo_transactions");
-      if (rawTxns) {
-        let txns: any[] = JSON.parse(rawTxns);
-        txns = txns.map(t => {
-          if (t.offerId === payment.offerId || t.lotId === payment.lotId) {
-            return { ...t, transactionStatus: 'PAYMENT_COMPLETED' };
-          }
-          return t;
-        });
-        localStorage.setItem("prisms_demo_transactions", JSON.stringify(txns));
-      }
-
-      // 5. Call API (safely swallow demo route 404 to avoid false error banners)
-      try {
-        await updatePaymentStatusApi(payment.paymentId, 'PAID');
-      } catch (e) {
-        // Backend sandbox route fallback
+        const rawTxns = localStorage.getItem("prisms_demo_transactions");
+        if (rawTxns) {
+          let txns: any[] = JSON.parse(rawTxns);
+          txns = txns.map(t => {
+            if (t.offerId === payment.offerId || t.lotId === payment.lotId) {
+              return { ...t, transactionStatus: 'PAYMENT_COMPLETED' };
+            }
+            return t;
+          });
+          localStorage.setItem("prisms_demo_transactions", JSON.stringify(txns));
+        }
       }
 
       setStatusMessage("Demo payout released successfully.");
     } catch (err: any) {
-      setStatusMessage(`Error: ${err.response?.data?.error?.message || err.message}`);
+      console.error("Payout release failed", err);
+      setStatusMessage(`Error: ${err.response?.data?.error?.message || err.message || "Failed to release payout"}`);
     } finally {
       setReleasingId(null);
     }

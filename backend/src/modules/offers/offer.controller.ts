@@ -134,8 +134,18 @@ export async function ensureDemoOffersForLot(lot: any) {
 
 export const getUserOffers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
-    const offers = await Offer.find({ sellerUserId: userId }).sort({ createdAt: -1 });
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
+    const offers = await Offer.find({
+      $or: [
+        { sellerUserId: rawUserId },
+        { sellerUserId: userIdObj },
+        { sellerUserId: String(rawUserId) }
+      ]
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -212,12 +222,21 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
 
 export const acceptOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
-      sellerUserId: userId,
+      $and: [{
+        $or: [
+          { sellerUserId: rawUserId },
+          { sellerUserId: userIdObj },
+          { sellerUserId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!offer) {
@@ -308,12 +327,21 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
 
 export const rejectOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
-      sellerUserId: userId,
+      $and: [{
+        $or: [
+          { sellerUserId: rawUserId },
+          { sellerUserId: userIdObj },
+          { sellerUserId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!offer) {
@@ -344,13 +372,22 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
 
 export const counterOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
     const { counterPricePerQtl, counterQuantityQtl, message } = req.body;
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
-      sellerUserId: userId,
+      $and: [{
+        $or: [
+          { sellerUserId: rawUserId },
+          { sellerUserId: userIdObj },
+          { sellerUserId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!offer) {
@@ -384,12 +421,21 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
 
 export const withdrawOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
-      sellerUserId: userId,
+      $and: [{
+        $or: [
+          { sellerUserId: rawUserId },
+          { sellerUserId: userIdObj },
+          { sellerUserId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!offer) {

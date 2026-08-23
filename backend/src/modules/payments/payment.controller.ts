@@ -6,8 +6,18 @@ import mongoose from 'mongoose';
 
 export const getUserPayments = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
-    const payments = await PaymentLedger.find({ farmerId: userId }).sort({ createdAt: -1 });
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
+    const payments = await PaymentLedger.find({
+      $or: [
+        { farmerId: rawUserId },
+        { farmerId: userIdObj },
+        { farmerId: String(rawUserId) }
+      ]
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -21,12 +31,21 @@ export const getUserPayments = async (req: Request, res: Response, next: NextFun
 
 export const getPaymentById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
 
     const payment = await PaymentLedger.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { paymentId: id }],
-      farmerId: userId,
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!payment) {
@@ -56,13 +75,22 @@ const VALID_PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
 
 export const updatePaymentStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
     const { status, notes, paymentMode } = req.body;
 
     const payment = await PaymentLedger.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { paymentId: id }],
-      farmerId: userId,
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!payment) {

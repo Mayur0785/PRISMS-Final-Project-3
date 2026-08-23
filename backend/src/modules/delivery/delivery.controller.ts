@@ -14,8 +14,18 @@ async function generateDeliveryId(): Promise<string> {
 
 export const getUserDeliveries = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
-    const deliveries = await DeliveryOrder.find({ farmerId: userId }).sort({ createdAt: -1 });
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
+    const deliveries = await DeliveryOrder.find({
+      $or: [
+        { farmerId: rawUserId },
+        { farmerId: userIdObj },
+        { farmerId: String(rawUserId) }
+      ]
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -181,13 +191,22 @@ const VALID_DELIVERY_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
 
 export const updateDeliveryStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
     const { id } = req.params;
     const { status, notes } = req.body;
 
     const delivery = await DeliveryOrder.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { deliveryId: id }],
-      farmerId: userId,
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
     });
 
     if (!delivery) {
@@ -242,7 +261,7 @@ export const updateDeliveryStatus = async (req: Request, res: Response, next: Ne
             transactionId: transaction._id as any,
             lotId: delivery.lotId as any,
             offerId: delivery.offerId as any,
-            farmerId: userId as any,
+            farmerId: rawUserId as any,
             buyerId: delivery.buyerId,
             grossAmount: transaction.grossAmount,
             deductions: transaction.totalDeductions,
