@@ -100,7 +100,9 @@ export const getBuyerDemands = async (req: Request, res: Response, next: NextFun
     if (grade) {
       query.requiredGrade = new RegExp(grade as string, 'i');
     }
-    query.demandStatus = status || 'ACTIVE';
+    if (status) {
+      query.demandStatus = status;
+    }
 
     const demands = await BuyerDemand.find(query).sort({ createdAt: -1 });
     
@@ -121,7 +123,14 @@ export const getBuyerDemands = async (req: Request, res: Response, next: NextFun
           location: buyer.location,
           isDemo: buyer.isDemo,
           verificationStatus: buyer.verificationStatus,
-        } : null,
+        } : {
+          businessName: d.buyerId.includes('@') ? `Buyer (${d.buyerId.split('@')[0]})` : d.buyerId,
+          buyerType: 'Commercial Buyer',
+          district: d.preferredDistricts?.[0] || 'Maharashtra',
+          location: 'Hub',
+          isDemo: d.isDemo,
+          verificationStatus: 'VERIFIED',
+        },
       };
     });
 
@@ -135,9 +144,70 @@ export const getBuyerDemands = async (req: Request, res: Response, next: NextFun
   }
 };
 
+export const createBuyerDemand = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rawUserId = (req as any).user?._id || (req as any).user?.id || (req as any).user;
+    const userEmail = (req as any).user?.email;
+    const userName = (req as any).user?.name;
+    const buyerId = userEmail || userName || String(rawUserId);
+
+    const {
+      commodity,
+      variety,
+      targetGrade,
+      quantityRequiredQtl,
+      targetPriceMin,
+      targetPriceMax,
+      preferredDistricts,
+      deliveryPreference,
+      deliveryLocation,
+      notes,
+    } = req.body;
+
+    const count = await BuyerDemand.countDocuments();
+    const hex = (count + 101).toString(16).toUpperCase().padStart(4, '0');
+    const demandId = `DEM-2026-${hex}`;
+
+    const numQty = Number(quantityRequiredQtl) || 50;
+    const numPriceMin = Number(targetPriceMin) || 2800;
+    const numPriceMax = Number(targetPriceMax) || 3200;
+
+    const newDemand = await BuyerDemand.create({
+      demandId,
+      buyerId,
+      commodity,
+      variety: variety || 'Standard',
+      requiredGrade: targetGrade || 'Grade A',
+      targetGrade: targetGrade || 'Grade A',
+      quantityRequiredQtl: numQty,
+      minQuantityQtl: Math.round(numQty * 0.2),
+      maxQuantityQtl: numQty,
+      targetPriceMin: numPriceMin,
+      targetPriceMax: numPriceMax,
+      preferredDistricts: Array.isArray(preferredDistricts) ? preferredDistricts : [preferredDistricts || 'Nashik'],
+      deliveryPreference: deliveryPreference || 'Buyer Pickup',
+      deliveryLocation: deliveryLocation || 'Mandi Yard / Warehouse',
+      urgency: 'HIGH',
+      demandStatus: 'ACTIVE',
+      status: 'ACTIVE',
+      isDemo: false,
+      notes,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Buyer procurement demand created successfully',
+      data: newDemand,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getBuyerDemandById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const demand = await BuyerDemand.findById(req.params.id);
+
     if (!demand) {
       return res.status(404).json({
         success: false,
@@ -150,7 +220,7 @@ export const getBuyerDemandById = async (req: Request, res: Response, next: Next
     res.status(200).json({
       success: true,
       data: {
-        ...demand.toObject(),
+        demand,
         buyer,
       },
     });

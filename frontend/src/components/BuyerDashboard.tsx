@@ -8,6 +8,8 @@ import {
   type PaymentLedger,
   type NotificationItem,
   fetchBuyerDemands,
+  createBuyerDemandApi,
+  fetchMarketplaceLotsApi,
   fetchUserDeliveries,
   fetchUserPayments,
   fetchUserOffers,
@@ -170,11 +172,10 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const loadAvailableFarmerLots = async () => {
     setLoadingLots(true);
     try {
-      const res = await apiClient.get(`${API_URL}/lots`);
-      const lots: TradeLot[] = res.data?.data || [];
-      setAvailableLots(lots);
+      const lots = await fetchMarketplaceLotsApi();
+      setAvailableLots(lots || []);
     } catch (e) {
-      console.warn("Failed loading lots from API", e);
+      console.warn("Failed loading marketplace lots from API", e);
     } finally {
       setLoadingLots(false);
     }
@@ -317,26 +318,27 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   };
 
   // Add New Buyer Demand
-  const handleCreateDemand = (e: React.FormEvent) => {
+  const handleCreateDemand = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newDem: BuyerDemand = {
-      demandId: `DEM-2026-${Math.floor(Math.random() * 900 + 100)}`,
-      buyerId: currentUser.id || "buyer_01",
-      commodity: newCrop,
-      variety: "Standard / Hybrid",
-      targetGrade: newQualityGrade,
-      quantityRequiredQtl: parseFloat(newQty) || 50,
-      targetPriceMin: parseFloat(newTargetMin) || 2800,
-      targetPriceMax: parseFloat(newTargetMax) || 3200,
-      preferredDistricts: [newDistrict],
-      deliveryPreference: newDeliveryPref,
-      urgency: "HIGH",
-      status: "OPEN",
-    };
-    setDemands([newDem, ...demands]);
-    setNewDemandModalOpen(false);
-    setBidSuccessToast(`New demand for ${newCrop} created successfully!`);
-    setTimeout(() => setBidSuccessToast(null), 4000);
+    try {
+      await createBuyerDemandApi({
+        commodity: newCrop,
+        variety: "Standard / Hybrid",
+        targetGrade: newQualityGrade,
+        quantityRequiredQtl: parseFloat(newQty) || 50,
+        targetPriceMin: parseFloat(newTargetMin) || 2800,
+        targetPriceMax: parseFloat(newTargetMax) || 3200,
+        preferredDistricts: [newDistrict],
+        deliveryPreference: newDeliveryPref,
+      });
+      setNewDemandModalOpen(false);
+      setBidSuccessToast(`New demand for ${newCrop} created successfully on backend!`);
+      await loadBuyerDemandsData();
+    } catch (err: any) {
+      alert(err?.response?.data?.error?.message || "Failed to create procurement demand.");
+    } finally {
+      setTimeout(() => setBidSuccessToast(null), 4000);
+    }
   };
 
   const filteredLots = availableLots.filter((l) => {

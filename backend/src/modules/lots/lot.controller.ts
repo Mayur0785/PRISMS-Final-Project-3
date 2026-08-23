@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Lot } from './lot.model';
+import { BuyerDemand } from '../buyers/buyerDemand.model';
+import { sendSystemNotification } from '../notifications/notification.controller';
 import { computeBuyerMatchesForLot } from './matching.service';
 import mongoose from 'mongoose';
 
@@ -37,6 +39,28 @@ export const getUserLots = async (req: Request, res: Response, next: NextFunctio
         { userId: String(rawUserId) }
       ]
     }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: lots.length,
+      data: lots,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMarketplaceLots = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rawUserId = (req as any).user?._id || (req as any).user?.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
+    // Fetch all available published/offered farmer trade lots for buyers (excluding CLOSED or ACCEPTED)
+    const lots = await Lot.find({
+      lotStatus: { $in: ['OFFERED', 'PUBLISHED', 'MATCHED'] },
+    } as any).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -145,6 +169,31 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
           message: 'Unable to create a unique trade lot ID. Please try again.',
         },
       });
+    }
+
+    // Proactively notify buyers with matching active demands
+    try {
+      const cropName = (createdLot.cropName || '').trim();
+      const matchingDemands = await BuyerDemand.find({
+        $or: [
+          { commodity: new RegExp(`^${cropName}$`, 'i') },
+          { commodity: new RegExp(cropName, 'i') },
+        ],
+        demandStatus: 'ACTIVE',
+      }).limit(5);
+
+      for (const demand of matchingDemands) {
+        await sendSystemNotification({
+          userId: demand.buyerId,
+          type: 'BUYER_MATCH',
+          title: `New ${createdLot.cropName} Lot Available`,
+          message: `New verified lot ${createdLot.lotId} (${createdLot.quantityQtl} Qtl at ₹${createdLot.expectedPricePerQtl}/Qtl) is now available in ${createdLot.district}.`,
+          relatedCrop: createdLot.cropName,
+          relatedLotId: createdLot._id,
+        });
+      }
+    } catch (notifErr) {
+      console.warn('Error sending lot matching notifications:', notifErr);
     }
 
     res.status(201).json({

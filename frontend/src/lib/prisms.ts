@@ -923,20 +923,28 @@ export interface Buyer {
 }
 
 export interface BuyerDemand {
-  _id: string;
+  _id?: string;
+  demandId?: string;
   buyerId: string;
   commodity: string;
   variety?: string;
-  requiredGrade: string;
-  minQuantityQtl: number;
-  maxQuantityQtl: number;
+  requiredGrade?: string;
+  targetGrade?: string;
+  minQuantityQtl?: number;
+  maxQuantityQtl?: number;
+  quantityRequiredQtl?: number;
   targetPriceMin: number;
   targetPriceMax: number;
-  deliveryLocation: string;
-  demandStatus: 'ACTIVE' | 'PAUSED' | 'EXPIRED' | 'FULFILLED';
-  validUntil: string;
-  isDemo: boolean;
+  preferredDistricts?: string[];
+  deliveryPreference?: string;
+  deliveryLocation?: string;
+  urgency?: string;
+  demandStatus?: 'ACTIVE' | 'PAUSED' | 'EXPIRED' | 'FULFILLED' | 'OPEN' | string;
+  status?: string;
+  validUntil?: string;
+  isDemo?: boolean;
   notes?: string;
+  createdAt?: string;
   buyer?: Partial<Buyer>;
 }
 
@@ -1038,12 +1046,17 @@ export async function fetchBuyers(params?: { commodity?: string; district?: stri
 
 export async function fetchBuyerDemands(params?: { commodity?: string; buyerId?: string }): Promise<BuyerDemand[]> {
   try {
-    const res = await apiClient.get(`${API_URL}/buyer-demands`, { params });
-    return res.data.data;
+    const res = await apiClient.get(`${API_URL}/buyers/demands`, { params });
+    return res.data?.data || [];
   } catch (error) {
     console.error("Error fetching buyer demands", error);
     return [];
   }
+}
+
+export async function createBuyerDemandApi(data: Partial<BuyerDemand>): Promise<BuyerDemand> {
+  const res = await apiClient.post(`${API_URL}/buyers/demands`, data);
+  return res.data?.data;
 }
 
 export async function fetchUserLots(): Promise<TradeLot[]> {
@@ -1449,6 +1462,17 @@ export async function fetchLotMatches(lotId: string, lotObj?: TradeLot): Promise
   };
 }
 
+export async function fetchMarketplaceLotsApi(): Promise<TradeLot[]> {
+  const token = localStorage.getItem("prisms_token");
+  if (!token) return [];
+  try {
+    const res = await apiClient.get(`${API_URL}/lots/marketplace`);
+    return res.data?.data || [];
+  } catch (error) {
+    console.error("Error fetching marketplace lots", error);
+    return [];
+  }
+}
 
 export interface Offer {
   _id: string;

@@ -4,6 +4,7 @@ import { validate } from '../../middleware/validate';
 import { createLotSchema, updateLotSchema } from './lot.schema';
 import {
   getUserLots,
+  getMarketplaceLots,
   createLot,
   getLotById,
   updateLot,
@@ -16,6 +17,7 @@ export const lotRouter = Router();
 lotRouter.use(requireAuth); // Lock down all private Lot endpoints
 
 lotRouter.get('/', getUserLots);
+lotRouter.get('/marketplace', getMarketplaceLots);
 lotRouter.post('/', validate(createLotSchema), createLot);
 lotRouter.get('/:id', getLotById);
 lotRouter.patch('/:id', validate(updateLotSchema), updateLot);
