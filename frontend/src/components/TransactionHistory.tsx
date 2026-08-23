@@ -60,7 +60,7 @@ export const TransactionHistory: React.FC = () => {
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold text-white">Historical Trade Transactions</h2>
             <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Read-Only Sandbox Records
+              Verified Trade Ledgers
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">

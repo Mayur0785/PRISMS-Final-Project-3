@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tag, CheckCircle2, XCircle, ArrowRightLeft, Building2, MapPin, Clock, ShieldCheck, Scale, AlertCircle, FileText } from 'lucide-react';
 import { TradeLot, Offer, fetchUserLots, fetchOffersForLot, acceptOfferApi, createDeliveryOrderApi, rejectOfferApi, recordOfferAcceptance, getAcceptedOfferForLot, getAuthMode } from '../lib/prisms';
-import { OfferComparisonModal, generateDemoOffers } from './OfferComparisonModal';
+import { OfferComparisonModal } from './OfferComparisonModal';
 import { t } from '../lib/i18n';
 
 interface DigitalOffersManagerProps {
@@ -10,6 +10,7 @@ interface DigitalOffersManagerProps {
 
 export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang = 'en' }) => {
   const [lots, setLots] = useState<TradeLot[]>([]);
+  const [lotOffersMap, setLotOffersMap] = useState<Record<string, Offer[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedLotForModal, setSelectedLotForModal] = useState<TradeLot | null>(null);
   const [acceptedOffersMap, setAcceptedOffersMap] = useState<Record<string, string>>({});
@@ -20,14 +21,34 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
     setLoading(true);
     try {
       const fetchedLots = await fetchUserLots();
-      setLots(fetchedLots || []);
+      const lotsArr = fetchedLots || [];
+      setLots(lotsArr);
 
-      // Check local storage for accepted offers
+      // Fetch real offers for each lot in parallel
+      const offersMap: Record<string, Offer[]> = {};
+      await Promise.all(
+        lotsArr.map(async (lot) => {
+          const lotKey = lot._id || lot.lotId;
+          try {
+            const offs = await fetchOffersForLot(lotKey);
+            offersMap[lotKey] = Array.isArray(offs) ? offs : [];
+          } catch {
+            offersMap[lotKey] = [];
+          }
+        })
+      );
+      setLotOffersMap(offersMap);
+
+      // Check accepted offers
       const acceptedMap: Record<string, string> = {};
-      fetchedLots.forEach(lot => {
-        const accId = getAcceptedOfferForLot(lot._id) || getAcceptedOfferForLot(lot.lotId);
-        if (accId) {
-          acceptedMap[lot._id || lot.lotId] = accId;
+      lotsArr.forEach(lot => {
+        const lotKey = lot._id || lot.lotId;
+        const offs = offersMap[lotKey] || [];
+        const acceptedOff = offs.find(o => o.offerStatus === 'ACCEPTED');
+        if (acceptedOff) {
+          acceptedMap[lotKey] = acceptedOff._id || acceptedOff.offerId;
+        } else if (lot.lotStatus === 'ACCEPTED') {
+          acceptedMap[lotKey] = 'ACCEPTED';
         }
       });
       setAcceptedOffersMap(acceptedMap);
@@ -55,35 +76,23 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
     setSubmitting(true);
     setAcceptError("");
 
-    const isBackendMode = getAuthMode() === 'BACKEND';
+    try {
+      const acceptRes = await acceptOfferApi(offer._id || offer.offerId);
+      const acceptedOfferId = acceptRes?.offer?._id || offer._id || offer.offerId;
 
-    if (isBackendMode) {
-      try {
-        const acceptRes = await acceptOfferApi(offer._id || offer.offerId);
-        const acceptedOfferId = acceptRes?.offer?._id || offer._id || offer.offerId;
+      // Create linked DeliveryOrder, PaymentLedger, and Transaction records on backend
+      await createDeliveryOrderApi(acceptedOfferId, "Medium Pickup (Bolero MaxiTruck)");
 
-        // Create linked DeliveryOrder, PaymentLedger, and Transaction records on backend
-        await createDeliveryOrderApi(acceptedOfferId, "Medium Pickup (Bolero MaxiTruck)");
-
-        setAcceptedOffersMap(prev => ({
-          ...prev,
-          [lotKey]: acceptedOfferId
-        }));
-        setDealConfirmedModal({ offer, lot });
-      } catch (err: any) {
-        console.error("Error accepting offer via API:", err);
-        setAcceptError(err?.response?.data?.error?.message || err?.message || "Failed to accept offer. Please try again.");
-      } finally {
-        setSubmitting(false);
-      }
-    } else {
-      // Demo / Local Mode
-      recordOfferAcceptance(offer, lot);
       setAcceptedOffersMap(prev => ({
         ...prev,
-        [lotKey]: offer.offerId || offer._id
+        [lotKey]: acceptedOfferId
       }));
       setDealConfirmedModal({ offer, lot });
+      await loadData();
+    } catch (err: any) {
+      console.error("Error accepting offer via API:", err);
+      setAcceptError(err?.response?.data?.error?.message || err?.message || "Failed to accept offer. Please try again.");
+    } finally {
       setSubmitting(false);
     }
   };
@@ -107,9 +116,6 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                 <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                   {lang === 'mr' ? 'डिजिटल ऑफर्स आणि थेट खरेदीदार बोली' : 'Digital Offers & Direct Buyer Bids'}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
-                  DEMO / SIMULATED OFFERS
-                </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
                 {lang === 'mr'
@@ -144,8 +150,8 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
       ) : (
         <div className="space-y-8">
           {lots.map(lot => {
-            const offers = generateDemoOffers(lot);
             const lotKey = lot._id || lot.lotId;
+            const offers = lotOffersMap[lotKey] || [];
             const acceptedOfferId = acceptedOffersMap[lotKey];
 
             return (
@@ -203,7 +209,13 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                     <span>BUYER OFFERS RECEIVED ({offers.length})</span>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {offers.length === 0 ? (
+                    <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-6 text-center space-y-1">
+                      <p className="text-xs text-slate-600 font-semibold">No buyer offers received for this trade lot yet.</p>
+                      <p className="text-[11px] text-slate-400">As commercial buyers submit purchase bids, they will appear here in real time.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {offers.map((offer, idx) => {
                       const offerKey = offer.offerId || offer._id;
                       const isAccepted = acceptedOfferId === offerKey || offer.offerStatus === 'ACCEPTED';
@@ -379,6 +391,7 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                       );
                     })}
                   </div>
+                  )}
                 </div>
               </div>
             );

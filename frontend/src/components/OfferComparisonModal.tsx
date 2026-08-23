@@ -11,133 +11,6 @@ interface OfferComparisonModalProps {
   lang?: "en" | "mr";
 }
 
-/** Generates realistic demo sandbox buyer offers when backend has no active seeded offers */
-export const generateDemoOffers = (tradeLot: TradeLot): (Offer & { isDemo?: boolean })[] => {
-  const basePrice = tradeLot.expectedPricePerQtl || 3200;
-  const qty = tradeLot.quantityQtl || 25;
-  const crop = tradeLot.cropName || 'Crop';
-
-  // Demo Offer 1: Nashik Agro Processors Ltd. (Highest Net - Buyer Pickup)
-  const price1 = Math.round(basePrice * 1.03);
-  const gross1 = Math.round(price1 * qty);
-  const transport1 = 0; // Buyer pickup = 0 transport cost for farmer
-  const handling1 = Math.round(gross1 * 0.005);
-  const spoilage1 = Math.round(gross1 * 0.015);
-  const net1 = gross1 - transport1 - handling1 - spoilage1;
-
-  // Demo Offer 2: Pune Fresh Foods Pvt Ltd (Wholesaler - Farmer Delivery)
-  const price2 = Math.round(basePrice * 0.98);
-  const gross2 = Math.round(price2 * qty);
-  const transport2 = Math.round(qty * 45); // Farmer delivery transport cost
-  const handling2 = Math.round(gross2 * 0.005);
-  const spoilage2 = Math.round(gross2 * 0.015);
-  const net2 = gross2 - transport2 - handling2 - spoilage2;
-
-  // Demo Offer 3: Sahyadri Farmers Producer Co. (FPO Aggregator)
-  const price3 = Math.round(basePrice * 1.01);
-  const gross3 = Math.round(price3 * qty);
-  const transport3 = Math.round(qty * 25);
-  const handling3 = Math.round(gross3 * 0.005);
-  const spoilage3 = Math.round(gross3 * 0.01);
-  const net3 = gross3 - transport3 - handling3 - spoilage3;
-
-  return [
-    {
-      _id: `demo_off_1_${tradeLot._id || '01'}`,
-      offerId: `DEMO-OFF-001`,
-      lotId: tradeLot._id,
-      buyerId: `DEMO-BUYER-01`,
-      sellerUserId: tradeLot.userId || 'demo_user',
-      commodity: crop,
-      variety: tradeLot.variety || 'Standard',
-      grade: tradeLot.grade || 'Grade A',
-      quantityQtl: qty,
-      pricePerQtl: price1,
-      grossValue: gross1,
-      estimatedTransportCost: transport1,
-      estimatedMarketHandlingCharges: handling1,
-      estimatedSpoilage: spoilage1,
-      estimatedNetRealization: net1,
-      paymentTerms: 'Payment within 48 hours (Bank Transfer)',
-      deliveryLocation: 'Buyer Pickup (Self Logistics)',
-      offerStatus: 'PENDING',
-      expiresAt: new Date(Date.now() + 86400000 * 3).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isDemo: true,
-      buyer: {
-        buyerId: 'DEMO-BUYER-01',
-        businessName: 'Nashik Agro Processors Ltd.',
-        buyerType: 'Processor',
-        district: 'Nashik',
-        rating: 4.8,
-      },
-    },
-    {
-      _id: `demo_off_2_${tradeLot._id || '02'}`,
-      offerId: `DEMO-OFF-002`,
-      lotId: tradeLot._id,
-      buyerId: `DEMO-BUYER-02`,
-      sellerUserId: tradeLot.userId || 'demo_user',
-      commodity: crop,
-      variety: tradeLot.variety || 'Standard',
-      grade: tradeLot.grade || 'Grade A',
-      quantityQtl: qty,
-      pricePerQtl: price2,
-      grossValue: gross2,
-      estimatedTransportCost: transport2,
-      estimatedMarketHandlingCharges: handling2,
-      estimatedSpoilage: spoilage2,
-      estimatedNetRealization: net2,
-      paymentTerms: 'Payment within 24 hours (Direct Deposit)',
-      deliveryLocation: 'Farmer Delivery to Hub',
-      offerStatus: 'PENDING',
-      expiresAt: new Date(Date.now() + 86400000 * 2).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isDemo: true,
-      buyer: {
-        buyerId: 'DEMO-BUYER-02',
-        businessName: 'Pune Fresh Foods Pvt Ltd',
-        buyerType: 'Wholesaler',
-        district: 'Pune',
-        rating: 4.6,
-      },
-    },
-    {
-      _id: `demo_off_3_${tradeLot._id || '03'}`,
-      offerId: `DEMO-OFF-003`,
-      lotId: tradeLot._id,
-      buyerId: `DEMO-BUYER-03`,
-      sellerUserId: tradeLot.userId || 'demo_user',
-      commodity: crop,
-      variety: tradeLot.variety || 'Standard',
-      grade: tradeLot.grade || 'Grade A',
-      quantityQtl: qty,
-      pricePerQtl: price3,
-      grossValue: gross3,
-      estimatedTransportCost: transport3,
-      estimatedMarketHandlingCharges: handling3,
-      estimatedSpoilage: spoilage3,
-      estimatedNetRealization: net3,
-      paymentTerms: 'Immediate Payment upon Quality Check',
-      deliveryLocation: 'APMC Yard Collection Point',
-      offerStatus: 'PENDING',
-      expiresAt: new Date(Date.now() + 86400000 * 4).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isDemo: true,
-      buyer: {
-        buyerId: 'DEMO-BUYER-03',
-        businessName: 'Sahyadri Farmers Producer Co.',
-        buyerType: 'FPO Aggregator',
-        district: 'Nashik',
-        rating: 4.9,
-      },
-    },
-  ];
-};
-
 export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
   lot,
   isOpen,
@@ -194,14 +67,14 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
     }
 
     if (fetchError) {
-      setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम." : "Unable to load buyer offers from the server.");
+      setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम. कृपया पुन्हा प्रयत्न करा." : "Unable to load buyer offers from the server. Please try again.");
       setOffers([]);
       setLoading(false);
       return;
     }
 
     if (!data || data.length === 0) {
-      setErrorState(lang === "mr" ? "या व्यापार लॉटसाठी सध्या कोणत्याही खरेदीदार ऑफर्स उपलब्ध नाहीत. खरेदीदारांनी ऑफर्स सादर केल्यावर त्या येथे दिसतील." : "No active buyer offers are currently available for this trade lot. As buyers submit offers, they will appear here in real time.");
+      setErrorState(null);
       setOffers([]);
       setLoading(false);
       return;
@@ -388,17 +261,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
           </div>
         </div>
 
-        {/* Demo Notice Banner */}
-        <div className="px-4 sm:px-6 pt-3 pb-0 shrink-0">
-          <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
-            <Info className="w-4 h-4 shrink-0 text-amber-700" />
-            <span className="leading-snug">
-              {lang === "mr"
-                ? "डेमो सँडबॉक्स: या खरेदीदार ऑफर्स प्रात्यक्षिकासाठी सादर केल्या आहेत. प्रत्यक्ष बँक व्यवहार किंवा वाहतूक प्रक्रिया सुरू होत नाही."
-                : "Demo Sandbox: These buyer offers are simulated presentation models for demonstration. No real financial debit, bank transfer, or transport dispatch is initiated."}
-            </span>
-          </div>
-        </div>
+
 
         {actionMessage && (
           <div className="mx-4 sm:mx-6 mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center justify-between shrink-0 shadow-sm">

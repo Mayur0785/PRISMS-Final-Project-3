@@ -151,13 +151,13 @@ export const PaymentTracker: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold mb-2 border border-emerald-200">
               <CreditCard className="w-3.5 h-3.5" />
-              Demo Sandbox Payment
+              Digital Escrow Settlement
             </div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
               Payment Tracking & Escrow Ledger
             </h2>
             <p className="text-xs text-slate-600 mt-1 max-w-2xl font-medium leading-relaxed">
-              Simulated bank settlement — no real bank transfer is initiated.
+              Automated trade settlement and escrow records linked to verified delivery milestones.
             </p>
           </div>
 
@@ -372,15 +372,15 @@ export const PaymentTracker: React.FC = () => {
                         <strong className="text-emerald-900 font-bold">{paidDateStr || "Just now"}</strong>
                       </div>
                     </div>
-                    <div className="text-[10px] text-emerald-600/90 pt-1 font-medium italic">
-                      "Demo Sandbox Payment — No real bank transfer is initiated."
+                    <div className="text-[10px] text-emerald-700/90 pt-1 font-medium italic">
+                      Verified automated escrow payout record.
                     </div>
                   </div>
                 )}
 
                 {/* Footer notes */}
                 <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-1 gap-2 font-medium">
-                  <span>Notes: {pmt.notes || 'Simulated Sandbox Payment Record'}</span>
+                  <span>Notes: {pmt.notes || 'Digital Escrow Settlement Record'}</span>
                   {paidDateStr && (
                     <span className="text-emerald-700 font-bold">
                       Settlement Timestamp: {paidDateStr}
