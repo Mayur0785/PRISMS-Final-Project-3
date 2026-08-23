@@ -62,60 +62,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ───────────────────────────────────────────────────────────────────────── */}
       {/* 1. NAVBAR */}
       {/* ───────────────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-[#163819]/95 backdrop-blur-md border-b border-emerald-900/60 text-white shadow-lg transition-all">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 text-slate-900 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Brand Logo & Title */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection("hero")}>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-amber-400 p-0.5 shadow-md flex items-center justify-center flex-shrink-0">
-              <div className="w-full h-full bg-[#163819] rounded-[14px] flex items-center justify-center text-xl font-black">
-                🌾
-              </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white shadow-sm flex items-center justify-center flex-shrink-0 text-xl font-black">
+              🌾
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-xl tracking-tight text-white font-serif">PRISMS</span>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 tracking-wider">
-                  Agri-Tech 2026
+                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
+                  Agri-Tech
                 </span>
               </div>
-              <p className="text-[11px] text-emerald-200/80 font-medium tracking-wide">
-                Digital Agricultural Command Center
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide">
+                Agricultural Market Realization & Trading
               </p>
             </div>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-bold tracking-wide text-emerald-100">
-            <button onClick={() => scrollToSection("hero")} className="hover:text-white transition-colors">
+          {/* Desktop Center Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600">
+            <button onClick={() => scrollToSection("hero")} className="hover:text-emerald-800 transition-colors">
               {lang === "mr" ? "मुख्यपृष्ठ" : "Home"}
             </button>
-            <button onClick={() => scrollToSection("problem-solution")} className="hover:text-white transition-colors">
-              {lang === "mr" ? "उपाय व दृष्टी" : "Vision"}
-            </button>
-            <button onClick={() => scrollToSection("features")} className="hover:text-white transition-colors">
+            <button onClick={() => scrollToSection("features-overview")} className="hover:text-emerald-800 transition-colors">
               {lang === "mr" ? "वैशिष्ट्ये" : "Features"}
             </button>
-            <button onClick={() => scrollToSection("how-it-works")} className="hover:text-white transition-colors">
+            <button onClick={() => scrollToSection("how-it-works")} className="hover:text-emerald-800 transition-colors">
               {lang === "mr" ? "कार्यपद्धती" : "How It Works"}
-            </button>
-            <button onClick={() => scrollToSection("role-selection")} className="hover:text-white transition-colors">
-              {lang === "mr" ? "शेतकरी व खरेदीदार" : "Role Selector"}
-            </button>
-            <button onClick={() => scrollToSection("highlights")} className="hover:text-white transition-colors">
-              {lang === "mr" ? "सुरक्षितता" : "Security"}
             </button>
           </nav>
 
           {/* Right Action Controls: Lang Switcher & Dual Login Buttons */}
-          <div className="hidden md:flex items-center gap-2.5">
-            {/* Language Switcher */}
+          <div className="hidden md:flex items-center gap-3">
             {onToggleLang && (
               <button
                 type="button"
                 onClick={() => onToggleLang(lang === "en" ? "mr" : "en")}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-emerald-950/60 border border-emerald-700/50 text-emerald-200 hover:text-white hover:bg-emerald-900 transition-all flex items-center gap-1.5"
+                className="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-slate-100 border border-slate-200 text-slate-700 hover:text-emerald-900 hover:bg-slate-200 transition-all flex items-center gap-1.5 mr-1"
               >
-                <Globe className="w-3.5 h-3.5" />
+                <Globe className="w-3.5 h-3.5 text-emerald-700" />
                 <span>{lang === "en" ? "मराठी" : "English"}</span>
               </button>
             )}
@@ -123,7 +111,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Farmer Login Button */}
             <button
               onClick={() => onOpenAuth("farmer", "login")}
-              className="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md active:scale-95 flex items-center gap-1.5 border border-emerald-400/40"
+              className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
             >
               <span>🚜</span>
               <span>{lang === "mr" ? "शेतकरी लॉग इन" : "Farmer Login"}</span>
@@ -132,7 +120,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Buyer Login Button */}
             <button
               onClick={() => onOpenAuth("buyer", "login")}
-              className="px-4 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md active:scale-95 flex items-center gap-1.5 border border-blue-400/40"
+              className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
             >
               <span>🏢</span>
               <span>{lang === "mr" ? "खरेदीदार लॉग इन" : "Buyer Login"}</span>
@@ -145,14 +133,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <button
                 type="button"
                 onClick={() => onToggleLang(lang === "en" ? "mr" : "en")}
-                className="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-900/60 border border-emerald-700/50 text-emerald-200"
+                className="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-slate-100 border border-slate-200 text-slate-700"
               >
                 {lang === "en" ? "मराठी" : "EN"}
               </button>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-emerald-100 hover:text-white hover:bg-emerald-900/60 transition-colors"
+              className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -161,40 +149,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Mobile Dropdown Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-[#143317] border-b border-emerald-800 p-4 space-y-3 animate-in slide-in-from-top duration-200">
+          <div className="md:hidden bg-white border-b border-slate-200 p-4 space-y-3 shadow-lg animate-in slide-in-from-top duration-200">
             <div className="grid grid-cols-2 gap-2 text-xs font-bold">
               <button
-                onClick={() => scrollToSection("problem-solution")}
-                className="p-2 text-left text-emerald-200 hover:text-white"
+                onClick={() => scrollToSection("features-overview")}
+                className="p-2 text-left text-slate-700 hover:text-emerald-800"
               >
-                Vision & Problem
-              </button>
-              <button
-                onClick={() => scrollToSection("features")}
-                className="p-2 text-left text-emerald-200 hover:text-white"
-              >
-                Platform Features
+                Features
               </button>
               <button
                 onClick={() => scrollToSection("how-it-works")}
-                className="p-2 text-left text-emerald-200 hover:text-white"
+                className="p-2 text-left text-slate-700 hover:text-emerald-800"
               >
                 How It Works
               </button>
-              <button
-                onClick={() => scrollToSection("role-selection")}
-                className="p-2 text-left text-emerald-200 hover:text-white"
-              >
-                Role Experience
-              </button>
             </div>
-            <div className="pt-2 border-t border-emerald-800/80 flex flex-col gap-2">
+            <div className="pt-2 border-t border-slate-200 flex flex-col gap-2">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenAuth("farmer", "login");
                 }}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2"
               >
                 🚜 {lang === "mr" ? "शेतकरी लॉग इन (Farmer Login)" : "Farmer Login"}
               </button>
@@ -203,7 +179,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAuth("buyer", "login");
                 }}
-                className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center gap-2"
               >
                 🏢 {lang === "mr" ? "खरेदीदार लॉग इन (Buyer Login)" : "Buyer Login"}
               </button>
@@ -217,154 +193,136 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ───────────────────────────────────────────────────────────────────────── */}
       <section
         id="hero"
-        className="relative bg-gradient-to-b from-[#163819] via-[#1a441e] to-[#205325] text-white pt-16 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        className="relative bg-gradient-to-b from-[#f7f9f6] via-white to-white text-slate-900 py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80"
       >
-        {/* Background Grid Accent */}
-        <div className="absolute inset-0 bg-[radial-gradient(#2f7836_1px,transparent_1px)] [background-size:24px_24px] opacity-25" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Hero Left Text & Actions */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            {/* Gov / Standards Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>APMC Market Realization & Spatial Intelligence Platform</span>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Hero Left (50% on Desktop) */}
+          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+            {/* Small badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold shadow-sm">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-600" />
+              <span>Digital Agricultural Command Center</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
+            {/* Main Heading */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12] text-slate-900 font-serif">
               Smarter Agricultural Trading.
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-emerald-200 mt-1">
+              <span className="block text-emerald-800 mt-1">
                 Better Market Decisions.
               </span>
             </h1>
 
             {/* Subheading */}
-            <p className="text-sm sm:text-base text-emerald-100/90 font-medium max-w-2xl leading-relaxed mx-auto lg:mx-0">
-              PRISMS connects farmers with buyers, compares market opportunities, and helps manage the complete trade journey from crop listing to delivery and payment.
+            <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
+              PRISMS connects farmers and buyers through intelligent market discovery, digital offers, negotiation, logistics and settlement.
             </p>
 
-            {/* Role Action CTAs */}
-            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+            {/* Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button
                 onClick={() => onOpenAuth("farmer", "login")}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm transition-all shadow-xl hover:shadow-emerald-500/25 active:scale-95 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 py-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2.5"
               >
                 <span>🚜</span>
-                <span>{lang === "mr" ? "शेतकरी म्हणून प्रवेश करा" : "Login as Farmer"}</span>
+                <span>{lang === "mr" ? "शेतकरी लॉग इन" : "Login as Farmer"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <button
                 onClick={() => onOpenAuth("buyer", "login")}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm transition-all shadow-xl hover:shadow-blue-600/25 active:scale-95 flex items-center justify-center gap-2 border border-blue-400/40"
+                className="w-full sm:w-auto px-7 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2.5"
               >
                 <span>🏢</span>
-                <span>{lang === "mr" ? "खरेदीदार म्हणून प्रवेश करा" : "Login as Buyer"}</span>
+                <span>{lang === "mr" ? "खरेदीदार लॉग इन" : "Login as Buyer"}</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => scrollToSection("problem-solution")}
-                className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-emerald-100 font-bold text-xs transition-all border border-white/20 flex items-center justify-center gap-1.5"
-              >
-                <Compass className="w-4 h-4 text-amber-400" />
-                <span>Explore PRISMS</span>
               </button>
             </div>
 
-            {/* Trust Badges */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs text-emerald-200/80 font-bold border-t border-emerald-800/60">
+            {/* Minimal Trust Indicators */}
+            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-500 font-semibold">
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Zero Hidden Brokerage</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Zero Brokerage</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Direct Escrow Settlements</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Verified APMC Rates</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-emerald-400" />
-                <span>GPS Milestone Logistics</span>
+                <Truck className="w-4 h-4 text-emerald-600" />
+                <span>Integrated Logistics</span>
               </div>
             </div>
           </div>
 
-          {/* Hero Right Visual: Enterprise Trade Mockup */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative rounded-3xl bg-gradient-to-b from-slate-900 to-[#0e2411] border border-emerald-500/30 p-5 sm:p-6 shadow-2xl space-y-4">
-              <BorderBeam size={260} duration={8} colorFrom="#10b981" colorTo="#fe932c" />
-
-              {/* Header Preview Bar */}
-              <div className="flex items-center justify-between border-b border-emerald-900/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
-                  <span className="text-[11px] font-mono font-bold text-emerald-300 ml-2">
-                    PRISMS-CORE // PIPELINE
-                  </span>
-                </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                  LIVE BENCHMARK
-                </span>
+          {/* Hero Right (50% on Desktop): High Quality Realistic Agricultural Photo */}
+          <div className="lg:col-span-6 flex justify-center">
+            <div className="w-full max-w-lg lg:max-w-none rounded-3xl overflow-hidden bg-white p-2.5 border border-emerald-100 shadow-xl shadow-emerald-950/5">
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-100">
+                <img
+                  src="/images/prisms_field_hero.jpg"
+                  alt="Indian farmer in agricultural field with harvested produce"
+                  className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/hero-farm.jpg";
+                  }}
+                />
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              {/* Sample Trade Lot Card */}
-              <div className="bg-emerald-950/60 rounded-2xl p-4 border border-emerald-800/60 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="font-mono text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
-                      LOT-2026-0073
-                    </span>
-                    <h4 className="font-black text-base text-white mt-1">Red Onion (Nashik) • 30 Qtl</h4>
-                    <p className="text-[11px] text-emerald-200/70 font-medium">Origin: Pimpalgaon Mandi Catchment</p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500 text-slate-950 uppercase">
-                    Grade A (45mm)
-                  </span>
-                </div>
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      {/* 3. ONE PLATFORM. COMPLETE AGRICULTURAL TRADE. */}
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      <section id="features-overview" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+              End-to-End Workflow
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-serif">
+              One Platform. Complete Agricultural Trade.
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 font-normal max-w-2xl mx-auto">
+              Empowering farmers with transparent market price realization and providing commercial buyers with direct farm-gate supply.
+            </p>
+          </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-emerald-900/40">
-                    <span className="text-[10px] text-emerald-300/80 font-bold block uppercase">Mandi Modal Rate</span>
-                    <span className="font-black text-base text-white">₹3,200/Qtl</span>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-emerald-900/40">
-                    <span className="text-[10px] text-emerald-300/80 font-bold block uppercase">Top Buyer Bid</span>
-                    <span className="font-black text-base text-amber-300">₹3,296/Qtl</span>
-                  </div>
-                </div>
+          {/* 3 Simple Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1: Market Discovery */}
+            <div className="p-8 rounded-2xl bg-[#f7f9f6] border border-slate-200/80 space-y-4 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold">
+                📈
               </div>
+              <h3 className="font-extrabold text-xl text-slate-900">Market Discovery</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Compare APMC mandi prices, spatial transit costs, and discover verified buyer demands with zero hidden brokerage.
+              </p>
+            </div>
 
-              {/* Pipeline Flow Steps */}
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between p-2.5 bg-emerald-900/20 rounded-xl border border-emerald-800/40">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-blue-400" />
-                    <span className="font-bold text-slate-200">Nashik Agro Processors Ltd.</span>
-                  </div>
-                  <span className="font-extrabold text-emerald-400">Offer Accepted ✓</span>
-                </div>
-
-                <div className="flex items-center justify-between p-2.5 bg-emerald-900/20 rounded-xl border border-emerald-800/40">
-                  <div className="flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-amber-400" />
-                    <span className="font-bold text-slate-200">Transit: Bolero Pickup</span>
-                  </div>
-                  <span className="font-bold text-amber-300">In-Transit (35km)</span>
-                </div>
-
-                <div className="flex items-center justify-between p-2.5 bg-emerald-900/20 rounded-xl border border-emerald-800/40">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-emerald-400" />
-                    <span className="font-bold text-slate-200">Escrow Net Settlement</span>
-                  </div>
-                  <span className="font-black text-emerald-300">₹97,460 Secured</span>
-                </div>
+            {/* Card 2: Digital Negotiation */}
+            <div className="p-8 rounded-2xl bg-[#f7f9f6] border border-slate-200/80 space-y-4 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold">
+                🤝
               </div>
+              <h3 className="font-extrabold text-xl text-slate-900">Digital Negotiation</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Receive direct transparent bids, submit structured counter-offers, and finalize mutually agreed trade terms instantly.
+              </p>
+            </div>
+
+            {/* Card 3: End-to-End Trade Tracking */}
+            <div className="p-8 rounded-2xl bg-[#f7f9f6] border border-slate-200/80 space-y-4 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold">
+                🚚
+              </div>
+              <h3 className="font-extrabold text-xl text-slate-900">End-to-End Trade Tracking</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Monitor real-time pickup and transit milestones, with automated escrow settlements released directly upon verified delivery.
+              </p>
             </div>
           </div>
         </div>
