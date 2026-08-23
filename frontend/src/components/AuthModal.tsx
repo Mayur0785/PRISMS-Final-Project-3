@@ -201,46 +201,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         </div>
 
-        {/* Role Selector */}
-        <div className="px-6 pt-3.5 pb-1">
-          <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">
-            {lang === "mr" ? "भूमिका निवडा (Select Role)" : "Selected Role"}
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-            {[
-              { id: "farmer", label: lang === "mr" ? "🚜 शेतकरी" : "🚜 Farmer" },
-              { id: "buyer", label: lang === "mr" ? "🏢 खरेदीदार" : "🏢 Buyer" },
-              { id: "fpo", label: lang === "mr" ? "🌾 FPO" : "🌾 FPO" },
-              { id: "advisor", label: lang === "mr" ? "📊 सल्लागार" : "📊 Advisor" },
-            ].map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => {
-                  setRole(r.id as any);
-                  if (r.id === "buyer") {
-                    setEmail("buyer.nashik@prisms.gov.in");
-                    setName("Nashik Agro Processors Ltd.");
-                  } else if (r.id === "farmer") {
-                    setEmail("farmer.lasalgaon@prisms.gov.in");
-                    setName("Mayur Kapse (नवी मुंबई)");
-                  }
-                }}
-                className={`py-2 px-1 rounded-xl border text-center font-bold text-[11px] transition-all cursor-pointer ${
-                  role === r.id
-                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100/80"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Alternate Auth Method Toggle (Password vs Mobile OTP) */}
         {mode === "login" && (
-          <div className="px-6 pt-3 flex items-center justify-between text-[12px] font-bold border-b border-slate-200/60 pb-3">
+          <div className="px-6 pt-4 flex items-center justify-between text-[12px] font-bold border-b border-slate-200/60 pb-3">
             <span className="text-slate-500">
               {lang === "mr" ? "लॉग इन पर्याय:" : "Sign In Option:"}
             </span>
