@@ -184,12 +184,8 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                         <span>Quantity: <strong className="text-slate-900">{lot.quantityQtl} Qtl</strong></span>
                         <span>•</span>
                         <span>Expected: <strong className="text-emerald-700">₹{lot.expectedPricePerQtl.toLocaleString('en-IN')}/Qtl</strong></span>
-                        {lot.location && lot.location.trim() !== '' && (
-                          <>
-                            <span>•</span>
-                            <span>Location: {lot.location}</span>
-                          </>
-                        )}
+                        <span>•</span>
+                        <span>Location: <strong className="text-slate-800">{lot.origin || lot.location || (lot.district ? `Farm Gate, ${lot.district}` : 'Farm Gate, Nashik')}</strong></span>
                       </p>
                     </div>
                   </div>

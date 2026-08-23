@@ -18,6 +18,7 @@ offerRouter.get('/', getUserOffers);
 offerRouter.post('/', createOffer);
 offerRouter.get('/lot/:lotId', getOffersForLot);
 offerRouter.post('/:id/accept', acceptOffer);
+offerRouter.post('/:id/accept-counter', acceptOffer);
 offerRouter.post('/:id/reject', rejectOffer);
 offerRouter.post('/:id/counter', counterOffer);
 offerRouter.post('/:id/withdraw', withdrawOffer);

@@ -218,6 +218,30 @@ export const createOffer = async (req: Request, res: Response, next: NextFunctio
 
     const qty = Number(quantityQtl) || lot.quantityQtl || 30;
     const pPerQtl = Number(pricePerQtl);
+
+    // Prevent duplicate active offers for the same buyer + lot
+    const existingActiveOffer = await Offer.findOne({
+      lotId: lot._id as any,
+      $or: [
+        { buyerId: String(buyerId) },
+        { buyerId: rawUserId },
+        ...(buyerEmail ? [{ buyerId: buyerEmail }] : [])
+      ],
+      offerStatus: { $in: ['PENDING', 'COUNTERED'] },
+    });
+
+    if (existingActiveOffer) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'ACTIVE_OFFER_EXISTS',
+          message: `An active binding offer (${existingActiveOffer.offerId}) already exists for this lot.`,
+          offerId: existingActiveOffer.offerId,
+        },
+        data: existingActiveOffer,
+      });
+    }
+
     const grossValue = Math.round(pPerQtl * qty);
     const estimatedTransportCost = Math.round(35 * 1.35 * qty);
     const estimatedMarketHandlingCharges = Math.round(grossValue * 0.005);
@@ -304,7 +328,9 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
       });
     }
 
-    const offers = await Offer.find({ lotId: lot._id as any }).sort({ estimatedNetRealization: -1 });
+    const offers = await Offer.find({
+      $or: [{ lotId: lot._id }, { lotId: lot.lotId }],
+    }).sort({ estimatedNetRealization: -1 });
 
     const buyerIds = [...new Set(offers.map(o => o.buyerId))];
     const buyers = await Buyer.find({ buyerId: { $in: buyerIds } });

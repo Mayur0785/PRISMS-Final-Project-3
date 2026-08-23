@@ -8,6 +8,7 @@ import { env } from './config/env';
 import { connectDB } from './db';
 import { seedDemoBuyers } from './modules/buyers/seedBuyers';
 import { seedDemoFpos } from './modules/fpos/seedFpos';
+import { seedDemoTradeLotsAndOffers } from './modules/offers/seedOffers';
 import { startPriceAlertWorker } from './modules/notifications/priceAlert.worker';
 
 const PORT = process.env.PORT || env.PORT || 5000;
@@ -26,6 +27,7 @@ const startServer = async () => {
     await connectDB();
     await seedDemoBuyers();
     await seedDemoFpos();
+    await seedDemoTradeLotsAndOffers();
 
     // 2. Start Automated Background Price Alert Worker (5 min frequency)
     startPriceAlertWorker(300000);

@@ -655,115 +655,231 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         {/* TAB 2: FARMER PRODUCE DISCOVERY */}
         {activeTab === "lots" && (
           <div className="space-y-6">
-            {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-              <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search crop, variety, or district..."
-                  value={lotSearchQuery}
-                  onChange={(e) => setLotSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white text-xs font-medium"
-                />
+            {/* Header & Filter Bar */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900">Farmer Produce Discovery</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Browse verified farmer trade lots across Maharashtra and submit direct binding purchase offers.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (lots.length > 0) {
+                      setSelectedLotForBid(lots[0]);
+                      setBidPrice(String(lots[0].expectedPricePerQtl || 3000));
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm active:scale-98 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add New Binding Offer</span>
+                </button>
               </div>
 
-              <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-                <span className="font-bold text-slate-500 whitespace-nowrap">Filter Commodity:</span>
-                {["ALL", "Onion", "Wheat", "Tomato", "Soybean", "Banana"].map((crop) => (
-                  <button
-                    key={crop}
-                    onClick={() => setLotFilterCrop(crop)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer ${
-                      lotFilterCrop === crop
-                        ? "bg-emerald-700 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    {crop}
-                  </button>
-                ))}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                <div className="relative w-full md:w-80">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search crop, variety, or district..."
+                    value={lotSearchQuery}
+                    onChange={(e) => setLotSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white text-xs font-medium"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                  <span className="font-bold text-slate-500 whitespace-nowrap">Filter Commodity:</span>
+                  {["ALL", "Onion", "Wheat", "Tomato", "Soybean", "Banana"].map((crop) => (
+                    <button
+                      key={crop}
+                      onClick={() => setLotFilterCrop(crop)}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer ${
+                        lotFilterCrop === crop
+                          ? "bg-emerald-700 text-white shadow-sm"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      {crop}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Lots Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredLots.map((lot) => (
-                <div
-                  key={lot.lotId || lot._id}
-                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-3.5 text-xs flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-bold text-slate-400">{lot.lotId}</span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300/60">
-                        {lot.provisionalGrade || lot.grade || "Grade A"}
-                        {!(lot.qualityScore || lot.qualityPassport) && " • Farmer Declared"}
-                      </span>
-                    </div>
+              {filteredLots.map((lot) => {
+                const lotKey = lot._id || lot.lotId;
+                const existingOffer = backendOffers.find(
+                  (o) =>
+                    (o.lotId === lot._id || o.lotId === lot.lotId || String(o.lotId) === String(lot._id) || String(o.lotId) === String(lot.lotId)) &&
+                    o.offerStatus !== "REJECTED"
+                );
 
-                    <h4 className="font-extrabold text-base text-slate-900">{lot.cropName}</h4>
-                    <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {lot.origin || "Farm Gate"}, {lot.district || "Nashik"}
-                    </p>
-                  </div>
-
-                  {/* Quality Passport Summary Pill */}
-                  {lot.qualityScore || lot.qualityPassport ? (
-                    <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>{lot.provisionalGrade || lot.grade || "Grade A"}</span>
-                        </span>
-                        <span className="text-[10px] font-black text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">
-                          Score: {lot.qualityScore}/100
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-600">
-                        <span>Confidence: {lot.evidenceConfidence || 75}%</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedLotForPassport(lot)}
-                          className="font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
-                        >
-                          View Quality Passport →
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2 text-slate-500">
-                      <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-slate-500">
-                        Quality Assessment Not Provided
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-bold block">LOT VOLUME</span>
-                      <span className="font-black text-slate-900 text-sm">{lot.quantityQtl} Qtl</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-bold block">EXPECTED PRICE</span>
-                      <span className="font-black text-emerald-700 text-sm">₹{lot.expectedPricePerQtl}/Qtl</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setSelectedLotForBid(lot);
-                      setBidPrice(String(lot.expectedPricePerQtl || 3000));
-                    }}
-                    className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer text-xs"
+                return (
+                  <div
+                    key={lot.lotId || lot._id}
+                    className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-3.5 text-xs flex flex-col justify-between"
                   >
-                    <DollarSign className="w-3.5 h-3.5" />
-                    Submit Binding Offer
-                  </button>
-                </div>
-              ))}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold text-slate-400">{lot.lotId}</span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300/60">
+                          {lot.provisionalGrade || lot.grade || "Grade A"}
+                          {!(lot.qualityScore || lot.qualityPassport) && " • Farmer Declared"}
+                        </span>
+                      </div>
+
+                      <h4 className="font-extrabold text-base text-slate-900">{lot.cropName}</h4>
+                      <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        {lot.origin || "Farm Gate"}, {lot.district || "Nashik"}
+                      </p>
+                    </div>
+
+                    {/* Quality Passport Summary Pill */}
+                    {lot.qualityScore || lot.qualityPassport ? (
+                      <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>{lot.provisionalGrade || lot.grade || "Grade A"}</span>
+                          </span>
+                          <span className="text-[10px] font-black text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">
+                            Score: {lot.qualityScore}/100
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-600">
+                          <span>Confidence: {lot.evidenceConfidence || 75}%</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLotForPassport(lot)}
+                            className="font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                          >
+                            View Quality Passport →
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2 text-slate-500">
+                        <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-[11px] font-medium text-slate-500">
+                          Quality Assessment Not Provided
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block">LOT VOLUME</span>
+                        <span className="font-black text-slate-900 text-sm">{lot.quantityQtl} Qtl</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block">EXPECTED PRICE</span>
+                        <span className="font-black text-emerald-700 text-sm">₹{lot.expectedPricePerQtl}/Qtl</span>
+                      </div>
+                    </div>
+
+                    {/* Conditional Action: Show Offer Status if submitted, otherwise Submit Button */}
+                    {existingOffer ? (
+                      existingOffer.offerStatus === "PENDING" ? (
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-extrabold text-emerald-800 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              ✓ Offer Submitted
+                            </span>
+                            <span className="font-black text-slate-900">
+                              ₹{existingOffer.pricePerQtl}/Qtl
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-200/60">
+                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold uppercase text-[10px]">
+                              Status: PENDING
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("offers")}
+                              className="font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer"
+                            >
+                              [ View Offer ]
+                            </button>
+                          </div>
+                        </div>
+                      ) : existingOffer.offerStatus === "COUNTERED" ? (
+                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-extrabold text-amber-900 flex items-center gap-1.5">
+                              ⚡ Counter Offer Received
+                            </span>
+                            <span className="font-black text-amber-950 text-sm">
+                              ₹{existingOffer.counterPricePerQtl}/Qtl
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1.5 border-t border-amber-200/60">
+                            <span className="text-[10px] text-amber-800 font-medium">
+                              Original: ₹{existingOffer.pricePerQtl}/Qtl
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("offers")}
+                              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs cursor-pointer"
+                            >
+                              [ Respond ]
+                            </button>
+                          </div>
+                        </div>
+                      ) : existingOffer.offerStatus === "ACCEPTED" ? (
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-extrabold text-emerald-900 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                              ✓ Deal Confirmed
+                            </span>
+                            <span className="font-black text-emerald-950">
+                              ₹{existingOffer.agreedPricePerQtl || existingOffer.counterPricePerQtl || existingOffer.pricePerQtl}/Qtl
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-end text-[11px] pt-1.5 border-t border-emerald-200/60">
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("delivery")}
+                              className="font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                            >
+                              [ Track Purchase ]
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setSelectedLotForBid(lot);
+                            setBidPrice(String(lot.expectedPricePerQtl || 3000));
+                          }}
+                          className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer text-xs"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" />
+                          Submit Binding Offer
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedLotForBid(lot);
+                          setBidPrice(String(lot.expectedPricePerQtl || 3000));
+                        }}
+                        className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer text-xs"
+                      >
+                        <DollarSign className="w-3.5 h-3.5" />
+                        Submit Binding Offer
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
