@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle, ArrowRight, TrendingUp, Sparkles, Building2, Layers, Check, Info, Truck, DollarSign, AlertCircle, RefreshCw } from 'lucide-react';
-import { TradeLot, Offer, fetchOffersForLot, acceptOfferApi, rejectOfferApi, counterOfferApi, recordOfferAcceptance, getAcceptedOfferForLot } from '../lib/prisms';
+import { TradeLot, Offer, fetchOffersForLot, acceptOfferApi, createDeliveryOrderApi, rejectOfferApi, counterOfferApi, recordOfferAcceptance, getAcceptedOfferForLot, getAuthMode } from '../lib/prisms';
 
 interface OfferComparisonModalProps {
   lot: TradeLot;
@@ -181,6 +181,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
   const loadOffers = async () => {
     setLoading(true);
     setErrorState(null);
+    const isBackendMode = getAuthMode() === 'BACKEND';
     let data: (Offer & { isDemo?: boolean })[] = [];
     let fetchError = false;
 
@@ -196,22 +197,24 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
       fetchError = true;
     }
 
-    try {
+    if (isBackendMode) {
+      if (fetchError) {
+        setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम." : "Unable to load buyer offers from the server.");
+        setOffers([]);
+        setLoading(false);
+        return;
+      }
+      if (!data || data.length === 0) {
+        setErrorState(lang === "mr" ? "या व्यापार लॉटसाठी सध्या कोणत्याही खरेदीदार ऑफर्स उपलब्ध नाहीत." : "No active buyer offers are currently available for this trade lot.");
+        setOffers([]);
+        setLoading(false);
+        return;
+      }
+    } else {
+      // DEMO Mode Fallback
       if (!data || data.length === 0) {
         data = generateDemoOffers(lot);
       }
-    } catch (genErr) {
-      console.error("Demo offer generation failed", genErr);
-    }
-
-    if (!data || data.length === 0) {
-      if (fetchError) {
-        setErrorState(lang === "mr" ? "खरेदीदार ऑफर्स लोड करण्यात अक्षम." : "Unable to load buyer offers.");
-      } else {
-        setOffers([]);
-      }
-      setLoading(false);
-      return;
     }
 
     try {
@@ -264,14 +267,43 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
     setAcceptingOfferId(offerId);
     setActionMessage(lang === "mr" ? "स्वीकृती प्रक्रिया सुरू आहे..." : "Accepting offer...");
 
-    // Record acceptance & create delivery, payment, transaction demo records (Idempotent)
-    recordOfferAcceptance(targetOffer, lot);
+    const isBackendMode = getAuthMode() === 'BACKEND';
 
-    // Update lot status
-    lot.lotStatus = 'ACCEPTED';
+    if (isBackendMode) {
+      try {
+        const acceptRes = await acceptOfferApi(targetOffer._id || targetOffer.offerId || offerId);
+        const acceptedOfferId = acceptRes?.offer?._id || targetOffer._id || offerId;
 
-    if (targetOffer.isDemo || offerId.startsWith("DEMO-")) {
-      // Mark accepted offer as ACCEPTED, and all other competing offers for this lot as REJECTED
+        // Create linked DeliveryOrder, PaymentLedger, and Transaction records on backend
+        await createDeliveryOrderApi(acceptedOfferId, "Medium Pickup (Bolero MaxiTruck)");
+
+        setOffers(prev =>
+          prev.map(o =>
+            o.offerId === offerId || o._id === offerId
+              ? { ...o, offerStatus: 'ACCEPTED' }
+              : { ...o, offerStatus: 'REJECTED' }
+          )
+        );
+        lot.lotStatus = 'ACCEPTED';
+
+        setActionMessage(
+          lang === "mr"
+            ? "सौदा निश्चित झाला! वितरण आणि पेमेंट ट्रॅकिंग सुरू झाले."
+            : "Deal Confirmed! Delivery and payment tracking initiated."
+        );
+        if (onOfferAccepted) onOfferAccepted();
+      } catch (err: any) {
+        console.error("Error accepting offer via API:", err);
+        const errMsg = err?.response?.data?.error?.message || err?.message || (lang === "mr" ? "ऑफर स्वीकारण्यात त्रुटी. कृपया पुन्हा प्रयत्न करा." : "Failed to accept offer. Please try again.");
+        setActionMessage(errMsg);
+      } finally {
+        setAcceptingOfferId(null);
+      }
+    } else {
+      // DEMO Mode
+      recordOfferAcceptance(targetOffer, lot);
+      lot.lotStatus = 'ACCEPTED';
+
       setOffers(prev =>
         prev.map(o =>
           o.offerId === offerId || o._id === offerId
@@ -287,39 +319,8 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
       if (onOfferAccepted) {
         setTimeout(() => onOfferAccepted(), 500);
       }
-    } else {
-      try {
-        await acceptOfferApi(offerId);
-        setOffers(prev =>
-          prev.map(o =>
-            o.offerId === offerId || o._id === offerId
-              ? { ...o, offerStatus: 'ACCEPTED' }
-              : { ...o, offerStatus: 'REJECTED' }
-          )
-        );
-        setActionMessage(
-          lang === "mr"
-            ? "सौदा निश्चित झाला! वितरण ट्रॅकिंग सुरू झाले."
-            : "Deal Confirmed! Delivery and payment tracking initiated."
-        );
-        if (onOfferAccepted) onOfferAccepted();
-      } catch {
-        setOffers(prev =>
-          prev.map(o =>
-            o.offerId === offerId || o._id === offerId
-              ? { ...o, offerStatus: 'ACCEPTED' }
-              : { ...o, offerStatus: 'REJECTED' }
-          )
-        );
-        setActionMessage(
-          lang === "mr"
-            ? "डेमो सौदा निश्चित झाला! वितरण ट्रॅकिंग सुरू झाले."
-            : "Deal Confirmed! Demo delivery tracking initiated."
-        );
-        if (onOfferAccepted) onOfferAccepted();
-      }
+      setAcceptingOfferId(null);
     }
-    setAcceptingOfferId(null);
   };
 
   const handleReject = async (offerId: string) => {
