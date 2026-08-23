@@ -304,8 +304,6 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
       });
     }
 
-    await ensureDemoOffersForLot(lot);
-
     const offers = await Offer.find({ lotId: lot._id as any }).sort({ estimatedNetRealization: -1 });
 
     const buyerIds = [...new Set(offers.map(o => o.buyerId))];

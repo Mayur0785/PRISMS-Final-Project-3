@@ -19,48 +19,8 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      let fetchedLots = await fetchUserLots();
-      if (!fetchedLots || fetchedLots.length === 0) {
-        fetchedLots = [
-          {
-            _id: 'lot_demo_0072',
-            lotId: 'LOT-2026-0072',
-            userId: 'demo_farmer',
-            cropName: 'Sharbati Wheat',
-            variety: 'MP Sharbati',
-            grade: 'Grade A',
-            quantityQtl: 80,
-            expectedPricePerQtl: 2800,
-            minPricePerQtl: 2700,
-            harvestDate: '2026-08-15',
-            location: 'Nashik, Maharashtra',
-            storageType: 'Dry Warehouse',
-            qualityReportUrl: '#',
-            lotStatus: 'OFFERED',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            _id: 'lot_demo_5938',
-            lotId: 'LOT-2026-5938',
-            userId: 'demo_farmer',
-            cropName: 'Red Onion (Nashik)',
-            variety: 'Garwa Premium',
-            grade: 'Grade A',
-            quantityQtl: 30,
-            expectedPricePerQtl: 3200,
-            minPricePerQtl: 3000,
-            harvestDate: '2026-08-18',
-            location: 'Karjat, Raigad',
-            storageType: 'Ventilated Shed',
-            qualityReportUrl: '#',
-            lotStatus: 'OFFERED',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-        ];
-      }
-      setLots(fetchedLots);
+      const fetchedLots = await fetchUserLots();
+      setLots(fetchedLots || []);
 
       // Check local storage for accepted offers
       const acceptedMap: Record<string, string> = {};

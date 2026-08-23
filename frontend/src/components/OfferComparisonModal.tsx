@@ -181,40 +181,30 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
   const loadOffers = async () => {
     setLoading(true);
     setErrorState(null);
-    const isBackendMode = getAuthMode() === 'BACKEND';
     let data: (Offer & { isDemo?: boolean })[] = [];
     let fetchError = false;
 
     try {
-      // Timeout safety (8 seconds) to prevent infinite pending state
-      const fetchPromise = fetchOffersForLot(lot._id || lot.lotId);
-      const timeoutPromise = new Promise<Offer[]>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 8000)
-      );
-      data = await Promise.race([fetchPromise, timeoutPromise]);
-    } catch (err) {
-      console.warn("API offer fetch failed or timed out", err);
+      const targetLotId = lot._id || lot.lotId;
+      const res = await fetchOffersForLot(targetLotId);
+      data = Array.isArray(res) ? res : [];
+    } catch (err: any) {
+      console.warn("API offer fetch failed", err);
       fetchError = true;
     }
 
-    if (isBackendMode) {
-      if (fetchError) {
-        setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम." : "Unable to load buyer offers from the server.");
-        setOffers([]);
-        setLoading(false);
-        return;
-      }
-      if (!data || data.length === 0) {
-        setErrorState(lang === "mr" ? "या व्यापार लॉटसाठी सध्या कोणत्याही खरेदीदार ऑफर्स उपलब्ध नाहीत." : "No active buyer offers are currently available for this trade lot.");
-        setOffers([]);
-        setLoading(false);
-        return;
-      }
-    } else {
-      // DEMO Mode Fallback
-      if (!data || data.length === 0) {
-        data = generateDemoOffers(lot);
-      }
+    if (fetchError) {
+      setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम." : "Unable to load buyer offers from the server.");
+      setOffers([]);
+      setLoading(false);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setErrorState(lang === "mr" ? "या व्यापार लॉटसाठी सध्या कोणत्याही खरेदीदार ऑफर्स उपलब्ध नाहीत. खरेदीदारांनी ऑफर्स सादर केल्यावर त्या येथे दिसतील." : "No active buyer offers are currently available for this trade lot. As buyers submit offers, they will appear here in real time.");
+      setOffers([]);
+      setLoading(false);
+      return;
     }
 
     try {
@@ -267,42 +257,9 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
     setAcceptingOfferId(offerId);
     setActionMessage(lang === "mr" ? "स्वीकृती प्रक्रिया सुरू आहे..." : "Accepting offer...");
 
-    const isBackendMode = getAuthMode() === 'BACKEND';
-
-    if (isBackendMode) {
-      try {
-        const acceptRes = await acceptOfferApi(targetOffer._id || targetOffer.offerId || offerId);
-        const acceptedOfferId = acceptRes?.offer?._id || targetOffer._id || offerId;
-
-        // Create linked DeliveryOrder, PaymentLedger, and Transaction records on backend
-        await createDeliveryOrderApi(acceptedOfferId, "Medium Pickup (Bolero MaxiTruck)");
-
-        setOffers(prev =>
-          prev.map(o =>
-            o.offerId === offerId || o._id === offerId
-              ? { ...o, offerStatus: 'ACCEPTED' }
-              : { ...o, offerStatus: 'REJECTED' }
-          )
-        );
-        lot.lotStatus = 'ACCEPTED';
-
-        setActionMessage(
-          lang === "mr"
-            ? "सौदा निश्चित झाला! वितरण आणि पेमेंट ट्रॅकिंग सुरू झाले."
-            : "Deal Confirmed! Delivery and payment tracking initiated."
-        );
-        if (onOfferAccepted) onOfferAccepted();
-      } catch (err: any) {
-        console.error("Error accepting offer via API:", err);
-        const errMsg = err?.response?.data?.error?.message || err?.message || (lang === "mr" ? "ऑफर स्वीकारण्यात त्रुटी. कृपया पुन्हा प्रयत्न करा." : "Failed to accept offer. Please try again.");
-        setActionMessage(errMsg);
-      } finally {
-        setAcceptingOfferId(null);
-      }
-    } else {
-      // DEMO Mode
-      recordOfferAcceptance(targetOffer, lot);
-      lot.lotStatus = 'ACCEPTED';
+    try {
+      const realOfferId = targetOffer._id || targetOffer.offerId || offerId;
+      await acceptOfferApi(realOfferId);
 
       setOffers(prev =>
         prev.map(o =>
@@ -311,44 +268,43 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
             : { ...o, offerStatus: 'REJECTED' }
         )
       );
+      lot.lotStatus = 'ACCEPTED';
+
       setActionMessage(
         lang === "mr"
-          ? "डेमो सौदा निश्चित झाला! वितरण आणि पेमेंट ट्रॅकिंग सुरू झाले."
-          : "Deal Confirmed! Demo delivery and payment records initiated."
+          ? "सौदा निश्चित झाला! वितरण आणि पेमेंट ट्रॅकिंग सुरू झाले."
+          : "Deal Confirmed! Delivery and payment tracking initiated."
       );
-      if (onOfferAccepted) {
-        setTimeout(() => onOfferAccepted(), 500);
-      }
+      if (onOfferAccepted) onOfferAccepted();
+    } catch (err: any) {
+      console.error("Error accepting offer via API:", err);
+      const errMsg = err?.response?.data?.error?.message || err?.message || (lang === "mr" ? "ऑफर स्वीकारण्यात त्रुटी. कृपया पुन्हा प्रयत्न करा." : "Failed to accept offer. Please try again.");
+      setActionMessage(errMsg);
+    } finally {
       setAcceptingOfferId(null);
     }
   };
 
   const handleReject = async (offerId: string) => {
     const targetOffer = offers.find(o => o.offerId === offerId || o._id === offerId);
-    if (targetOffer?.isDemo || offerId.startsWith("DEMO-")) {
+    const realOfferId = targetOffer?._id || targetOffer?.offerId || offerId;
+    try {
+      await rejectOfferApi(realOfferId);
       setOffers(prev =>
         prev.map(o => (o.offerId === offerId || o._id === offerId ? { ...o, offerStatus: 'REJECTED' } : o))
       );
-      setActionMessage(lang === "mr" ? "डेमो ऑफर नाकारली." : "Demo offer rejected.");
-    } else {
-      try {
-        await rejectOfferApi(offerId);
-        setOffers(prev =>
-          prev.map(o => (o.offerId === offerId || o._id === offerId ? { ...o, offerStatus: 'REJECTED' } : o))
-        );
-        setActionMessage(lang === "mr" ? "ऑफर नाकारली." : "Offer rejected.");
-      } catch {
-        setOffers(prev =>
-          prev.map(o => (o.offerId === offerId || o._id === offerId ? { ...o, offerStatus: 'REJECTED' } : o))
-        );
-        setActionMessage(lang === "mr" ? "डेमो ऑफर नाकारली." : "Demo offer rejected.");
-      }
+      setActionMessage(lang === "mr" ? "ऑफर नाकारली." : "Offer rejected.");
+    } catch (err: any) {
+      console.error("Error rejecting offer:", err);
+      setActionMessage(err?.response?.data?.error?.message || err?.message || "Failed to reject offer.");
     }
   };
 
   const handleCounterSubmit = async (offerId: string) => {
+    const targetOffer = offers.find(o => o.offerId === offerId || o._id === offerId);
+    const realOfferId = targetOffer?._id || targetOffer?.offerId || offerId;
     try {
-      await counterOfferApi(offerId, counterPrice, counterNote);
+      await counterOfferApi(realOfferId, counterPrice, counterNote);
       setCounteringOfferId(null);
       setOffers(prev =>
         prev.map(o =>
@@ -364,22 +320,9 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
         )
       );
       setActionMessage(lang === "mr" ? "✓ काउंटर ऑफर यशस्वीरित्या सबमिट केली." : "✓ Counter offer submitted successfully.");
-    } catch {
-      setCounteringOfferId(null);
-      setOffers(prev =>
-        prev.map(o =>
-          o.offerId === offerId || o._id === offerId
-            ? {
-                ...o,
-                offerStatus: 'COUNTERED',
-                counterBy: 'FARMER',
-                counterPricePerQtl: counterPrice,
-                counterMessage: counterNote || o.counterMessage,
-              }
-            : o
-        )
-      );
-      setActionMessage(lang === "mr" ? "✓ काउंटर ऑफर सबमिट केली." : "✓ Counter offer submitted successfully.");
+    } catch (err: any) {
+      console.error("Error submitting counter offer:", err);
+      setActionMessage(err?.response?.data?.error?.message || err?.message || "Failed to submit counter offer.");
     }
   };
 
@@ -407,9 +350,6 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                 <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 truncate">
                   {lang === "mr" ? "डिजिटल खरेदीदार ऑफर्स आणि निव्वळ परतावा तुलना" : "Digital Buyer Offers & Net Comparison"}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                  Demo Sandbox
-                </span>
               </div>
               <p className="text-xs text-slate-600 mt-0.5 truncate">
                 Lot {lot.lotId}: <strong className="text-slate-900">{lot.cropName}</strong> ({lot.quantityQtl} Qtl) • {lang === "mr" ? "अपेक्षित भाव:" : "Expected:"} ₹{lot.expectedPricePerQtl.toLocaleString('en-IN')}/Qtl • {lang === "mr" ? "उगम:" : "Origin:"} {lot.origin || lot.district || 'Farm Gate'}
