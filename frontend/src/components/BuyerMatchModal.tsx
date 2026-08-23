@@ -15,6 +15,7 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
   const [decision, setDecision] = useState<ComparativeDecision | null>(null);
   const [loading, setLoading] = useState(true);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [showRankedList, setShowRankedList] = useState(false);
   const [mounted, setMounted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
   useEffect(() => {
     if (isOpen && lot) {
       setLoading(true);
+      setShowRankedList(false);
       fetchLotMatches(lot.lotId || lot._id, lot).then((res) => {
         setDecision(res);
         setLoading(false);
@@ -117,7 +119,7 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
             </div>
           ) : !decision ? (
             <div className="text-center py-10 bg-white rounded-xl border border-slate-200">
-              <p className="text-slate-600">{lang === "mr" ? "कोणतीही मॅच माहिती मिळाली नाही." : "Unable to compute buyer match for this lot."}</p>
+              <p className="text-slate-600">{lang === "mr" ? "कोणतीही मॅच माहिती मिळाली नाही." : "No nearby market data available."}</p>
             </div>
           ) : (
             <>
@@ -272,25 +274,15 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100">
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
                       <button
-                        onClick={() => {
-                          window.dispatchEvent(
-                            new CustomEvent("prisms:navigate_to_ranking", {
-                              detail: {
-                                cropName: lot.cropName,
-                                quantityQtl: lot.quantityQtl,
-                                origin: lot.origin || lot.district,
-                                lotId: lot.lotId,
-                              },
-                            })
-                          );
-                          onClose();
-                        }}
-                        className="w-full inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold py-2.5 rounded-xl border border-slate-300 transition-all"
+                        onClick={() => setShowRankedList(!showRankedList)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold py-2.5 rounded-xl border border-slate-300 transition-all"
                       >
                         <Store className="w-3.5 h-3.5 text-slate-600" />
-                        {lang === "mr" ? "रँक केलेले बाजार पहा (View Ranked Markets)" : "View Ranked Markets"}
+                        {showRankedList
+                          ? (lang === "mr" ? "रँकिंग लपवा" : "Hide Ranked Markets")
+                          : (lang === "mr" ? "रँक केलेले बाजार पहा" : "View Ranked Markets")}
                       </button>
                     </div>
                   </div>
@@ -308,30 +300,16 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
 
                       <h4 className="text-base font-bold text-slate-800 flex items-center gap-2 mt-2">
                         <Store className="w-4.5 h-4.5 text-slate-400 shrink-0" />
-                        {lang === "mr" ? "बाजार तुलना उपलब्ध नाही" : "Market comparison unavailable"}
+                        {lang === "mr" ? "बाजार तुलना उपलब्ध नाही" : "No nearby market data available"}
                       </h4>
                       <p className="text-xs text-slate-600 mt-1 font-medium leading-relaxed">
                         {lang === "mr"
                           ? "या पिकासाठी कोणताही जुळणारा APMC बेंचमार्क बाजार भाव सध्या उपलब्ध नाही."
-                          : "No matching APMC benchmark price is currently available for this crop."}
+                          : "No nearby market data available for this crop."}
                       </p>
-
-                      <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-                        <p className="font-semibold text-slate-800">
-                          💡 {lang === "mr" ? "महत्त्वाची टीप:" : "Note:"}
-                        </p>
-                        <p>
-                          {lang === "mr"
-                            ? "PRISMS जुळणाऱ्या बेंचमार्क नोंदीशिवाय विश्वसनीय बाजार तुलना करू शकत नाही."
-                            : "PRISMS cannot calculate a reliable mandi comparison without a matching benchmark record."}
-                        </p>
-                      </div>
                     </div>
 
                     <div className="mt-5 pt-3 border-t border-slate-100 space-y-2">
-                      <p className="text-[11px] text-slate-500 font-medium text-center">
-                        {lang === "mr" ? "सध्याचे APMC भाव तपासण्यासाठी मार्केट सर्च वापरा." : "Try Market Search to check currently available APMC prices."}
-                      </p>
                       <button
                         onClick={() => {
                           window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "search" }));
@@ -346,6 +324,81 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
                   </div>
                 )}
               </div>
+
+              {/* Expandable Unified Ranked Markets Breakdown */}
+              {showRankedList && decision.rankedMarkets && decision.rankedMarkets.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-sm animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <Store className="w-4 h-4 text-emerald-600" />
+                        {lang === "mr" ? "स्थानिक APMC बाजार क्रमवारी (Ranked Markets)" : "Authoritative Ranked APMC Markets"}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {lang === "mr"
+                          ? `आपल्या मूळ स्थानावरून (${lot.origin || lot.district || "Farm Gate"}) मोजलेली क्रमवारी`
+                          : `Calculated from your origin (${lot.origin || lot.district || "Farm Gate"})`}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(
+                          new CustomEvent("prisms:navigate_to_ranking", {
+                            detail: {
+                              cropName: lot.cropName,
+                              quantityQtl: lot.quantityQtl,
+                              origin: lot.origin || lot.district,
+                              lotId: lot.lotId,
+                            },
+                          })
+                        );
+                        onClose();
+                      }}
+                      className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
+                    >
+                      {lang === "mr" ? "मार्केट सर्च मध्ये उघडा →" : "Open in Market Search →"}
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-slate-600 font-bold bg-slate-50">
+                          <th className="py-2.5 px-3">#</th>
+                          <th className="py-2.5 px-3">{lang === "mr" ? "बाजार समिती" : "Market / APMC"}</th>
+                          <th className="py-2.5 px-3">{lang === "mr" ? "अंतर" : "Distance"}</th>
+                          <th className="py-2.5 px-3">{lang === "mr" ? "सरासरी भाव" : "Modal Price"}</th>
+                          <th className="py-2.5 px-3">{lang === "mr" ? "वाहतूक व खर्च" : "Logistics & Costs"}</th>
+                          <th className="py-2.5 px-3 text-right">{lang === "mr" ? "निव्वळ परतावा" : "Est. Net Take-Home"}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {decision.rankedMarkets.map((m) => (
+                          <tr key={m.marketId} className={m.rank === 1 ? "bg-emerald-50/50 font-medium" : "hover:bg-slate-50"}>
+                            <td className="py-2.5 px-3">
+                              <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold ${
+                                m.rank === 1 ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"
+                              }`}>
+                                {m.rank}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold text-slate-900">{m.marketName}</div>
+                              <div className="text-[10px] text-slate-500">{m.district}</div>
+                            </td>
+                            <td className="py-2.5 px-3 text-slate-700 font-medium">{m.distanceKm} km</td>
+                            <td className="py-2.5 px-3 text-slate-900 font-semibold">₹{m.modalPrice.toLocaleString("en-IN")}/Qtl</td>
+                            <td className="py-2.5 px-3 text-rose-700 font-medium">-₹{m.estimatedLogisticsCost.toLocaleString("en-IN")}</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-emerald-700 text-sm">
+                              ₹{m.estimatedNetRealization.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               {/* Match Explanation Breakdown */}
               {decision.bestBuyerMatch && (

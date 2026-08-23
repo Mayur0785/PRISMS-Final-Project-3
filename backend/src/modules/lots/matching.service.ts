@@ -3,6 +3,7 @@ import { Buyer, IBuyer } from '../buyers/buyer.model';
 import { BuyerDemand, IBuyerDemand } from '../buyers/buyerDemand.model';
 import { Market } from '../markets/market.model';
 import { Price } from '../prices/price.model';
+import { getRankedMarkets, RankedMarketResult } from '../markets/ranking.service';
 
 export interface BuyerMatchResult {
   buyer: {
@@ -64,6 +65,7 @@ export interface ComparativeDecision {
     estimatedNetPerQtl: number;
     distanceKm: number;
   } | null;
+  rankedMarkets?: RankedMarketResult[];
   takeHomeDifference: number; // Profit delta in Rupees
   recommendationExplanation: string;
 }
@@ -232,54 +234,25 @@ export async function computeBuyerMatchesForLot(lot: ILot): Promise<ComparativeD
 
   const bestBuyerMatch = matches.length > 0 ? matches[0] : null;
 
-  // Compute Best Mandi Realization for comparison
-  let bestMandi = null;
-  const rawCrop = (lot.cropName || '').trim();
-  const cleanCrop = rawCrop
-    .replace(/_\d+$/, '')
-    .replace(/\s*\([^)]*\)/g, '')
-    .replace(/^(red|yellow|white|sharbati|hard|green|fresh|hybrid)\s+/i, '')
-    .trim();
+  // Compute Best Mandi Realization using the authoritative getRankedMarkets pipeline
+  const rankedMarkets = await getRankedMarkets({
+    cropName: lot.cropName,
+    origin: lot.origin,
+    district: lot.district || 'Nashik',
+    quantityQtl: lot.quantityQtl,
+    grade: lot.grade,
+  });
 
-  const mandiPrices = await Price.find({
-    $or: [
-      { commodity: new RegExp(cleanCrop, 'i') },
-      { commodity: new RegExp(rawCrop, 'i') }
-    ],
-    validationStatus: { $ne: 'INVALID' }
-  }).populate('marketId');
-
-  if (mandiPrices.length > 0) {
-    let topMandiNet = -Infinity;
-    for (const p of mandiPrices) {
-      const market: any = p.marketId;
-      if (!market) continue;
-      const mPricePerKg = p.modalPrice > 100 ? p.modalPrice / 100 : p.modalPrice;
-      const modalPricePerQtl = mPricePerKg * 100;
-      const mGross = Math.round(modalPricePerQtl * lot.quantityQtl);
-      const mDistKm = getApproxDistance(lotOriginDistrict, market.district || 'Nashik');
-      const mTransport = Math.round(mDistKm * 1.5 * lot.quantityQtl);
-      const mLabour = Math.round(500 * Math.max(1, Math.ceil(lot.quantityQtl / 30)));
-      const mSpoilage = Math.round(mGross * 0.08); // 8% standard mandi spoilage
-      const mCommission = Math.round(mGross * 0.01); // 1% APMC fees
-      const mLogistics = mTransport + mLabour + mSpoilage + mCommission;
-      const mNet = mGross - mLogistics;
-
-      if (mNet > topMandiNet) {
-        topMandiNet = mNet;
-        bestMandi = {
-          mandiName: market.name,
-          district: market.district || 'Nashik',
-          modalPricePerQtl,
-          grossRevenue: mGross,
-          estimatedLogisticsCost: mLogistics,
-          estimatedNetRealization: mNet,
-          estimatedNetPerQtl: Math.round(mNet / lot.quantityQtl),
-          distanceKm: mDistKm,
-        };
-      }
-    }
-  }
+  const bestMandi = rankedMarkets.length > 0 ? {
+    mandiName: rankedMarkets[0].marketName,
+    district: rankedMarkets[0].district,
+    modalPricePerQtl: rankedMarkets[0].modalPrice,
+    grossRevenue: rankedMarkets[0].estimatedGrossRevenue,
+    estimatedLogisticsCost: rankedMarkets[0].estimatedLogisticsCost,
+    estimatedNetRealization: rankedMarkets[0].estimatedNetRealization,
+    estimatedNetPerQtl: rankedMarkets[0].estimatedNetPerQtl,
+    distanceKm: rankedMarkets[0].distanceKm,
+  } : null;
 
   // Final Channel Recommendation logic
   let recommendedChannel: 'BUYER' | 'MANDI' = 'BUYER';
@@ -313,6 +286,7 @@ export async function computeBuyerMatchesForLot(lot: ILot): Promise<ComparativeD
     lotQuantityQtl: lot.quantityQtl,
     bestBuyerMatch,
     bestMandi,
+    rankedMarkets,
     takeHomeDifference,
     recommendationExplanation,
   };

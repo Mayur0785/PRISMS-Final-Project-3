@@ -656,52 +656,28 @@ export function Index() {
   }, [results]);
 
   const searchTabMandis = useMemo(() => {
-    if (results && results.length > 0) {
-      return results.map((r) => ({
-        id: r.market.id,
-        name: r.market.name,
-        name_mr: r.market.name_mr || r.market.name,
-        dist: Math.round(r.market.distance_km * 10) / 10,
-        tag: r.net === results[0]?.net ? "Highest Take-Home Profit" : "APMC Regulated Market",
-        tag_mr: r.net === results[0]?.net ? "सर्वोच्च निव्वळ नफा" : "कृषी उत्पन्न बाजार समिती",
-        gross: r.pricePerQtl,
-        logistics: r.transport,
-        labour: r.labour,
-        handling: r.commission,
-        net: r.net,
-        type: r.market.type || "APMC Regulated",
-        state: r.market.state || "Maharashtra",
-        indicatorColor: r.net === results[0]?.net ? "bg-success-sage" : "bg-primary",
-        tagColor: r.net === results[0]?.net ? "text-success-sage" : "text-primary",
-      }));
+    if (!results || results.length === 0) {
+      return [];
     }
 
-    const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-      const toR = (d: number) => (d * Math.PI) / 180;
-      const dLat = toR(lat2 - lat1);
-      const dLon = toR(lon2 - lon1);
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLon / 2) ** 2;
-      return Math.round(2 * 6371 * Math.asin(Math.sqrt(a)) * 1.35 * 10) / 10;
-    };
-
-    const oLat = coords?.lat ?? 18.5912;
-    const oLng = coords?.lng ?? 73.7997;
-
-    return [
-      { id: "pune", name: "Pune APMC (Gultekdi)", name_mr: "पुणे APMC (गुलटेकडी)", lat: 18.5204, lng: 73.8567, tag: "Major Consumption Center", tag_mr: "मोठी ग्राहक बाजारपेठ", gross: 3500, logistics: 603, handling: 1050, net: 93447, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-success-sage", tagColor: "text-success-sage" },
-      { id: "vashi", name: "Vashi APMC, Navi Mumbai", name_mr: "वाशी APMC (नवी मुंबई)", lat: 19.0745, lng: 73.0031, tag: "High Demand Terminal", tag_mr: "उच्च खरेदी मागणी", gross: 2606, logistics: 6048, handling: 782, net: 63596, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "panvel", name: "Panvel APMC", name_mr: "पनवेल APMC", lat: 18.9894, lng: 73.1093, tag: "Nearest Local Hub", tag_mr: "सर्वात जवळचा बाजार", gross: 2434, logistics: 5171, handling: 730, net: 59777, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "kalyan", name: "Kalyan APMC", name_mr: "कल्याण APMC", lat: 19.2403, lng: 73.1305, tag: "Optimal Route", tag_mr: "कमी वाहतूक अंतर", gross: 2349, logistics: 6124, handling: 705, net: 56503, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "baramati", name: "Baramati APMC", name_mr: "बारामती APMC", lat: 18.1517, lng: 74.5815, tag: "Grain & Oilseed Hub", tag_mr: "धान्य व तेलबिया हब", gross: 2443, logistics: 5600, handling: 733, net: 55000, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "lasalgaon", name: "Lasalgaon Mandi", name_mr: "लासलगाव बाजार समिती (नाशिक)", lat: 20.1418, lng: 74.2255, tag: "Asia's Onion Benchmark", tag_mr: "आशियातील कांदा मानक", gross: 2414, logistics: 6960, handling: 724, net: 54000, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "pimpalgaon", name: "Pimpalgaon Baswant APMC", name_mr: "पिंपळगाव बसवंत APMC", lat: 20.1700, lng: 73.9800, tag: "Tomato & Onion Hub", tag_mr: "कांदा व टोमॅटो हब", gross: 2425, logistics: 6660, handling: 728, net: 53500, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "nashik", name: "Nashik Main APMC", name_mr: "नाशिक मुख्य बाजार समिती", lat: 19.9975, lng: 73.7898, tag: "District Terminal", tag_mr: "जिल्हा मुख्य बाजार", gross: 2448, logistics: 6210, handling: 734, net: 53000, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-      { id: "rahuri", name: "Rahuri APMC", name_mr: "राहुरी APMC", lat: 19.3900, lng: 74.6500, tag: "Central Maharashtra Hub", tag_mr: "मध्य महाराष्ट्र हब", gross: 2360, logistics: 6390, handling: 708, net: 52000, type: "APMC Regulated", state: "Maharashtra", indicatorColor: "bg-primary", tagColor: "text-primary" },
-    ].map((m) => ({
-      ...m,
-      dist: haversineKm(oLat, oLng, m.lat, m.lng),
+    return results.map((r, idx) => ({
+      id: r.market.id,
+      name: r.market.name,
+      name_mr: r.market.name_mr || r.market.name,
+      dist: Math.round(r.market.distance_km * 10) / 10,
+      tag: idx === 0 ? "Highest Take-Home Profit" : "APMC Regulated Market",
+      tag_mr: idx === 0 ? "सर्वोच्च निव्वळ नफा" : "कृषी उत्पन्न बाजार समिती",
+      gross: r.pricePerQtl,
+      logistics: r.transport,
+      labour: r.labour,
+      handling: r.commission,
+      net: r.net,
+      type: r.market.type || "APMC Regulated",
+      state: r.market.state || "Maharashtra",
+      indicatorColor: idx === 0 ? "bg-success-sage" : "bg-primary",
+      tagColor: idx === 0 ? "text-success-sage" : "text-primary",
     }));
-  }, [results, coords]);
+  }, [results]);
 
   const filteredMandis = useMemo(() => {
     if (!searchTabMandis || searchTabMandis.length === 0) return [];

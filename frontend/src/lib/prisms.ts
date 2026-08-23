@@ -1106,6 +1106,25 @@ export interface BuyerMatchResult {
   distanceKm: number;
 }
 
+export interface RankedMarket {
+  marketId: string;
+  marketName: string;
+  district: string;
+  distanceKm: number;
+  modalPrice: number;
+  arrivalVolume: number;
+  transportCost: number;
+  labourCost: number;
+  spoilageCost: number;
+  marketHandlingCharges: number;
+  estimatedLogisticsCost: number;
+  estimatedGrossRevenue: number;
+  estimatedNetRealization: number;
+  estimatedNetPerQtl: number;
+  rank: number;
+  source: string;
+}
+
 export interface ComparativeDecision {
   recommendedChannel: 'BUYER' | 'MANDI';
   lotId: string;
@@ -1122,8 +1141,31 @@ export interface ComparativeDecision {
     estimatedNetPerQtl: number;
     distanceKm: number;
   } | null;
+  rankedMarkets?: RankedMarket[];
   takeHomeDifference: number;
   recommendationExplanation: string;
+}
+
+export async function fetchRankedMarketsApi(params: {
+  cropName: string;
+  origin?: string;
+  district?: string;
+  farmerLat?: number;
+  farmerLng?: number;
+  quantityQtl?: number;
+  grade?: string;
+  vehicle?: string;
+  transportRatePerKm?: number;
+  labourPerTrip?: number;
+  isColdChain?: boolean;
+}): Promise<RankedMarket[]> {
+  try {
+    const res = await apiClient.post(`${API_URL}/markets/ranked`, params);
+    return res.data?.data || [];
+  } catch (error) {
+    console.error("Error fetching ranked markets", error);
+    return [];
+  }
 }
 
 export async function fetchBuyers(params?: { commodity?: string; district?: string; buyerType?: string; grade?: string }): Promise<Buyer[]> {
@@ -1415,12 +1457,33 @@ export async function fetchLotMatches(lotId: string, lotObj?: TradeLot): Promise
     }
   }
 
-  // Fallback demo matching decision generator if API fails
+  // Fallback using the authoritative market ranking API
   const crop = lotObj?.cropName || 'Red Onion';
   const qty = lotObj?.quantityQtl || 30;
-  const basePrice = lotObj?.expectedPricePerQtl || 3000;
+  const origin = lotObj?.origin || 'Farm Gate, Niphad';
+  const district = lotObj?.district || 'Nashik';
 
-  const quotedPrice = Math.round(basePrice * 1.08);
+  const rankedMarkets = await fetchRankedMarketsApi({
+    cropName: crop,
+    origin,
+    district,
+    quantityQtl: qty,
+    grade: lotObj?.grade || 'Grade A',
+  });
+
+  const bestMandi = rankedMarkets.length > 0 ? {
+    mandiName: rankedMarkets[0].marketName,
+    district: rankedMarkets[0].district,
+    modalPricePerQtl: rankedMarkets[0].modalPrice,
+    grossRevenue: rankedMarkets[0].estimatedGrossRevenue,
+    estimatedLogisticsCost: rankedMarkets[0].estimatedLogisticsCost,
+    estimatedNetRealization: rankedMarkets[0].estimatedNetRealization,
+    estimatedNetPerQtl: rankedMarkets[0].estimatedNetPerQtl,
+    distanceKm: rankedMarkets[0].distanceKm,
+  } : null;
+
+  const basePrice = lotObj?.expectedPricePerQtl || (bestMandi ? bestMandi.modalPricePerQtl : 3000);
+  const quotedPrice = Math.round(basePrice * 1.05);
   const gross = quotedPrice * qty;
   const transport = Math.round(qty * 35);
   const handling = Math.round(gross * 0.005);
@@ -1465,94 +1528,36 @@ export async function fetchLotMatches(lotId: string, lotObj?: TradeLot): Promise
     distanceKm: 25,
   };
 
-  // Check if crop has benchmark market price data in system (with commodity normalization)
-  const rawCrop = (crop || '').trim();
-  const cleanCrop = rawCrop
-    .replace(/_\d+$/, '')
-    .replace(/\s*\([^)]*\)/g, '')
-    .replace(/^(red|yellow|white|sharbati|hard|green|fresh|hybrid)\s+/i, '')
-    .toLowerCase()
-    .trim();
-
-  const knownBenchmarkRoots = [
-    'onion', 'soybea', 'wheat', 'cotton', 'tomato', 'maize', 
-    'potato', 'banana', 'grape', 'pomegranate', 'gram', 'paddy', 'rice'
-  ];
-
-  const hasBenchmark = knownBenchmarkRoots.some(root => cleanCrop.includes(root) || rawCrop.toLowerCase().includes(root));
-
-  let bestMandi = null;
-  if (hasBenchmark) {
-    // Generate candidate APMC markets evaluated using the authoritative computeResults engine
-    const candidateMarkets: Market[] = [
-      { id: "mkt_lasalgaon", name: "Lasalgaon APMC Mandi", district: "Nashik", state: "Maharashtra", distance_km: 32, commodities: ["Onion", "Red Onion"] },
-      { id: "mkt_pimpalgaon", name: "Pimpalgaon APMC Mandi", district: "Nashik", state: "Maharashtra", distance_km: 28, commodities: ["Onion", "Red Onion", "Tomato"] },
-      { id: "mkt_vashi", name: "Vashi APMC Market", district: "Navi Mumbai", state: "Maharashtra", distance_km: 185, commodities: ["Onion", "Potato", "Tomato", "Banana", "Wheat", "Soybeans"] },
-      { id: "mkt_pune", name: "Pune APMC (Gultekdi)", district: "Pune", state: "Maharashtra", distance_km: 210, commodities: ["Onion", "Tomato", "Wheat", "Soybeans", "Maize"] }
-    ];
-
-    const mandiModalPrice = Math.round(basePrice * 0.95);
-    const mockPrices: PriceEntry[] = candidateMarkets.map(m => ({
-      market_id: m.id,
-      commodity_id: cleanCrop,
-      date: new Date().toISOString(),
-      price_per_unit: mandiModalPrice,
-      source: "SEEDED_HISTORICAL_BENCHMARK"
-    }));
-
-    const mockCommodityObj: Commodity = {
-      id: cleanCrop,
-      name: crop,
-      hindi_name: crop,
-      marathi_name: crop,
-      spoilage_rate_percent: 8
-    };
-
-    const computed = computeResults(
-      candidateMarkets,
-      mockPrices,
-      mockCommodityObj,
-      qty * 100,
-      1.5,
-      null,
-      null,
-      "medium_pickup",
-      500,
-      false
-    );
-
-    if (computed && computed.length > 0) {
-      const top = computed[0];
-      bestMandi = {
-        mandiName: top.market.name,
-        district: top.market.district || 'Nashik',
-        modalPricePerQtl: top.pricePerQtl,
-        grossRevenue: top.gross,
-        estimatedLogisticsCost: top.totalLogistics + top.spoilage + top.commission,
-        estimatedNetRealization: top.net,
-        estimatedNetPerQtl: Math.round(top.net / qty),
-        distanceKm: top.market.distance_km,
-      };
-    }
-  }
-
   const diff = bestMandi ? net - bestMandi.estimatedNetRealization : 0;
   const takeHomeDifference = Math.abs(diff);
   let recommendationExplanation = '';
+  let recommendedChannel: 'BUYER' | 'MANDI' = 'BUYER';
 
-  if (bestMandi) {
-    recommendationExplanation = `Selling to Nashik Agro Processors Ltd. yields ₹${takeHomeDifference.toLocaleString('en-IN')} higher net take-home pay than Lasalgaon APMC Mandi due to reduced transit handling and direct delivery terms.`;
+  if (bestBuyerMatch && bestMandi) {
+    if (diff >= 0) {
+      recommendedChannel = 'BUYER';
+      recommendationExplanation = `Selling to ${bestBuyerMatch.buyer.businessName} yields ₹${takeHomeDifference.toLocaleString('en-IN')} higher net take-home pay than ${bestMandi.mandiName} due to reduced transit handling and direct delivery terms.`;
+    } else {
+      recommendedChannel = 'MANDI';
+      recommendationExplanation = `Selling at ${bestMandi.mandiName} yields ₹${takeHomeDifference.toLocaleString('en-IN')} higher net realization than buyer options due to competitive APMC auction demand.`;
+    }
+  } else if (bestBuyerMatch) {
+    recommendationExplanation = `Selling to ${bestBuyerMatch.buyer.businessName} provides an estimated net realization of ₹${net.toLocaleString('en-IN')}.`;
+  } else if (bestMandi) {
+    recommendedChannel = 'MANDI';
+    recommendationExplanation = `Top APMC Mandi (${bestMandi.mandiName}) offers an estimated net realization of ₹${bestMandi.estimatedNetRealization.toLocaleString('en-IN')}.`;
   } else {
-    recommendationExplanation = `Selling to Nashik Agro Processors Ltd. provides an estimated net realization of ₹${net.toLocaleString('en-IN')}. Market comparison is unavailable as PRISMS could not find a matching APMC benchmark price for ${crop}.`;
+    recommendationExplanation = `No active market price data or buyer bids available.`;
   }
 
   return {
-    recommendedChannel: 'BUYER',
+    recommendedChannel,
     lotId: lotObj?.lotId || lotId,
     lotCommodity: crop,
     lotQuantityQtl: qty,
     bestBuyerMatch,
     bestMandi,
+    rankedMarkets,
     takeHomeDifference,
     recommendationExplanation,
   };
