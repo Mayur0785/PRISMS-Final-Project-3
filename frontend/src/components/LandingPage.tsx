@@ -448,97 +448,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
             {/* Hero Right Visual Preview Card */}
             <div className="lg:col-span-6 relative">
               {/* Outer Glowing Container */}
-              <div className="relative rounded-3xl p-1 bg-gradient-to-b from-[#67AD5D]/40 via-[#B0DBA8]/20 to-[#E0F0DC]/10 shadow-2xl shadow-[#154611]/15">
-                <div className="bg-white rounded-[22px] p-5 sm:p-6 border border-[#E3EBE0] shadow-inner space-y-4">
-                  {/* Mock Window Top Bar */}
-                  <div className="flex items-center justify-between pb-3 border-b border-[#EDF3EA]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#FF6961]" />
-                      <span className="w-3 h-3 rounded-full bg-[#FFD166]" />
-                      <span className="w-3 h-3 rounded-full bg-[#06D6A0]" />
-                      <span className="text-xs font-mono font-semibold text-[#5B6F57] ml-2">
-                        prisms-command-center.gov.in
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#EDF8EA] text-[#1E5E16] text-[11px] font-bold">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#248119]" />
-                      <span>Gov Agmarknet Verified</span>
-                    </div>
+              <div className="relative rounded-3xl p-2 bg-gradient-to-b from-[#67AD5D]/40 via-[#B0DBA8]/20 to-[#E0F0DC]/10 shadow-2xl shadow-[#154611]/15 group">
+                <div className="bg-white rounded-[24px] p-2 border border-[#E3EBE0] shadow-inner overflow-hidden relative">
+                  <img
+                    src="/images/prisms_ui_card.png"
+                    alt="PRISMS Command Center Benchmark Realization UI Card"
+                    className="w-full h-auto rounded-[20px] object-cover shadow-sm transition-transform duration-500 group-hover:scale-[1.01]"
+                  />
+                  {/* Floating live pulse badge on the image */}
+                  <div className="absolute top-5 right-5 flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0F3810]/90 text-white text-[11px] font-bold backdrop-blur-md border border-[#8EE87E]/30 shadow-lg">
+                    <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+                    <span>Live APMC Sync</span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                  {/* Top Live Ticker */}
-                  <div className="bg-[#F6FAF4] rounded-xl p-3 border border-[#E0EBDC] flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] font-bold text-[#62775E] uppercase tracking-wider block">
-                        Optimal Benchmark Mandi
-                      </span>
-                      <span className="text-sm font-extrabold text-[#0E2E0D]">
-                        Pune APMC Market Yard
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-[#2A821E] bg-[#DFF3DB] px-2 py-0.5 rounded inline-block">
-                        ₹3,620 / Qtl (+16.8%)
-                      </span>
-                      <span className="text-[10px] text-[#556950] block mt-0.5">
-                        Distance: 135 km · Freight: ₹1.35/km
-                      </span>
-                    </div>
+          {/* Aerial Agricultural Landscape Banner */}
+          <div className="mt-14 relative rounded-3xl overflow-hidden shadow-2xl border border-[#DCE8D8] group">
+            <div className="relative h-64 sm:h-80 lg:h-96 w-full overflow-hidden">
+              <img
+                src="/images/prisms_field_hero.jpg"
+                alt="Modern Tractor in lush green agricultural farm field"
+                className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#092408]/95 via-[#0F350E]/40 to-transparent flex flex-col justify-end p-6 sm:p-10 text-white" />
+              
+              {/* Floating Content over Image */}
+              <div className="absolute bottom-6 left-6 right-6 sm:bottom-10 sm:left-10 sm:right-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 text-white z-10">
+                <div className="max-w-xl space-y-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#205D1C]/80 backdrop-blur-md text-[#B6F5A9] text-xs font-bold border border-[#6BB560]/40">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Next-Gen Agricultural Intelligence</span>
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                    Connecting Every Indian Farm Gate to Terminal APMCs
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#D1EED0] leading-relaxed">
+                    AI route optimization, verified weighbridge tracking, and automated escrow settlements bring institutional market power directly to farmers.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2.5">
+                  <div className="px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 text-xs">
+                    <span className="text-[#A2E29B] block text-[10px] uppercase font-bold">Logistics Network</span>
+                    <span className="font-extrabold text-white">2,400+ Mandi Corridors</span>
                   </div>
-
-                  {/* Net Realization Compare Highlight Box */}
-                  <div className="bg-gradient-to-br from-[#0F350E] to-[#1E571A] text-white rounded-2xl p-4 sm:p-5 shadow-lg relative overflow-hidden">
-                    <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-28 h-28 bg-[#83D175]/20 rounded-full blur-xl pointer-events-none" />
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-xs font-semibold text-[#AEE6A3] uppercase tracking-wider">
-                          Net Farmer Take-Home Earnings
-                        </span>
-                        <div className="text-2xl sm:text-3xl font-black text-white mt-1 tracking-tight">
-                          ₹1,32,480{" "}
-                          <span className="text-xs font-normal text-[#C4EFC0]">
-                            for 40 Qtl Lot
-                          </span>
-                        </div>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-lg bg-[#276F22] text-[#DCFBD7] text-xs font-extrabold border border-[#529E4B]/40">
-                        +₹18,400 Extra Profit
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-[#346F2E] text-xs">
-                      <div>
-                        <span className="text-[#96C78D] block text-[10px]">Gross Value</span>
-                        <span className="font-bold text-white">₹1,44,800</span>
-                      </div>
-                      <div>
-                        <span className="text-[#96C78D] block text-[10px]">Freight & Cess</span>
-                        <span className="font-bold text-[#FFD1A6]">-₹9,240</span>
-                      </div>
-                      <div>
-                        <span className="text-[#96C78D] block text-[10px]">Transit Spoilage</span>
-                        <span className="font-bold text-[#FFD1A6]">-₹3,080</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mini Trade Status Flow */}
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="p-2.5 rounded-xl bg-[#F4F9F2] border border-[#DCE8D8]">
-                      <Truck className="w-4 h-4 text-[#20671B] mx-auto mb-1" />
-                      <span className="font-bold text-[#143412] block">Delivery</span>
-                      <span className="text-[10px] text-[#2F7E24] font-semibold">Dispatched</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-[#F4F9F2] border border-[#DCE8D8]">
-                      <DollarSign className="w-4 h-4 text-[#C47D00] mx-auto mb-1" />
-                      <span className="font-bold text-[#143412] block">Escrow</span>
-                      <span className="text-[10px] text-[#A66800] font-semibold">₹1.32L Locked</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-[#F4F9F2] border border-[#DCE8D8]">
-                      <CheckCircle2 className="w-4 h-4 text-[#1C7317] mx-auto mb-1" />
-                      <span className="font-bold text-[#143412] block">Settlement</span>
-                      <span className="text-[10px] text-[#1C7317] font-semibold">Instant UPI/NEFT</span>
-                    </div>
+                  <div className="px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 text-xs">
+                    <span className="text-[#A2E29B] block text-[10px] uppercase font-bold">Farmer Profit Lift</span>
+                    <span className="font-extrabold text-white">+18.4% Net Earnings</span>
                   </div>
                 </div>
               </div>
