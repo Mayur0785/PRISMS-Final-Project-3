@@ -32,6 +32,18 @@ import {
   ChevronDown,
   Warehouse,
   IndianRupee,
+  Navigation2,
+  Route,
+  Store,
+  Compass,
+  ArrowUpDown,
+  Boxes,
+  CircleDollarSign,
+  Receipt,
+  FileText,
+  BadgeCheck,
+  UserCheck,
+  PackageCheck,
 } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { getCurrentUser, type AuthUser } from "@/lib/prisms";
@@ -51,6 +63,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
   const [calcDistance, setCalcDistance] = useState(65);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [lang, setLang] = useState<"en" | "mr">("en");
+  const [activeTradeTab, setActiveTradeTab] = useState<"offer" | "delivery" | "payment" | "receipt">("offer");
+  const [selectedRadius, setSelectedRadius] = useState<50 | 100 | 200>(100);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -198,7 +212,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-[#3C4A38]">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-[#3C4A38]">
             <a href="#how-it-works" className="hover:text-[#184D13] transition-colors">
               How It Works
             </a>
@@ -208,11 +222,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
             <a href="#market-intelligence" className="hover:text-[#184D13] transition-colors">
               Market Intelligence
             </a>
-            <a href="#ai-advisor" className="hover:text-[#184D13] transition-colors">
-              AI Agri Advisor
+            <a href="#trade-execution" className="hover:text-[#184D13] transition-colors">
+              Trade Execution
             </a>
             <a href="#net-realization" className="hover:text-[#184D13] transition-colors">
               Net Realization
+            </a>
+            <a href="#gis-map" className="hover:text-[#184D13] transition-colors">
+              GIS Radius
+            </a>
+            <a href="#ai-advisor" className="hover:text-[#184D13] transition-colors">
+              AI Advisor
             </a>
             <a href="#faq" className="hover:text-[#184D13] transition-colors">
               FAQ
@@ -293,11 +313,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
               Market Intelligence
             </a>
             <a
-              href="#ai-advisor"
+              href="#trade-execution"
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-sm font-medium text-[#2E3F2A]"
             >
-              AI Agri Advisor
+              Trade Execution
             </a>
             <a
               href="#net-realization"
@@ -305,6 +325,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
               className="block py-2 text-sm font-medium text-[#2E3F2A]"
             >
               Net Realization
+            </a>
+            <a
+              href="#gis-map"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-medium text-[#2E3F2A]"
+            >
+              GIS Radius
+            </a>
+            <a
+              href="#ai-advisor"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-medium text-[#2E3F2A]"
+            >
+              AI Agri Advisor
             </a>
             <div className="pt-3 border-t border-[#E8F0E4] flex flex-col gap-2">
               <button
@@ -772,7 +806,346 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </section>
 
-      {/* ── 6. INTERACTIVE NET REALIZATION CALCULATOR ─────────────── */}
+      {/* ── 6. LIVE MANDI MARKET INTELLIGENCE TICKER ─────────────── */}
+      <section id="market-intelligence" className="py-20 bg-[#FAFDF9]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#E0F2DC] text-[#154E11] text-xs font-bold uppercase tracking-wider border border-[#B7E3AF]">
+              Live Agmarknet Stream
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0D290D] tracking-tight">
+              Real-Time Mandi Price Spreads & Arrival Volumes
+            </h2>
+            <p className="text-sm sm:text-base text-[#4E624A]">
+              Track wholesale arrival spikes and modal prices across Maharashtra and national terminal markets.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Live Card 1: Nashik */}
+            <div className="bg-white rounded-2xl p-6 border border-[#DFE8DC] shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EDF3EA]">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🧅</span>
+                  <div>
+                    <h4 className="font-bold text-[#123010] text-sm">Lasalgaon APMC</h4>
+                    <span className="text-[11px] text-[#637760]">Nashik District · Maharashtra</span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#DEF7DB] text-[#1E6917]">
+                  +4.2% ↑
+                </span>
+              </div>
+              <div className="mt-4 flex items-baseline justify-between">
+                <div>
+                  <span className="text-xs text-[#5D715A] block">Modal Price</span>
+                  <span className="text-2xl font-extrabold text-[#11310F] font-mono">₹3,280</span>
+                  <span className="text-[11px] text-[#637760]"> / Qtl</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-[#5D715A] block">Daily Arrivals</span>
+                  <span className="text-sm font-bold text-[#1F411C]">18,450 Qtl</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#F0F5EE] flex justify-between text-[11px] text-[#556952]">
+                <span>Min: ₹2,800 · Max: ₹3,510</span>
+                <span className="text-[#1A6115] font-semibold">High Liquidity</span>
+              </div>
+            </div>
+
+            {/* Live Card 2: Pune */}
+            <div className="bg-white rounded-2xl p-6 border border-[#DFE8DC] shadow-sm hover:shadow-md transition-all ring-2 ring-[#70B865]/20">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EDF3EA]">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🍅</span>
+                  <div>
+                    <h4 className="font-bold text-[#123010] text-sm">Pune Market Yard</h4>
+                    <span className="text-[11px] text-[#637760]">Gultekdi · Urban Consumer Hub</span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#DEF7DB] text-[#1E6917]">
+                  +8.6% ↑
+                </span>
+              </div>
+              <div className="mt-4 flex items-baseline justify-between">
+                <div>
+                  <span className="text-xs text-[#5D715A] block">Modal Price</span>
+                  <span className="text-2xl font-extrabold text-[#11310F] font-mono">₹3,620</span>
+                  <span className="text-[11px] text-[#637760]"> / Qtl</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-[#5D715A] block">Daily Arrivals</span>
+                  <span className="text-sm font-bold text-[#1F411C]">24,100 Qtl</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#F0F5EE] flex justify-between text-[11px] text-[#556952]">
+                <span>Min: ₹3,100 · Max: ₹3,850</span>
+                <span className="text-[#155A10] font-bold">Recommended Hub</span>
+              </div>
+            </div>
+
+            {/* Live Card 3: Vashi */}
+            <div className="bg-white rounded-2xl p-6 border border-[#DFE8DC] shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EDF3EA]">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🍌</span>
+                  <div>
+                    <h4 className="font-bold text-[#123010] text-sm">Vashi APMC (Navi Mumbai)</h4>
+                    <span className="text-[11px] text-[#637760]">Mumbai Metro Terminal</span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#DEF7DB] text-[#1E6917]">
+                  +11.2% ↑
+                </span>
+              </div>
+              <div className="mt-4 flex items-baseline justify-between">
+                <div>
+                  <span className="text-xs text-[#5D715A] block">Modal Price</span>
+                  <span className="text-2xl font-extrabold text-[#11310F] font-mono">₹3,890</span>
+                  <span className="text-[11px] text-[#637760]"> / Qtl</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-[#5D715A] block">Daily Arrivals</span>
+                  <span className="text-sm font-bold text-[#1F411C]">32,800 Qtl</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#F0F5EE] flex justify-between text-[11px] text-[#556952]">
+                <span>Min: ₹3,350 · Max: ₹4,150</span>
+                <span className="text-[#1A6115] font-semibold">Exporter Demand</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. DIGITAL TRADE EXECUTION PIPELINE SHOWCASE ─────────── */}
+      <section id="trade-execution" className="py-20 bg-white border-y border-[#E2EBE0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#E0F2DC] text-[#154E11] text-xs font-bold uppercase tracking-wider border border-[#B7E3AF]">
+              Zero Dispute Trade Workflow
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0D290D] tracking-tight">
+              Digitized Contracts, Delivery Tracking & Bank Settlements
+            </h2>
+            <p className="text-sm sm:text-base text-[#4E624A]">
+              Experience how PRISMS unifies buyer matching, vehicle dispatch, and escrow release into one authoritative ledger.
+            </p>
+          </div>
+
+          {/* Trade Tabs */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex p-1.5 rounded-2xl bg-[#F0F6EE] border border-[#DCE7DA] gap-1">
+              <button
+                onClick={() => setActiveTradeTab("offer")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTradeTab === "offer"
+                    ? "bg-[#0F3810] text-white shadow-sm"
+                    : "text-[#3D5239] hover:text-[#11330F]"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>1. Buyer Offer</span>
+              </button>
+              <button
+                onClick={() => setActiveTradeTab("delivery")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTradeTab === "delivery"
+                    ? "bg-[#0F3810] text-white shadow-sm"
+                    : "text-[#3D5239] hover:text-[#11330F]"
+                }`}
+              >
+                <Truck className="w-3.5 h-3.5" />
+                <span>2. Delivery Tracking</span>
+              </button>
+              <button
+                onClick={() => setActiveTradeTab("payment")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTradeTab === "payment"
+                    ? "bg-[#0F3810] text-white shadow-sm"
+                    : "text-[#3D5239] hover:text-[#11330F]"
+                }`}
+              >
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>3. Escrow Ledger</span>
+              </button>
+              <button
+                onClick={() => setActiveTradeTab("receipt")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTradeTab === "receipt"
+                    ? "bg-[#0F3810] text-white shadow-sm"
+                    : "text-[#3D5239] hover:text-[#11330F]"
+                }`}
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>4. Trade Certificate</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Trade Preview Container */}
+          <div className="max-w-4xl mx-auto bg-[#FAFDF9] rounded-3xl p-6 sm:p-8 border border-[#DFE9DC] shadow-xl">
+            {activeTradeTab === "offer" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-[#E3ECE0]">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#62775E] uppercase tracking-wider block">
+                      Contract Order ID: PRISMS-OFF-2026-8942
+                    </span>
+                    <h3 className="text-xl font-bold text-[#113010]">
+                      Sahyadri Agro Processing Ltd. (Nashik Mega Hub)
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#DEF7DB] text-[#175A12] border border-[#BDE5B6]">
+                    Verified Buyer · Rating 4.9 ★
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                  <div className="p-3 bg-white rounded-xl border border-[#E0EADE]">
+                    <span className="text-[#657962] block text-[10px]">Crop & Variety</span>
+                    <span className="font-bold text-[#143212]">Red Onion (Grade A)</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-[#E0EADE]">
+                    <span className="text-[#657962] block text-[10px]">Contracted Quantity</span>
+                    <span className="font-bold text-[#143212]">40 Quintals</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-[#E0EADE]">
+                    <span className="text-[#657962] block text-[10px]">Offered Rate</span>
+                    <span className="font-bold text-[#196415] text-sm">₹3,450 / Qtl</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-[#E0EADE]">
+                    <span className="text-[#657962] block text-[10px]">Logistics Term</span>
+                    <span className="font-bold text-[#143212]">Direct Farm Gate Pickup</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#E8F6E4] border border-[#BDE5B5] flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-[#526B50] block">Gross Deal Value</span>
+                    <span className="text-2xl font-black text-[#0F3810]">₹1,38,000</span>
+                  </div>
+                  <button
+                    onClick={() => handleOpenAuth("signup")}
+                    className="px-5 py-2.5 rounded-xl bg-[#0F3810] text-white text-xs font-bold hover:bg-[#184F14] transition-colors"
+                  >
+                    Accept Offer & Book Logistics →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTradeTab === "delivery" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="flex justify-between items-center pb-4 border-b border-[#E3ECE0]">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#62775E] uppercase tracking-wider block">
+                      Delivery Manifest: DLV-2026-0814
+                    </span>
+                    <h3 className="text-xl font-bold text-[#113010]">
+                      Vehicle: Bolero MaxiTruck (MH-15-EG-4421)
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#E2F0FF] text-[#0A538D] border border-[#B9DCFF]">
+                    In Transit · 42 km to Hub
+                  </span>
+                </div>
+
+                {/* Stepper tracker */}
+                <div className="grid grid-cols-4 gap-2 text-center text-xs pt-2">
+                  <div className="p-3 bg-[#E8F6E4] rounded-xl border border-[#BDE5B5]">
+                    <PackageCheck className="w-5 h-5 text-[#196115] mx-auto mb-1" />
+                    <span className="font-bold text-[#143412] block">1. Lot Loaded</span>
+                    <span className="text-[10px] text-[#4F684D]">09:30 AM · Dindori</span>
+                  </div>
+                  <div className="p-3 bg-[#E8F6E4] rounded-xl border border-[#BDE5B5]">
+                    <Truck className="w-5 h-5 text-[#196115] mx-auto mb-1" />
+                    <span className="font-bold text-[#143412] block">2. Dispatched</span>
+                    <span className="text-[10px] text-[#4F684D]">10:15 AM · Gate Exit</span>
+                  </div>
+                  <div className="p-3 bg-[#E2F0FF] rounded-xl border border-[#B9DCFF] ring-2 ring-[#0A538D]/20">
+                    <Navigation2 className="w-5 h-5 text-[#0A538D] mx-auto mb-1 animate-pulse" />
+                    <span className="font-bold text-[#0A538D] block">3. In Transit</span>
+                    <span className="text-[10px] text-[#0A538D]">GPS Active · 60 km/h</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-[#E0EADE] opacity-60">
+                    <Warehouse className="w-5 h-5 text-[#637A61] mx-auto mb-1" />
+                    <span className="font-bold text-[#354833] block">4. Gate Receipt</span>
+                    <span className="text-[10px] text-[#637A61]">ETA: 01:15 PM</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTradeTab === "payment" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="flex justify-between items-center pb-4 border-b border-[#E3ECE0]">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#62775E] uppercase tracking-wider block">
+                      Escrow Settlement Ledger: PMT-2026-0428
+                    </span>
+                    <h3 className="text-xl font-bold text-[#113010]">
+                      Status: Bank Payout Released (IMPS / UPI)
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#DEF7DB] text-[#175A12] border border-[#BDE5B6]">
+                    ✓ 100% Settled
+                  </span>
+                </div>
+
+                <div className="bg-white rounded-2xl p-4 border border-[#DFE9DC] space-y-2 text-xs">
+                  <div className="flex justify-between text-[#4D624A]">
+                    <span>Gross Produce Settlement (40 Qtl):</span>
+                    <span className="font-bold text-[#143212]">₹1,38,000</span>
+                  </div>
+                  <div className="flex justify-between text-[#9C5D1E]">
+                    <span>Transporter Freight Settlement (Pre-deducted):</span>
+                    <span className="font-bold">-₹3,850</span>
+                  </div>
+                  <div className="flex justify-between text-[#9C5D1E]">
+                    <span>Standard Handling & Cess (1.2%):</span>
+                    <span className="font-bold">-₹1,656</span>
+                  </div>
+                  <div className="pt-3 border-t border-[#EDF4EB] flex justify-between text-sm font-bold text-[#0F3810]">
+                    <span>Net Direct Farmer Credit:</span>
+                    <span className="text-lg font-black text-[#155A11] font-mono">₹1,32,494</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTradeTab === "receipt" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="p-5 rounded-2xl bg-white border border-[#DFE9DC] space-y-4 text-xs">
+                  <div className="flex justify-between items-start pb-3 border-b border-[#EDF4EB]">
+                    <div>
+                      <span className="font-mono text-[10px] text-[#637960] block">CERTIFICATE NO: PRISMS-TXN-2026-9041</span>
+                      <h4 className="text-base font-bold text-[#0F3810]">Digital Agri-Trade Execution Certificate</h4>
+                    </div>
+                    <BadgeCheck className="w-6 h-6 text-[#175E12]" />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div>
+                      <span className="text-[#657C62] block text-[10px]">Seller Farmer</span>
+                      <span className="font-bold text-[#133011]">Mayur Patil (Dindori, Nashik)</span>
+                    </div>
+                    <div>
+                      <span className="text-[#657C62] block text-[10px]">Verified Buyer</span>
+                      <span className="font-bold text-[#133011]">Sahyadri Agro Processing Ltd.</span>
+                    </div>
+                    <div>
+                      <span className="text-[#657C62] block text-[10px]">Net Realization Paid</span>
+                      <span className="font-bold text-[#175C12]">₹1,32,494 (Bank Ref #49021890)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. INTERACTIVE NET REALIZATION CALCULATOR ─────────────── */}
       <section id="net-realization" className="py-20 bg-[#F4F9F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
@@ -972,8 +1345,107 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </section>
 
-      {/* ── 7. AI AGRI ADVISOR SHOWCASE ───────────────────────────── */}
-      <section id="ai-advisor" className="py-20 bg-white">
+      {/* ── 9. GIS & SPATIAL RADIUS INTELLIGENCE SHOWCASE ─────────── */}
+      <section id="gis-map" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left Spatial Content */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E5F5E1] text-[#165112] text-xs font-bold border border-[#BDE5B6]">
+                <Compass className="w-4 h-4" />
+                <span>Geospatial Market Discovery</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0D290D] tracking-tight">
+                Radius-Based APMC Discovery & Transport Optimization
+              </h2>
+
+              <p className="text-sm sm:text-base text-[#4C6049] leading-relaxed">
+                PRISMS plots your farm location against hundreds of APMC mandis, cold-storage clusters, and highway logistics corridors, calculating real road distance instead of simple straight-line radius.
+              </p>
+
+              {/* Radius Selectors */}
+              <div className="flex gap-3 pt-2">
+                {([50, 100, 200] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setSelectedRadius(r)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      selectedRadius === r
+                        ? "bg-[#0F3810] text-white border-[#0F3810] shadow-sm"
+                        : "bg-[#F5FAF3] text-[#3D523A] border-[#DCE8D8] hover:bg-[#EAF4E8]"
+                    }`}
+                  >
+                    {r} km Radius Zone
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-3 pt-2 text-xs sm:text-sm">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F6FAF4] border border-[#DFE9DC]">
+                  <MapPin className="w-5 h-5 text-[#1C6916] shrink-0" />
+                  <span>
+                    <strong>{selectedRadius === 50 ? "12 Mandis" : selectedRadius === 100 ? "34 Mandis" : "86 Mandis"}</strong> available within {selectedRadius} km zone.
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F6FAF4] border border-[#DFE9DC]">
+                  <Truck className="w-5 h-5 text-[#1C6916] shrink-0" />
+                  <span>
+                    Average Freight Rate: <strong>₹1.35 / km / Qtl</strong> (Standard Bolero / 407 Truckload).
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Map Visual Display */}
+            <div className="lg:col-span-6">
+              <div className="rounded-3xl bg-gradient-to-br from-[#123911] to-[#0A2609] p-6 text-white shadow-2xl relative overflow-hidden">
+                {/* Mock Map Canvas */}
+                <div className="h-80 rounded-2xl bg-[#174815] relative overflow-hidden border border-[#2B6A27] flex items-center justify-center">
+                  {/* Concentric Radius Rings */}
+                  <div className="absolute w-64 h-64 rounded-full border border-dashed border-[#8EE87E]/30 animate-spin duration-1000" style={{ animationDuration: "60s" }} />
+                  <div className="absolute w-44 h-44 rounded-full border border-[#8EE87E]/40" />
+                  <div className="absolute w-24 h-24 rounded-full border border-[#8EE87E]/60 bg-[#8EE87E]/10" />
+
+                  {/* Center Farm Pin */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-8 h-8 rounded-full bg-[#E5F5E0] text-[#0F3810] flex items-center justify-center font-bold shadow-lg ring-4 ring-[#8EE87E]">
+                      🌱
+                    </div>
+                    <span className="text-[10px] font-bold bg-[#0F3810]/90 px-2 py-0.5 rounded text-white mt-1 border border-[#346F2D]">
+                      Your Farm (Nashik)
+                    </span>
+                  </div>
+
+                  {/* Surrounding Mandi Pins */}
+                  <div className="absolute top-12 left-14 flex items-center gap-1 bg-white text-[#11310E] px-2 py-1 rounded-lg text-[10px] font-bold shadow-md">
+                    <span className="w-2 h-2 rounded-full bg-[#186414]" />
+                    <span>Lasalgaon (42km) · ₹3,280</span>
+                  </div>
+
+                  <div className="absolute bottom-10 right-10 flex items-center gap-1 bg-[#F9EED4] text-[#714E08] px-2 py-1 rounded-lg text-[10px] font-bold shadow-md border border-[#DFC27F]">
+                    <span className="w-2 h-2 rounded-full bg-[#C2820C]" />
+                    <span>Pune Hub (135km) · ₹3,620</span>
+                  </div>
+
+                  <div className="absolute top-16 right-16 flex items-center gap-1 bg-white text-[#11310E] px-2 py-1 rounded-lg text-[10px] font-bold shadow-md">
+                    <span className="w-2 h-2 rounded-full bg-[#186414]" />
+                    <span>Narayangaon (68km)</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-xs text-[#AFDCA7]">
+                  <span>🟢 Connected to State Mandi Highways</span>
+                  <span className="font-mono text-white font-bold">Live GPS Matrix</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 10. AI AGRI ADVISOR SHOWCASE ──────────────────────────── */}
+      <section id="ai-advisor" className="py-20 bg-[#FAFDF9] border-t border-[#E2EBE0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left AI Feature Copy */}
@@ -1026,7 +1498,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
 
             {/* Right Chatbot UI Visual */}
             <div className="lg:col-span-6">
-              <div className="rounded-3xl p-5 sm:p-6 bg-[#F6FAF4] border border-[#DFE9DC] shadow-xl space-y-4">
+              <div className="rounded-3xl p-5 sm:p-6 bg-white border border-[#DFE9DC] shadow-xl space-y-4">
                 {/* Chat Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-[#E3ECE0]">
                   <div className="flex items-center gap-3">
@@ -1040,7 +1512,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-mono text-[#586C55] bg-white px-2 py-1 rounded border border-[#E0EADE]">
+                  <span className="text-xs font-mono text-[#586C55] bg-[#F6FAF4] px-2 py-1 rounded border border-[#E0EADE]">
                     Model: Gemini-2.0-Flash
                   </span>
                 </div>
@@ -1058,7 +1530,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
 
                   {/* AI response message */}
                   <div className="flex justify-start">
-                    <div className="max-w-[90%] bg-white text-[#193217] p-4 rounded-2xl rounded-tl-sm border border-[#E0EADE] shadow-sm space-y-2">
+                    <div className="max-w-[90%] bg-[#F6FAF4] text-[#193217] p-4 rounded-2xl rounded-tl-sm border border-[#E0EADE] shadow-sm space-y-2">
                       <p className="font-semibold text-[#0E2F0C]">
                         🌾 Recommendation: <span className="text-[#1A6F13] font-bold">Route to Pune Market Yard</span>
                       </p>
@@ -1077,7 +1549,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
 
                 {/* Input box mock */}
                 <div className="pt-2">
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-xl border border-[#DCE7DA]">
+                  <div className="flex items-center gap-2 p-2 bg-[#F6FAF4] rounded-xl border border-[#DCE7DA]">
                     <input
                       type="text"
                       disabled
@@ -1098,8 +1570,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </section>
 
-      {/* ── 8. FAQ SECTION ────────────────────────────────────────── */}
-      <section id="faq" className="py-20 bg-[#FAFDF9] border-t border-[#E2EBE0]">
+      {/* ── 11. FAQ SECTION ───────────────────────────────────────── */}
+      <section id="faq" className="py-20 bg-white border-t border-[#E2EBE0]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-3">
             <span className="inline-block px-3 py-1 rounded-full bg-[#E3F4DF] text-[#195614] text-xs font-bold uppercase tracking-wider border border-[#BBE5B4]">
@@ -1119,7 +1591,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-2xl border border-[#DFE8DC] overflow-hidden transition-all shadow-sm"
+                  className="bg-[#FAFDF9] rounded-2xl border border-[#DFE8DC] overflow-hidden transition-all shadow-sm"
                 >
                   <button
                     onClick={() => setActiveFaq(isOpen ? null : index)}
@@ -1144,7 +1616,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </section>
 
-      {/* ── 9. FINAL HIGH-CONVERSION CTA ──────────────────────────── */}
+      {/* ── 12. FINAL HIGH-CONVERSION CTA ─────────────────────────── */}
       <section className="py-20 bg-gradient-to-br from-[#0B2A0A] via-[#124010] to-[#0A2909] text-white relative overflow-hidden">
         {/* Glow overlay */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#67C756]/15 blur-3xl pointer-events-none rounded-full" />
@@ -1194,7 +1666,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </section>
 
-      {/* ── 10. ENTERPRISE FOOTER ─────────────────────────────────── */}
+      {/* ── 13. ENTERPRISE FOOTER ─────────────────────────────────── */}
       <footer className="bg-[#071B07] text-[#869E83] text-xs py-14 border-t border-[#133211]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#163614]">
@@ -1237,6 +1709,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
                   </a>
                 </li>
                 <li>
+                  <a href="#trade-execution" className="hover:text-white transition-colors">
+                    Trade Execution
+                  </a>
+                </li>
+                <li>
                   <a href="#net-realization" className="hover:text-white transition-colors">
                     Net Realization Formula
                   </a>
@@ -1248,17 +1725,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
               <h5 className="text-xs font-bold text-white uppercase tracking-wider">Intelligence</h5>
               <ul className="space-y-2">
                 <li>
+                  <a href="#gis-map" className="hover:text-white transition-colors">
+                    GIS Radius Engine
+                  </a>
+                </li>
+                <li>
                   <a href="#ai-advisor" className="hover:text-white transition-colors">
                     Gemini AI Advisor
                   </a>
                 </li>
                 <li>
-                  <a href="#features" className="hover:text-white transition-colors">
-                    Trade Lot Management
-                  </a>
-                </li>
-                <li>
-                  <a href="#features" className="hover:text-white transition-colors">
+                  <a href="#trade-execution" className="hover:text-white transition-colors">
                     Escrow Settlement
                   </a>
                 </li>
@@ -1308,7 +1785,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
         </div>
       </footer>
 
-      {/* ── 11. AUTH MODAL INTEGRATION ────────────────────────────── */}
+      {/* ── 14. AUTH MODAL INTEGRATION ────────────────────────────── */}
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
