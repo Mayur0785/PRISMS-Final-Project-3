@@ -1795,25 +1795,25 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
   const activeUserEmail = activeUser?.email;
 
   let apiDeliveries: DeliveryOrder[] = [];
-  try {
-    const res = await apiClient.get(`${API_URL}/deliveries`);
-    apiDeliveries = res.data.data || [];
-  } catch (error) {
-    console.error("Error fetching deliveries", error);
+  const token = localStorage.getItem("prisms_token");
+  if (token && !token.startsWith("demo_token_")) {
+    try {
+      const res = await apiClient.get(`${API_URL}/deliveries`);
+      apiDeliveries = res.data.data || [];
+    } catch (error) {
+      console.error("Error fetching deliveries", error);
+    }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_deliveries");
   const localDeliveries: DeliveryOrder[] = rawLocal ? JSON.parse(rawLocal) : [];
+  const filteredLocal = localDeliveries.filter(d => isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail));
 
   const STATUS_ORDER = ['OFFER_ACCEPTED_PLANNED', 'PLANNED', 'PICKUP_READY', 'DISPATCHED', 'IN_TRANSIT', 'DELIVERED'];
   const getStatusRank = (s?: string) => Math.max(0, STATUS_ORDER.indexOf(s || ''));
 
   const map = new Map<string, DeliveryOrder>();
-  [...apiDeliveries, ...localDeliveries].forEach(d => {
-    if (!isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
-
+  [...apiDeliveries, ...filteredLocal].forEach(d => {
     const key = d.deliveryId || d._id;
     if (!key) return;
     const existing = map.get(key);
@@ -1868,22 +1868,22 @@ export async function fetchUserPayments(): Promise<PaymentLedger[]> {
   const activeUserEmail = activeUser?.email;
 
   let apiPayments: PaymentLedger[] = [];
-  try {
-    const res = await apiClient.get(`${API_URL}/payments`);
-    apiPayments = res.data.data || [];
-  } catch (error) {
-    console.error("Error fetching payments", error);
+  const token = localStorage.getItem("prisms_token");
+  if (token && !token.startsWith("demo_token_")) {
+    try {
+      const res = await apiClient.get(`${API_URL}/payments`);
+      apiPayments = res.data.data || [];
+    } catch (error) {
+      console.error("Error fetching payments", error);
+    }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_payments");
   const localPayments: PaymentLedger[] = rawLocal ? JSON.parse(rawLocal) : [];
+  const filteredLocal = localPayments.filter(p => isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail));
 
   const map = new Map<string, PaymentLedger>();
-  [...apiPayments, ...localPayments].forEach(p => {
-    if (!isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
-
+  [...apiPayments, ...filteredLocal].forEach(p => {
     const key = p.paymentId || p._id;
     if (!key) return;
     const existing = map.get(key);
@@ -1910,22 +1910,22 @@ export async function fetchUserTransactions(): Promise<TransactionItem[]> {
   const activeUserEmail = activeUser?.email;
 
   let apiTxns: TransactionItem[] = [];
-  try {
-    const res = await apiClient.get(`${API_URL}/transactions`);
-    apiTxns = res.data.data || [];
-  } catch (error) {
-    console.error("Error fetching transactions", error);
+  const token = localStorage.getItem("prisms_token");
+  if (token && !token.startsWith("demo_token_")) {
+    try {
+      const res = await apiClient.get(`${API_URL}/transactions`);
+      apiTxns = res.data.data || [];
+    } catch (error) {
+      console.error("Error fetching transactions", error);
+    }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_transactions");
   const localTxns: TransactionItem[] = rawLocal ? JSON.parse(rawLocal) : [];
+  const filteredLocal = localTxns.filter(t => isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail));
 
   const map = new Map<string, TransactionItem>();
-  [...localTxns, ...apiTxns].forEach(t => {
-    if (!isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail)) {
-      return;
-    }
-
+  [...apiTxns, ...filteredLocal].forEach(t => {
     const key = t.transactionId || t._id;
     if (key && !map.has(key)) map.set(key, t);
   });
