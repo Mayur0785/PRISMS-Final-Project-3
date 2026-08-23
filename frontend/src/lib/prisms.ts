@@ -1023,8 +1023,11 @@ export async function fetchBuyerDemands(params?: { commodity?: string; buyerId?:
 }
 
 export async function fetchUserLots(): Promise<TradeLot[]> {
+  const activeUser = getCurrentUser();
+  const activeUserId = activeUser?.id || activeUser?.email || "user_demo_001";
+
   const token = localStorage.getItem("prisms_token");
-  if (token) {
+  if (token && !token.startsWith("demo_token_")) {
     try {
       const res = await apiClient.get(`${API_URL}/lots`);
       if (res.data?.data && Array.isArray(res.data.data)) {
@@ -1035,37 +1038,56 @@ export async function fetchUserLots(): Promise<TradeLot[]> {
     }
   }
 
-  // Load persistent local demo lots when API is unauthenticated or unreachable
+  // Load persistent local demo lots when API is unauthenticated or in demo mode
   const rawDemo = localStorage.getItem("prisms_demo_lots_list");
+  let localLots: TradeLot[] = [];
   if (rawDemo) {
     try {
-      const demoLots: TradeLot[] = JSON.parse(rawDemo);
-      return demoLots;
+      localLots = JSON.parse(rawDemo);
     } catch {}
+  } else {
+    localLots = [
+      {
+        _id: "demo_lot_71",
+        lotId: "LOT-2026-0071",
+        userId: "user_demo_001",
+        cropName: "Red Onion",
+        variety: "Garwa",
+        grade: "Grade A",
+        quantityQtl: 30,
+        expectedPricePerQtl: 3000,
+        minimumAcceptablePrice: 2600,
+        qualityScore: 88,
+        origin: "Farm Gate",
+        district: "Nashik",
+        lotStatus: "PUBLISHED",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    ];
+    localStorage.setItem("prisms_demo_lots_list", JSON.stringify(localLots));
   }
 
-  // Initial seed demo lot
-  const initialSeed: TradeLot[] = [
-    {
-      _id: "demo_lot_71",
-      lotId: "LOT-2026-0071",
-      userId: "demo_user",
-      cropName: "Red Onion",
-      variety: "Garwa",
-      grade: "Grade A",
-      quantityQtl: 30,
-      expectedPricePerQtl: 3000,
-      minimumAcceptablePrice: 2600,
-      qualityScore: 88,
-      origin: "Farm Gate",
-      district: "Nashik",
-      lotStatus: "PUBLISHED",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-  ];
-  localStorage.setItem("prisms_demo_lots_list", JSON.stringify(initialSeed));
-  return initialSeed;
+  // User-Scoped Trade Lot Filtering
+  const isDefaultDemoAccount =
+    activeUserId === "user_demo_001" ||
+    activeUser?.email === "farmer.lasalgaon@prisms.gov.in" ||
+    activeUserId === "farmer.lasalgaon@prisms.gov.in" ||
+    !activeUser;
+
+  if (isDefaultDemoAccount) {
+    return localLots.filter(l => 
+      !l.userId || 
+      l.userId === "user_demo_001" || 
+      l.userId === "demo_user" || 
+      l.userId === "farmer.lasalgaon@prisms.gov.in"
+    );
+  }
+
+  return localLots.filter(l => 
+    l.userId === activeUserId || 
+    (activeUser?.email && l.userId === activeUser.email)
+  );
 }
 
 export async function createTradeLot(data: {
@@ -1080,15 +1102,21 @@ export async function createTradeLot(data: {
   expectedPricePerQtl: number;
   minimumAcceptablePrice?: number;
 }): Promise<TradeLot> {
+  const activeUser = getCurrentUser();
+  const activeUserId = activeUser?.id || activeUser?.email || "user_demo_001";
+
   const token = localStorage.getItem("prisms_token");
-  if (token) {
+  if (token && !token.startsWith("demo_token_")) {
     try {
       const res = await apiClient.post(`${API_URL}/lots`, data);
       if (res.data?.data) {
         return res.data.data;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating trade lot via API", err);
+      if (err.response?.data?.error?.message) {
+        throw new Error(err.response.data.error.message);
+      }
     }
   }
 
@@ -1102,7 +1130,7 @@ export async function createTradeLot(data: {
       {
         _id: "demo_lot_71",
         lotId: "LOT-2026-0071",
-        userId: "demo_user",
+        userId: "user_demo_001",
         cropName: "Red Onion",
         variety: "Garwa",
         grade: "Grade A",
@@ -1119,9 +1147,10 @@ export async function createTradeLot(data: {
     ];
   }
 
-  // Deduplication check: prevent rapid duplicate creation within 3 seconds
+  // Deduplication check: prevent rapid duplicate creation within 3 seconds for the SAME user
   const now = Date.now();
   const existingDup = demoLots.find(l => 
+    l.userId === activeUserId &&
     l.cropName === data.cropName && 
     l.quantityQtl === Number(data.quantityQtl) && 
     (now - new Date(l.createdAt).getTime()) < 3000
@@ -1137,7 +1166,7 @@ export async function createTradeLot(data: {
   const newLot: TradeLot = {
     _id: `lot_local_${now}`,
     lotId: newLotId,
-    userId: "demo_user",
+    userId: activeUserId,
     cropName: data.cropName,
     variety: data.variety || "Standard",
     grade: data.grade || "Grade A",
