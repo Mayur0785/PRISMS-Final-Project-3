@@ -19,12 +19,22 @@ export const getUserDeliveries = async (req: Request, res: Response, next: NextF
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
 
+    const userEmail = (req as any).user.email;
+    const userName = (req as any).user.name;
+
+    const orConditions: any[] = [
+      { farmerId: rawUserId },
+      { farmerId: userIdObj },
+      { farmerId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: userIdObj },
+      { buyerId: String(rawUserId) },
+    ];
+    if (userEmail) orConditions.push({ buyerId: userEmail });
+    if (userName) orConditions.push({ buyerId: userName });
+
     const deliveries = await DeliveryOrder.find({
-      $or: [
-        { farmerId: rawUserId },
-        { farmerId: userIdObj },
-        { farmerId: String(rawUserId) }
-      ]
+      $or: orConditions
     }).sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -180,6 +190,7 @@ export const createDeliveryOrder = async (req: Request, res: Response, next: Nex
 };
 
 const VALID_DELIVERY_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
+  OFFER_ACCEPTED_PLANNED: ['PLANNED', 'PICKUP_READY', 'DISPATCHED', 'CANCELLED'],
   PLANNED: ['PICKUP_READY', 'DISPATCHED', 'CANCELLED'],
   PICKUP_READY: ['DISPATCHED', 'CANCELLED'],
   DISPATCHED: ['IN_TRANSIT', 'CANCELLED'],

@@ -3,6 +3,7 @@ import { requireAuth } from '../../middleware/requireAuth';
 import {
   getUserOffers,
   getOffersForLot,
+  createOffer,
   acceptOffer,
   rejectOffer,
   counterOffer,
@@ -14,6 +15,7 @@ export const offerRouter = Router();
 offerRouter.use(requireAuth); // Enforce authentication and ownership
 
 offerRouter.get('/', getUserOffers);
+offerRouter.post('/', createOffer);
 offerRouter.get('/lot/:lotId', getOffersForLot);
 offerRouter.post('/:id/accept', acceptOffer);
 offerRouter.post('/:id/reject', rejectOffer);

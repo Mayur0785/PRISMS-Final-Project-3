@@ -7,6 +7,11 @@ export type NotificationType =
   | 'SPOILAGE_ALERT'
   | 'BUYER_MATCH'
   | 'OFFER_RECEIVED'
+  | 'COUNTER_OFFER'
+  | 'OFFER_ACCEPTED'
+  | 'OFFER_REJECTED'
+  | 'DELIVERY_UPDATE'
+  | 'PAYMENT_UPDATE'
   | 'LOGISTICS_ALERT'
   | 'PAYMENT_ALERT'
   | 'GRIEVANCE_UPDATE';
@@ -15,14 +20,15 @@ export type NotificationSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface INotification extends Document {
   notificationId: string;
-  userId: Schema.Types.ObjectId;
+  userId: any;
   type: NotificationType;
   title: string;
   message: string;
   severity: NotificationSeverity;
   relatedCrop?: string;
   relatedMarket?: string;
-  relatedLotId?: Schema.Types.ObjectId;
+  relatedLotId?: any;
+  relatedOfferId?: any;
   isRead: boolean;
   createdAt: Date;
   expiresAt?: Date;
@@ -31,7 +37,7 @@ export interface INotification extends Document {
 const NotificationSchema = new Schema<INotification>(
   {
     notificationId: { type: String, required: true, unique: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: Schema.Types.Mixed, required: true, index: true },
     type: {
       type: String,
       enum: [
@@ -41,6 +47,11 @@ const NotificationSchema = new Schema<INotification>(
         'SPOILAGE_ALERT',
         'BUYER_MATCH',
         'OFFER_RECEIVED',
+        'COUNTER_OFFER',
+        'OFFER_ACCEPTED',
+        'OFFER_REJECTED',
+        'DELIVERY_UPDATE',
+        'PAYMENT_UPDATE',
         'LOGISTICS_ALERT',
         'PAYMENT_ALERT',
         'GRIEVANCE_UPDATE',
@@ -56,7 +67,8 @@ const NotificationSchema = new Schema<INotification>(
     },
     relatedCrop: { type: String },
     relatedMarket: { type: String },
-    relatedLotId: { type: Schema.Types.ObjectId },
+    relatedLotId: { type: Schema.Types.Mixed },
+    relatedOfferId: { type: Schema.Types.Mixed },
     isRead: { type: Boolean, default: false },
     expiresAt: { type: Date },
   },

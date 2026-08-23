@@ -1621,6 +1621,18 @@ export async function counterOfferApi(offerId: string, counterPricePerQtl: numbe
   return res.data.data;
 }
 
+export async function createOfferApi(data: {
+  lotId: string;
+  pricePerQtl: number;
+  quantityQtl?: number;
+  paymentTerms?: string;
+  deliveryTerms?: string;
+  message?: string;
+}): Promise<Offer> {
+  const res = await apiClient.post(`${API_URL}/offers`, data);
+  return res.data.data;
+}
+
 export function getAcceptedOfferForLot(lotId: string): string | null {
   if (!lotId || typeof lotId !== "string" || !lotId.trim()) return null;
   const rawAccepted = localStorage.getItem("prisms_demo_accepted_offers");

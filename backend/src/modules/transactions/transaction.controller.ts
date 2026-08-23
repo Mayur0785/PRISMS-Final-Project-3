@@ -10,17 +10,26 @@ import mongoose from 'mongoose';
 export const getUserTransactions = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userEmail = (req as any).user.email;
+    const userName = (req as any).user.name;
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
     const { crop, status } = req.query;
 
+    const orConditions: any[] = [
+      { farmerId: rawUserId },
+      { farmerId: userIdObj },
+      { farmerId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: userIdObj },
+      { buyerId: String(rawUserId) },
+    ];
+    if (userEmail) orConditions.push({ buyerId: userEmail });
+    if (userName) orConditions.push({ buyerId: userName });
+
     const query: any = {
-      $or: [
-        { farmerId: rawUserId },
-        { farmerId: userIdObj },
-        { farmerId: String(rawUserId) }
-      ]
+      $or: orConditions
     };
     if (crop) {
       query.crop = new RegExp(crop as string, 'i');
