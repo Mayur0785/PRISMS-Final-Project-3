@@ -29,6 +29,7 @@ export interface INotification extends Document {
   relatedMarket?: string;
   relatedLotId?: any;
   relatedOfferId?: any;
+  counterPrice?: number;
   isRead: boolean;
   createdAt: Date;
   expiresAt?: Date;
@@ -69,10 +70,34 @@ const NotificationSchema = new Schema<INotification>(
     relatedMarket: { type: String },
     relatedLotId: { type: Schema.Types.Mixed },
     relatedOfferId: { type: Schema.Types.Mixed },
+    counterPrice: { type: Number },
     isRead: { type: Boolean, default: false },
     expiresAt: { type: Date },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret: any) => {
+        ret.recipientUserId = ret.userId;
+        ret.offerId = ret.relatedOfferId;
+        ret.lotId = ret.relatedLotId;
+        ret.read = ret.isRead;
+        return ret;
+      }
+    },
+    toObject: {
+      virtuals: true,
+      transform: (_doc, ret: any) => {
+        ret.recipientUserId = ret.userId;
+        ret.offerId = ret.relatedOfferId;
+        ret.lotId = ret.relatedLotId;
+        ret.read = ret.isRead;
+        return ret;
+      }
+    }
+  }
 );
 
 export const Notification = mongoose.model<INotification>('Notification', NotificationSchema);
+

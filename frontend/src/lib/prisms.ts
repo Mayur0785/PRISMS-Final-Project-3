@@ -956,8 +956,12 @@ export interface TradeLot {
   cropName: string;
   variety: string;
   grade: string;
+  provisionalGrade?: string;
   quantityQtl: number;
   qualityScore?: number;
+  evidenceConfidence?: number;
+  qualityAssessmentId?: string;
+  qualityPassport?: any;
   origin: string;
   district?: string;
   targetMarket?: string;
@@ -968,6 +972,92 @@ export interface TradeLot {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface QualityQuestionOption {
+  value: string;
+  label: string;
+  score: number;
+}
+
+export interface QualityQuestionConfig {
+  id: string;
+  parameterId: string;
+  section: string;
+  questionText: string;
+  helpText?: string;
+  inputType: 'SELECT' | 'NUMBER' | 'PERCENTAGE' | 'RADIO';
+  options?: QualityQuestionOption[];
+  min?: number;
+  max?: number;
+  unit?: string;
+  required: boolean;
+  defaultEvidenceSource?: string;
+}
+
+export interface QualityParameterConfig {
+  parameterId: string;
+  name: string;
+  unit: string;
+  weight: number;
+  critical: boolean;
+  criticalThreshold?: number;
+  criticalMessage?: string;
+  allowedEvidenceSources: string[];
+}
+
+export interface CropQualityQuestionsResponse {
+  cropName: string;
+  parameters: QualityParameterConfig[];
+  questions: QualityQuestionConfig[];
+  gradeRules: Array<{
+    grade: string;
+    minScore: number;
+    maxScore: number;
+    description: string;
+  }>;
+}
+
+export interface QualityAssessmentAnswer {
+  questionId: string;
+  parameterId: string;
+  value: any;
+  evidenceSource?: string;
+}
+
+export interface QualityAssessmentResult {
+  _id?: string;
+  assessmentId: string;
+  farmerId?: string;
+  lotId?: string;
+  cropName: string;
+  variety?: string;
+  qualityScore: number;
+  provisionalGrade: string;
+  evidenceConfidence: number;
+  criticalFlags: string[];
+  positiveFactors: string[];
+  riskFactors: string[];
+  parameterScores?: Record<string, any>;
+  passportSummary: {
+    crop: string;
+    provisionalGrade: string;
+    qualityScore: number;
+    evidenceConfidence: number;
+    bulbSize?: string;
+    rotPercent?: number;
+    sproutingPercent?: number;
+    cutsPercent?: number;
+    neckDrying?: string;
+    firmness?: string;
+    skinCondition?: string;
+    foreignMatterPercent?: number;
+    storageCondition?: string;
+    verificationStatus: string;
+    disclaimer: string;
+  };
+  isProvisional?: boolean;
+  createdAt?: string;
 }
 
 export interface BuyerMatchResult {
@@ -1132,8 +1222,12 @@ export async function createTradeLot(data: {
   cropName: string;
   variety?: string;
   grade?: string;
+  provisionalGrade?: string;
   quantityQtl: number;
   qualityScore?: number;
+  evidenceConfidence?: number;
+  qualityAssessmentId?: string;
+  qualityPassport?: any;
   origin?: string;
   district?: string;
   expectedPricePerQtl: number;
@@ -1474,6 +1568,42 @@ export async function fetchMarketplaceLotsApi(): Promise<TradeLot[]> {
   }
 }
 
+export async function fetchQualityQuestionsApi(crop: string): Promise<CropQualityQuestionsResponse | null> {
+  try {
+    const res = await apiClient.get(`${API_URL}/quality/crops/${encodeURIComponent(crop)}/questions`);
+    return res.data?.data || null;
+  } catch (error) {
+    console.error("Error fetching quality questions", error);
+    return null;
+  }
+}
+
+export async function submitQualityAssessmentApi(payload: {
+  cropName: string;
+  variety?: string;
+  answers: QualityAssessmentAnswer[];
+  cropBatchId?: string;
+  lotId?: string;
+}): Promise<QualityAssessmentResult | null> {
+  try {
+    const res = await apiClient.post(`${API_URL}/quality/assessments`, payload);
+    return res.data?.data || null;
+  } catch (error) {
+    console.error("Error submitting quality assessment", error);
+    return null;
+  }
+}
+
+export async function fetchQualityAssessmentApi(id: string): Promise<QualityAssessmentResult | null> {
+  try {
+    const res = await apiClient.get(`${API_URL}/quality/assessments/${encodeURIComponent(id)}`);
+    return res.data?.data || null;
+  } catch (error) {
+    console.error("Error fetching quality assessment", error);
+    return null;
+  }
+}
+
 export interface Offer {
   _id: string;
   offerId: string;
@@ -1500,6 +1630,7 @@ export interface Offer {
   counterPricePerQtl?: number;
   counterQuantityQtl?: number;
   counterMessage?: string;
+  counterBy?: 'FARMER' | 'BUYER';
   isDemo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2241,13 +2372,21 @@ export interface QualityAssessmentItem {
 export interface NotificationItem {
   _id: string;
   notificationId: string;
+  userId?: string;
+  recipientUserId?: string;
   type: string;
   title: string;
   message: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   relatedCrop?: string;
   relatedMarket?: string;
+  relatedLotId?: string;
+  relatedOfferId?: string;
+  lotId?: string;
+  offerId?: string;
+  counterPrice?: number;
   isRead: boolean;
+  read?: boolean;
   createdAt: string;
 }
 

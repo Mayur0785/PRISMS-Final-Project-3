@@ -4,9 +4,9 @@ export type OfferStatus = 'PENDING' | 'COUNTERED' | 'ACCEPTED' | 'REJECTED' | 'E
 
 export interface IOffer extends Document {
   offerId: string;
-  lotId: Schema.Types.ObjectId;
+  lotId: any;
   buyerId: string;
-  sellerUserId: Schema.Types.ObjectId;
+  sellerUserId: any;
   commodity: string;
   variety: string;
   grade: string;
@@ -27,6 +27,7 @@ export interface IOffer extends Document {
   counterPricePerQtl?: number;
   counterQuantityQtl?: number;
   counterMessage?: string;
+  counterBy?: 'FARMER' | 'BUYER';
   isDemo: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -35,9 +36,9 @@ export interface IOffer extends Document {
 const OfferSchema = new Schema<IOffer>(
   {
     offerId: { type: String, required: true, unique: true, index: true },
-    lotId: { type: Schema.Types.ObjectId, ref: 'Lot', required: true, index: true },
+    lotId: { type: Schema.Types.Mixed, required: true, index: true },
     buyerId: { type: String, required: true, index: true },
-    sellerUserId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    sellerUserId: { type: Schema.Types.Mixed, required: true, index: true },
     commodity: { type: String, required: true },
     variety: { type: String, default: 'Standard' },
     grade: { type: String, required: true },
@@ -63,6 +64,7 @@ const OfferSchema = new Schema<IOffer>(
     counterPricePerQtl: { type: Number },
     counterQuantityQtl: { type: Number },
     counterMessage: { type: String },
+    counterBy: { type: String, enum: ['FARMER', 'BUYER'] },
     isDemo: { type: Boolean, default: true },
   },
   { timestamps: true }

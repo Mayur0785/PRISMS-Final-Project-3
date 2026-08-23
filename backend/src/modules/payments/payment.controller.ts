@@ -21,8 +21,14 @@ export const getUserPayments = async (req: Request, res: Response, next: NextFun
       { buyerId: userIdObj },
       { buyerId: String(rawUserId) },
     ];
-    if (userEmail) orConditions.push({ buyerId: userEmail });
-    if (userName) orConditions.push({ buyerId: userName });
+    if (userEmail) {
+      orConditions.push({ buyerId: userEmail });
+      orConditions.push({ farmerId: userEmail });
+    }
+    if (userName) {
+      orConditions.push({ buyerId: userName });
+      orConditions.push({ farmerId: userName });
+    }
 
     const payments = await PaymentLedger.find({
       $or: orConditions

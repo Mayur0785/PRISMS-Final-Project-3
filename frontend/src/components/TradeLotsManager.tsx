@@ -1,8 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { fetchUserLots, createTradeLot, deleteTradeLot, getAcceptedOfferForLot, type TradeLot, type CropBatchItem } from "@/lib/prisms";
+import {
+  fetchUserLots,
+  createTradeLot,
+  deleteTradeLot,
+  getAcceptedOfferForLot,
+  type TradeLot,
+  type CropBatchItem,
+  type QualityAssessmentResult,
+} from "@/lib/prisms";
 import { BuyerMatchModal } from "./BuyerMatchModal";
 import { OfferComparisonModal } from "./OfferComparisonModal";
-import { Package, Plus, Trash2, Tag, TrendingUp, Building2, CheckCircle2, AlertCircle, RefreshCw, Truck, DollarSign, ArrowRight } from "lucide-react";
+import { QualityAssessmentWizard } from "./QualityAssessmentWizard";
+import { QualityPassportModal } from "./QualityPassportModal";
+import {
+  Package,
+  Plus,
+  Trash2,
+  Tag,
+  TrendingUp,
+  Building2,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Truck,
+  DollarSign,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 interface TradeLotsManagerProps {
   cropBatches: CropBatchItem[];
@@ -15,6 +40,11 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedLotForMatch, setSelectedLotForMatch] = useState<TradeLot | null>(null);
   const [selectedLotForOffers, setSelectedLotForOffers] = useState<TradeLot | null>(null);
+
+  // Quality Assessment State
+  const [qualityWizardOpen, setQualityWizardOpen] = useState(false);
+  const [qualityResult, setQualityResult] = useState<QualityAssessmentResult | null>(null);
+  const [selectedLotForPassport, setSelectedLotForPassport] = useState<TradeLot | null>(null);
 
   // Form State
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
@@ -63,7 +93,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
     }
   };
 
-  const handleCreateLot = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return; // Prevent double submit
     setFormError("");
@@ -73,21 +103,39 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
       return;
     }
 
+    const isOnion = (cropName || "").toLowerCase().includes("onion");
+    if (isOnion && !qualityResult) {
+      // Direct the farmer to the Quality Assessment Wizard first
+      setQualityWizardOpen(true);
+      return;
+    }
+
+    // Proceed to create the lot
+    handleCreateLot();
+  };
+
+  const handleCreateLot = async () => {
     try {
       setSubmitting(true);
       await createTradeLot({
         cropBatchId: selectedBatchId || undefined,
         cropName,
         variety,
-        grade,
+        grade: qualityResult?.provisionalGrade || grade,
+        provisionalGrade: qualityResult?.provisionalGrade || grade,
         quantityQtl: Number(quantityQtl),
         expectedPricePerQtl: Number(expectedPrice),
         minimumAcceptablePrice: Number(minPrice),
+        qualityScore: qualityResult?.qualityScore || 85,
+        evidenceConfidence: qualityResult?.evidenceConfidence || 80,
+        qualityAssessmentId: qualityResult?.assessmentId || qualityResult?._id,
+        qualityPassport: qualityResult?.passportSummary,
       });
       setCreateOpen(false);
+      setQualityResult(null);
       await loadLots();
     } catch (err: any) {
-      setFormError(err.response?.data?.error?.message || "Failed to create trade lot.");
+      setFormError(err.response?.data?.error?.message || err.message || "Failed to create trade lot.");
     } finally {
       setSubmitting(false);
     }
@@ -132,10 +180,26 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative text-slate-900">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Package className="w-5 h-5 text-emerald-600" />
-              {lang === "mr" ? "व्यापार लॉट तयार करा (Create Trade Lot)" : "Create Trade Lot"}
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5 text-emerald-600" />
+                {lang === "mr" ? "व्यापार लॉट तयार करा (Create Trade Lot)" : "Create Trade Lot"}
+              </h3>
+              {cropName.toLowerCase().includes("onion") && (
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Step 1 of 2
+                </span>
+              )}
+            </div>
+
+            {cropName.toLowerCase().includes("onion") && (
+              <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-900 text-[11px] flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>
+                  <strong>Quality Passport:</strong> Onion lots require completing the standard quality questionnaire to evaluate Grade, Quality Score, and Confidence.
+                </span>
+              </div>
+            )}
 
             {formError && (
               <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
@@ -144,7 +208,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
               </div>
             )}
 
-            <form onSubmit={handleCreateLot} className="space-y-4 text-xs">
+            <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
               {cropBatches.length > 0 && (
                 <div>
                   <label className="text-slate-700 font-medium block mb-1">
@@ -167,14 +231,40 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "पिक नाव:" : "Crop Name:"}</label>
-                  <input
-                    type="text"
-                    value={cropName}
-                    onChange={(e) => setCropName(e.target.value)}
-                    required
-                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
-                  />
+                  <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "पिक निवडा / नाव:" : "Crop Name:"}</label>
+                  <select
+                    value={["Red Onion", "White Onion", "Garwa Onion", "Sharbati Wheat", "Yellow Soybeans", "Hybrid Tomato", "Potato", "Banana"].includes(cropName) ? cropName : "Other"}
+                    onChange={(e) => {
+                      if (e.target.value !== "Other") {
+                        setCropName(e.target.value);
+                        if (e.target.value.includes("Onion")) setVariety("Garwa");
+                        else if (e.target.value.includes("Wheat")) setVariety("Sharbati");
+                        else if (e.target.value.includes("Soybean")) setVariety("JS-335");
+                        else if (e.target.value.includes("Tomato")) setVariety("Abhinav");
+                      }
+                    }}
+                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white font-bold"
+                  >
+                    <option value="Red Onion">🧅 Red Onion (Nashik)</option>
+                    <option value="Garwa Onion">🧅 Garwa Red Onion</option>
+                    <option value="White Onion">🧅 White Onion</option>
+                    <option value="Sharbati Wheat">🌾 Sharbati Wheat</option>
+                    <option value="Yellow Soybeans">🌱 Yellow Soybeans</option>
+                    <option value="Hybrid Tomato">🍅 Hybrid Tomato</option>
+                    <option value="Potato">🥔 Potato</option>
+                    <option value="Banana">🍌 Banana</option>
+                    <option value="Other">Custom Crop...</option>
+                  </select>
+                  {!["Red Onion", "White Onion", "Garwa Onion", "Sharbati Wheat", "Yellow Soybeans", "Hybrid Tomato", "Potato", "Banana"].includes(cropName) && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom crop name"
+                      value={cropName}
+                      onChange={(e) => setCropName(e.target.value)}
+                      required
+                      className="w-full mt-1.5 bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2 text-xs focus:border-emerald-600 focus:bg-white"
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -239,10 +329,68 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                 </div>
               </div>
 
+              {/* Crop Quality Assessment Trigger */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Quality Assessment)" : "Crop-Specific Quality Assessment"}
+                  </span>
+                  {qualityResult ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white">
+                      ATTACHED
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                      OPTIONAL / RECOMMENDED
+                    </span>
+                  )}
+                </div>
+
+                {qualityResult ? (
+                  <div className="p-2.5 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs">
+                    <div className="space-y-0.5">
+                      <div className="font-black text-emerald-900 flex items-center gap-2">
+                        <span>{qualityResult.provisionalGrade}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">•</span>
+                        <span className="text-emerald-700">Score: {qualityResult.qualityScore}/100</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Evidence Confidence: {qualityResult.evidenceConfidence}% • Ready to link
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setQualityWizardOpen(true)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                    >
+                      {lang === "mr" ? "बदला" : "Edit"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] text-slate-600">
+                      Complete standard Onion questionnaire to generate an official Quality Passport for buyers.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setQualityWizardOpen(true)}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{lang === "mr" ? "मूल्यांकन सुरू करा" : "Start Assessment"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
-                  onClick={() => setCreateOpen(false)}
+                  onClick={() => {
+                    setCreateOpen(false);
+                    setQualityResult(null);
+                  }}
                   className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
                 >
                   {lang === "mr" ? "रद्द करा" : "Cancel"}
@@ -251,9 +399,29 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  {submitting ? "Creating..." : lang === "mr" ? "लॉट जतन करा" : "Create Trade Lot"}
+                  {cropName.toLowerCase().includes("onion") && !qualityResult ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>{lang === "mr" ? "गुणवत्ता मूल्यांकनाकडे पुढे जा →" : "Continue to Quality Assessment →"}</span>
+                    </>
+                  ) : qualityResult ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>
+                        {submitting
+                          ? lang === "mr"
+                            ? "तयार करत आहे..."
+                            : "Creating..."
+                          : lang === "mr"
+                          ? "लॉट तयार करा (पासपोर्ट संलग्न)"
+                          : "Confirm & Create Trade Lot"}
+                      </span>
+                    </>
+                  ) : (
+                    <span>{submitting ? "Creating..." : lang === "mr" ? "लॉट जतन करा" : "Create Trade Lot"}</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -337,9 +505,38 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
                     <span>{lot.variety}</span>
                     <span>•</span>
-                    <span className="text-emerald-700 font-semibold">{lot.grade}</span>
+                    <span className="text-emerald-700 font-semibold">{lot.provisionalGrade || lot.grade}</span>
                     <span>•</span>
                     <span className="font-bold text-slate-800">{lot.quantityQtl} Qtl</span>
+                  </div>
+
+                  {/* Quality Passport Summary Pill */}
+                  <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-emerald-50/60 border border-emerald-200/80 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1 rounded-md bg-emerald-100 text-emerald-800">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="font-extrabold text-emerald-950">
+                        {lot.provisionalGrade || lot.grade || "Grade A"}
+                      </span>
+                      <span className="text-[10px] text-slate-400">•</span>
+                      <span className="text-emerald-800 font-semibold text-[11px]">
+                        Score: {lot.qualityScore || 85}/100
+                      </span>
+                      <span className="text-[10px] text-slate-400">•</span>
+                      <span className="text-blue-700 font-semibold text-[11px]">
+                        Conf: {lot.evidenceConfidence || 80}%
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLotForPassport(lot)}
+                      className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 underline flex items-center gap-0.5 cursor-pointer ml-auto"
+                    >
+                      <span>Quality Passport</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
                   </div>
 
                   {/* 3-Column Financial Grid */}
@@ -536,6 +733,79 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
           onClose={() => setSelectedLotForOffers(null)}
           onOfferAccepted={() => loadLots()}
           lang={lang}
+        />
+      )}
+
+      {/* Quality Assessment Wizard Modal */}
+      {qualityWizardOpen && (
+        <QualityAssessmentWizard
+          isOpen={qualityWizardOpen}
+          onClose={() => setQualityWizardOpen(false)}
+          cropName={cropName}
+          variety={variety}
+          cropBatchId={selectedBatchId || undefined}
+          onAssessmentCompleted={(result) => {
+            setQualityResult(result);
+            setGrade(result.provisionalGrade);
+          }}
+          onConfirmAndCreate={async (result) => {
+            setQualityResult(result);
+            setGrade(result.provisionalGrade);
+            try {
+              setSubmitting(true);
+              await createTradeLot({
+                cropBatchId: selectedBatchId || undefined,
+                cropName,
+                variety,
+                grade: result.provisionalGrade || grade,
+                provisionalGrade: result.provisionalGrade || grade,
+                quantityQtl: Number(quantityQtl),
+                expectedPricePerQtl: Number(expectedPrice),
+                minimumAcceptablePrice: Number(minPrice),
+                qualityScore: result.qualityScore || 85,
+                evidenceConfidence: result.evidenceConfidence || 80,
+                qualityAssessmentId: result.assessmentId || (result as any)._id,
+                qualityPassport: result.passportSummary,
+              });
+              setQualityWizardOpen(false);
+              setCreateOpen(false);
+              setQualityResult(null);
+              await loadLots();
+            } catch (err: any) {
+              setFormError(err.response?.data?.error?.message || err.message || "Failed to create trade lot.");
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          lang={lang}
+        />
+      )}
+
+      {/* Quality Passport Viewer Modal */}
+      {selectedLotForPassport && (
+        <QualityPassportModal
+          isOpen={!!selectedLotForPassport}
+          onClose={() => setSelectedLotForPassport(null)}
+          assessment={
+            selectedLotForPassport.qualityPassport
+              ? ({
+                  assessmentId: selectedLotForPassport.qualityAssessmentId || selectedLotForPassport.lotId,
+                  cropName: selectedLotForPassport.cropName,
+                  variety: selectedLotForPassport.variety,
+                  qualityScore: selectedLotForPassport.qualityScore || 85,
+                  provisionalGrade: selectedLotForPassport.provisionalGrade || selectedLotForPassport.grade || "Grade A",
+                  evidenceConfidence: selectedLotForPassport.evidenceConfidence || 80,
+                  criticalFlags: [],
+                  positiveFactors: [
+                    `Standard grade certification for ${selectedLotForPassport.cropName}`,
+                    "Clean harvest batch with verified origin",
+                  ],
+                  riskFactors: ["Provisional assessment awaiting hub gate verification"],
+                  passportSummary: selectedLotForPassport.qualityPassport,
+                } as any)
+              : null
+          }
+          lotId={selectedLotForPassport.lotId}
         />
       )}
     </div>

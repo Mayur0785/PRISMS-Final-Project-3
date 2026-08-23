@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { Notification, NotificationType, NotificationSeverity } from './notification.model';
+import { User } from '../users/user.model';
 import mongoose from 'mongoose';
 
 export async function generateNotificationId(): Promise<string> {
   const count = await Notification.countDocuments();
-  const hex = (count + 501).toString(16).toUpperCase().padStart(4, '0');
-  return `NTF-2026-${hex}`;
+  const randomSuffix = Math.floor(Math.random() * 0xffff).toString(16).toUpperCase().padStart(4, '0');
+  const hex = (count + 1).toString(16).toUpperCase().padStart(3, '0');
+  return `NTF-2026-${hex}${randomSuffix}`;
 }
 
 export async function sendSystemNotification(params: {
@@ -18,12 +20,14 @@ export async function sendSystemNotification(params: {
   relatedMarket?: string;
   relatedLotId?: any;
   relatedOfferId?: any;
+  counterPrice?: number;
 }) {
   try {
     const notificationId = await generateNotificationId();
+    const targetUserId = String(params.userId?._id || params.userId?.id || params.userId);
     return await Notification.create({
       notificationId,
-      userId: params.userId,
+      userId: targetUserId,
       type: params.type,
       title: params.title,
       message: params.message,
@@ -32,6 +36,7 @@ export async function sendSystemNotification(params: {
       relatedMarket: params.relatedMarket,
       relatedLotId: params.relatedLotId,
       relatedOfferId: params.relatedOfferId,
+      counterPrice: params.counterPrice,
       isRead: false,
     });
   } catch (err) {
@@ -80,7 +85,15 @@ export const createNotification = async (req: Request, res: Response, next: Next
 export const getUserNotifications = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
+    let userEmail = (req as any).user.email;
+    let userName = (req as any).user.name;
+    if ((!userEmail || !userName) && mongoose.isValidObjectId(rawUserId)) {
+      const user = await User.findById(rawUserId);
+      if (user) {
+        if (!userEmail && user.email) userEmail = user.email;
+        if (!userName && user.name) userName = user.name;
+      }
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
@@ -92,6 +105,9 @@ export const getUserNotifications = async (req: Request, res: Response, next: Ne
     ];
     if (userEmail) {
       queryConditions.push({ userId: userEmail });
+    }
+    if (userName) {
+      queryConditions.push({ userId: userName });
     }
 
     const notifications = await Notification.find({

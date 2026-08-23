@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Lot } from './lot.model';
+import { QualityAssessment } from '../quality/quality.model';
 import { BuyerDemand } from '../buyers/buyerDemand.model';
 import { sendSystemNotification } from '../notifications/notification.controller';
 import { computeBuyerMatchesForLot } from './matching.service';
@@ -91,8 +92,12 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
       cropName,
       variety,
       grade,
+      provisionalGrade,
       quantityQtl,
       qualityScore,
+      evidenceConfidence,
+      qualityAssessmentId,
+      qualityPassport,
       origin,
       district,
       targetMarket,
@@ -129,9 +134,13 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
           cropBatchId: (cropBatchId && mongoose.isValidObjectId(cropBatchId)) ? new mongoose.Types.ObjectId(cropBatchId) : (cropBatchId || undefined),
           cropName,
           variety: variety || 'Standard',
-          grade: grade || 'Grade A',
+          grade: provisionalGrade || grade || 'Grade A',
+          provisionalGrade: provisionalGrade || grade || 'Grade A',
           quantityQtl: numQuantity,
           qualityScore: Number(qualityScore) || 85,
+          evidenceConfidence: Number(evidenceConfidence) || 80,
+          qualityAssessmentId: qualityAssessmentId || undefined,
+          qualityPassport: qualityPassport || undefined,
           origin: origin || 'Farm Gate',
           district: district || 'Nashik',
           targetMarket,
@@ -169,6 +178,36 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
           message: 'Unable to create a unique trade lot ID. Please try again.',
         },
       });
+    }
+
+    // Link quality assessment to lot if assessment was completed
+    if (qualityAssessmentId) {
+      try {
+        const assessment = await QualityAssessment.findOneAndUpdate(
+          {
+            $or: [
+              { _id: mongoose.isValidObjectId(qualityAssessmentId) ? qualityAssessmentId : null },
+              { assessmentId: qualityAssessmentId },
+            ],
+          },
+          {
+            $set: {
+              lotId: createdLot._id,
+            },
+          },
+          { new: true }
+        );
+
+        if (assessment) {
+          createdLot.qualityScore = assessment.qualityScore;
+          createdLot.provisionalGrade = assessment.provisionalGrade;
+          createdLot.evidenceConfidence = assessment.evidenceConfidence;
+          createdLot.qualityPassport = assessment.passportSummary;
+          await createdLot.save();
+        }
+      } catch (qErr) {
+        console.warn('[Quality Link Warning] Failed to update assessment with lotId:', qErr);
+      }
     }
 
     // Proactively notify buyers with matching active demands

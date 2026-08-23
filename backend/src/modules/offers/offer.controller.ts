@@ -6,6 +6,7 @@ import { BuyerDemand } from '../buyers/buyerDemand.model';
 import { Transaction } from '../transactions/transaction.model';
 import { DeliveryOrder } from '../delivery/delivery.model';
 import { PaymentLedger } from '../payments/payment.model';
+import { User } from '../users/user.model';
 import { sendSystemNotification } from '../notifications/notification.controller';
 import mongoose from 'mongoose';
 
@@ -137,8 +138,15 @@ export async function ensureDemoOffersForLot(lot: any) {
 export const getUserOffers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
-    const userName = (req as any).user.name;
+    let userEmail = (req as any).user.email;
+    let userName = (req as any).user.name;
+    if ((!userEmail || !userName) && mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u) {
+        if (!userEmail && u.email) userEmail = u.email;
+        if (!userName && u.name) userName = u.name;
+      }
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
@@ -151,7 +159,10 @@ export const getUserOffers = async (req: Request, res: Response, next: NextFunct
       { buyerId: userIdObj },
       { buyerId: String(rawUserId) },
     ];
-    if (userEmail) orConditions.push({ buyerId: userEmail });
+    if (userEmail) {
+      orConditions.push({ buyerId: userEmail });
+      orConditions.push({ sellerUserId: userEmail });
+    }
     if (userName) orConditions.push({ buyerId: userName });
 
     const offers = await Offer.find({
@@ -171,9 +182,16 @@ export const getUserOffers = async (req: Request, res: Response, next: NextFunct
 export const createOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const buyerEmail = (req as any).user.email;
-    const buyerName = (req as any).user.name;
-    const buyerId = buyerEmail || buyerName || String(rawUserId);
+    let buyerEmail = (req as any).user.email;
+    let buyerName = (req as any).user.name;
+    if ((!buyerEmail || !buyerName) && mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u) {
+        if (!buyerEmail && u.email) buyerEmail = u.email;
+        if (!buyerName && u.name) buyerName = u.name;
+      }
+    }
+    const buyerId = String(rawUserId);
 
     const { lotId, pricePerQtl, quantityQtl, paymentTerms, deliveryTerms, message } = req.body;
 
@@ -294,8 +312,19 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
     const buyers = await Buyer.find({ buyerId: { $in: buyerIds } });
     const buyersMap = new Map(buyers.map(b => [b.buyerId, b]));
 
+    const validUserIds = buyerIds.filter(id => mongoose.isValidObjectId(id));
+    const userBuyers = await User.find({
+      $or: [
+        { _id: { $in: validUserIds } },
+        { email: { $in: buyerIds } }
+      ]
+    });
+    const userBuyersMap = new Map(userBuyers.map(u => [String(u._id), u]));
+    const userEmailMap = new Map(userBuyers.map(u => [u.email, u]));
+
     const enrichedOffers = offers.map(o => {
       const buyer = buyersMap.get(o.buyerId);
+      const userBuyer = userBuyersMap.get(o.buyerId) || userEmailMap.get(o.buyerId);
       return {
         ...o.toObject(),
         buyer: buyer ? {
@@ -305,8 +334,15 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
           location: buyer.location,
           isDemo: buyer.isDemo,
           verificationStatus: buyer.verificationStatus,
+        } : userBuyer ? {
+          businessName: userBuyer.name || `Buyer (${userBuyer.email.split('@')[0]})`,
+          buyerType: 'Commercial Buyer',
+          district: userBuyer.district || 'Maharashtra',
+          location: userBuyer.village || 'Hub',
+          isDemo: false,
+          verificationStatus: 'VERIFIED',
         } : {
-          businessName: o.buyerId.includes('@') ? `Buyer (${o.buyerId.split('@')[0]})` : o.buyerId,
+          businessName: o.buyerId.includes('@') ? `Buyer (${o.buyerId.split('@')[0]})` : `Buyer ${o.buyerId.slice(-4)}`,
           buyerType: 'Commercial Buyer',
           district: 'Maharashtra',
           location: 'Hub',
@@ -329,7 +365,15 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
 export const acceptOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
+    let userEmail = (req as any).user.email;
+    let userRole = (req as any).user.role;
+    if (mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u) {
+        if (!userEmail && u.email) userEmail = u.email;
+        if (!userRole && u.role) userRole = u.role;
+      }
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
@@ -344,7 +388,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
           { sellerUserId: String(rawUserId) },
           { buyerId: rawUserId },
           { buyerId: String(rawUserId) },
-          { buyerId: userEmail },
+          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
         ]
       }],
     });
@@ -368,6 +412,26 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
         success: false,
         error: { code: 'INVALID_OFFER_STATE', message: `Cannot accept offer with status ${offer.offerStatus}.` },
       });
+    }
+
+    const isSeller = String(offer.sellerUserId) === String(rawUserId) ||
+                     (userEmail && String(offer.sellerUserId) === userEmail) ||
+                     (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
+
+    // State machine validation:
+    if (offer.offerStatus === 'COUNTERED') {
+      if (offer.counterBy === 'FARMER' && isSeller) {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'CANNOT_ACCEPT_OWN_COUNTER', message: 'You have submitted a counter offer and must wait for the buyer response.' },
+        });
+      }
+      if (offer.counterBy === 'BUYER' && !isSeller) {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'CANNOT_ACCEPT_OWN_COUNTER', message: 'You have submitted a counter offer and must wait for the farmer response.' },
+        });
+      }
     }
 
     const lot = await Lot.findById(offer.lotId);
@@ -487,25 +551,53 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
     });
 
     // 7. Dispatch Notifications to both Seller (Farmer) and Buyer
-    await sendSystemNotification({
-      userId: offer.sellerUserId,
-      type: 'OFFER_ACCEPTED',
-      title: 'Deal Confirmed! Offer Accepted',
-      message: `Your deal for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) is confirmed. Delivery tracking DLV-2026-${dlvHex} initiated.`,
-      relatedCrop: offer.commodity,
-      relatedLotId: offer.lotId,
-      relatedOfferId: offer._id,
-    });
+    if (!isSeller) {
+      // Buyer accepted Farmer's counter offer
+      await sendSystemNotification({
+        userId: offer.sellerUserId,
+        type: 'OFFER_ACCEPTED',
+        title: 'Deal Confirmed! Buyer Accepted Counter Offer',
+        message: `Buyer accepted your counter offer at ₹${finalPrice}/Qtl.`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+        counterPrice: finalPrice,
+      });
 
-    await sendSystemNotification({
-      userId: offer.buyerId,
-      type: 'OFFER_ACCEPTED',
-      title: 'Purchase Confirmed! Delivery Initiated',
-      message: `Purchase for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) confirmed. Escrow secured.`,
-      relatedCrop: offer.commodity,
-      relatedLotId: offer.lotId,
-      relatedOfferId: offer._id,
-    });
+      await sendSystemNotification({
+        userId: offer.buyerId,
+        type: 'OFFER_ACCEPTED',
+        title: 'Purchase Confirmed! Delivery Initiated',
+        message: `Purchase for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) confirmed. Escrow secured.`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+        counterPrice: finalPrice,
+      });
+    } else {
+      // Farmer accepted Buyer's offer
+      await sendSystemNotification({
+        userId: offer.sellerUserId,
+        type: 'OFFER_ACCEPTED',
+        title: 'Deal Confirmed! Offer Accepted',
+        message: `Your deal for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) is confirmed. Delivery tracking ${deliveryId} initiated.`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+        counterPrice: finalPrice,
+      });
+
+      await sendSystemNotification({
+        userId: offer.buyerId,
+        type: 'OFFER_ACCEPTED',
+        title: 'Purchase Confirmed! Farmer Accepted Offer',
+        message: `Farmer accepted your offer for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl).`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+        counterPrice: finalPrice,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -525,7 +617,15 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
 export const rejectOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
+    let userEmail = (req as any).user.email;
+    let userRole = (req as any).user.role;
+    if (mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u) {
+        if (!userEmail && u.email) userEmail = u.email;
+        if (!userRole && u.role) userRole = u.role;
+      }
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
@@ -540,7 +640,7 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
           { sellerUserId: String(rawUserId) },
           { buyerId: rawUserId },
           { buyerId: String(rawUserId) },
-          { buyerId: userEmail },
+          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
         ]
       }],
     });
@@ -562,17 +662,33 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
     offer.offerStatus = 'REJECTED';
     await offer.save();
 
-    // Send rejection notification
-    const isSeller = String(offer.sellerUserId) === String(rawUserId) || String(offer.sellerUserId) === String(userIdObj);
-    await sendSystemNotification({
-      userId: isSeller ? offer.buyerId : offer.sellerUserId,
-      type: 'OFFER_REJECTED',
-      title: 'Offer Declined',
-      message: `The offer for ${offer.commodity} was rejected.`,
-      relatedCrop: offer.commodity,
-      relatedLotId: offer.lotId,
-      relatedOfferId: offer._id,
-    });
+    const isSeller = String(offer.sellerUserId) === String(rawUserId) ||
+                     (userEmail && String(offer.sellerUserId) === userEmail) ||
+                     (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
+
+    if (!isSeller) {
+      // Buyer rejected
+      await sendSystemNotification({
+        userId: offer.sellerUserId,
+        type: 'OFFER_REJECTED',
+        title: 'Offer Declined',
+        message: `Buyer rejected your counter offer.`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+      });
+    } else {
+      // Farmer rejected
+      await sendSystemNotification({
+        userId: offer.buyerId,
+        type: 'OFFER_REJECTED',
+        title: 'Offer Declined',
+        message: `Farmer declined your offer for ${offer.commodity}.`,
+        relatedCrop: offer.commodity,
+        relatedLotId: offer.lotId,
+        relatedOfferId: offer._id,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -586,12 +702,27 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
 export const counterOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
+    let userEmail = (req as any).user.email;
+    let userRole = (req as any).user.role;
+    if (mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u) {
+        if (!userEmail && u.email) userEmail = u.email;
+        if (!userRole && u.role) userRole = u.role;
+      }
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
     const { id } = req.params;
     const { counterPricePerQtl, counterQuantityQtl, message } = req.body;
+
+    if (!counterPricePerQtl || isNaN(Number(counterPricePerQtl))) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_COUNTER_PRICE', message: 'Valid counter price per Qtl is required.' }
+      });
+    }
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
@@ -602,7 +733,7 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
           { sellerUserId: String(rawUserId) },
           { buyerId: rawUserId },
           { buyerId: String(rawUserId) },
-          { buyerId: userEmail },
+          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
         ]
       }],
     });
@@ -617,40 +748,69 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
     if (offer.offerStatus !== 'PENDING' && offer.offerStatus !== 'COUNTERED') {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_OFFER_STATE', message: 'Can only counter active pending or countered offers.' },
+        error: { code: 'INVALID_OFFER_STATE', message: `Cannot counter offer with status ${offer.offerStatus}.` },
       });
     }
 
-    offer.offerStatus = 'COUNTERED';
-    if (counterPricePerQtl) offer.counterPricePerQtl = Number(counterPricePerQtl);
-    if (counterQuantityQtl) offer.counterQuantityQtl = Number(counterQuantityQtl);
-    if (message) offer.counterMessage = message;
-    await offer.save();
+    const isSeller = String(offer.sellerUserId) === String(rawUserId) ||
+                     (userEmail && String(offer.sellerUserId) === userEmail) ||
+                     (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
 
-    // Determine who countered:
-    const isSeller = String(offer.sellerUserId) === String(rawUserId) || String(offer.sellerUserId) === String(userIdObj);
+    const counterPriceNum = Number(counterPricePerQtl);
 
     if (isSeller) {
-      // Farmer countered -> Notify buyer
+      // Farmer is countering:
+      if (offer.offerStatus === 'COUNTERED' && offer.counterBy === 'FARMER') {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'AWAITING_BUYER', message: 'You have already submitted a counter offer. Please wait for the buyer response.' }
+        });
+      }
+
+      offer.offerStatus = 'COUNTERED';
+      offer.counterBy = 'FARMER';
+      offer.counterPricePerQtl = counterPriceNum;
+      if (counterQuantityQtl) offer.counterQuantityQtl = Number(counterQuantityQtl);
+      if (message) offer.counterMessage = message;
+      await offer.save();
+
+      // Notify Buyer
       await sendSystemNotification({
         userId: offer.buyerId,
         type: 'COUNTER_OFFER',
         title: 'Farmer Counter Offer Received',
-        message: `Farmer countered your offer for ${offer.commodity} at ₹${counterPricePerQtl}/Qtl.`,
+        message: `Farmer has countered your offer for ${offer.commodity} at ₹${counterPriceNum}/Qtl.`,
         relatedCrop: offer.commodity,
         relatedLotId: offer.lotId,
         relatedOfferId: offer._id,
+        counterPrice: counterPriceNum,
       });
     } else {
-      // Buyer countered -> Notify farmer
+      // Buyer is countering ("Counter Again"):
+      if (offer.offerStatus === 'COUNTERED' && offer.counterBy === 'BUYER') {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'AWAITING_FARMER', message: 'You have already submitted a counter offer. Please wait for the farmer response.' }
+        });
+      }
+
+      offer.offerStatus = 'COUNTERED';
+      offer.counterBy = 'BUYER';
+      offer.counterPricePerQtl = counterPriceNum;
+      if (counterQuantityQtl) offer.counterQuantityQtl = Number(counterQuantityQtl);
+      if (message) offer.counterMessage = message;
+      await offer.save();
+
+      // Notify Farmer
       await sendSystemNotification({
         userId: offer.sellerUserId,
         type: 'COUNTER_OFFER',
         title: 'Buyer Counter Offer Received',
-        message: `Buyer revised counter price for ${offer.commodity} to ₹${counterPricePerQtl}/Qtl.`,
+        message: `Buyer has countered your offer at ₹${counterPriceNum}/Qtl.`,
         relatedCrop: offer.commodity,
         relatedLotId: offer.lotId,
         relatedOfferId: offer._id,
+        counterPrice: counterPriceNum,
       });
     }
 

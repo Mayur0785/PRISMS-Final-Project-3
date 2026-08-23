@@ -30,8 +30,14 @@ export const getUserDeliveries = async (req: Request, res: Response, next: NextF
       { buyerId: userIdObj },
       { buyerId: String(rawUserId) },
     ];
-    if (userEmail) orConditions.push({ buyerId: userEmail });
-    if (userName) orConditions.push({ buyerId: userName });
+    if (userEmail) {
+      orConditions.push({ buyerId: userEmail });
+      orConditions.push({ farmerId: userEmail });
+    }
+    if (userName) {
+      orConditions.push({ buyerId: userName });
+      orConditions.push({ farmerId: userName });
+    }
 
     const deliveries = await DeliveryOrder.find({
       $or: orConditions

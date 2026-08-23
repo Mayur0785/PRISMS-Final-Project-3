@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { BorderBeam } from "./BorderBeam";
 import { SpotlightCard } from "./SpotlightCard";
+import { QualityPassportModal } from "./QualityPassportModal";
 
 interface BuyerDashboardProps {
   currentUser: AuthUser;
@@ -90,6 +91,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const [lotSearchQuery, setLotSearchQuery] = useState("");
   const [lotFilterCrop, setLotFilterCrop] = useState("ALL");
   const [selectedLotForBid, setSelectedLotForBid] = useState<TradeLot | null>(null);
+  const [selectedLotForPassport, setSelectedLotForPassport] = useState<TradeLot | null>(null);
   const [bidPrice, setBidPrice] = useState("");
   const [bidTerms, setBidTerms] = useState("Payment within 24h via Bank Escrow");
   const [bidDeliveryType, setBidDeliveryType] = useState("Buyer Pickup (Self Logistics)");
@@ -570,20 +572,69 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                 </div>
 
                 <div className="space-y-3">
-                  {notifications.slice(0, 4).map((n) => (
-                    <div
-                      key={n._id || n.notificationId}
-                      className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-900">{n.title}</span>
-                        {!n.isRead && (
-                          <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  {notifications.slice(0, 5).map((n) => {
+                    const isUnread = n.isRead === false || n.read === false;
+                    const isCounter = n.type === "COUNTER_OFFER";
+
+                    return (
+                      <div
+                        key={n._id || n.notificationId}
+                        onClick={async () => {
+                          if (isUnread && n._id) {
+                            await markNotificationReadApi(n._id);
+                            loadNotificationsData();
+                          }
+                          if (isCounter) {
+                            setActiveTab("offers");
+                          }
+                        }}
+                        className={`p-3.5 rounded-xl border transition-all space-y-1.5 text-xs cursor-pointer ${
+                          isCounter && isUnread
+                            ? "bg-amber-50/90 border-amber-300 shadow-sm ring-1 ring-amber-200"
+                            : isUnread
+                            ? "bg-blue-50/80 border-blue-200 shadow-xs"
+                            : "bg-slate-50 border-slate-100 text-slate-600"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-extrabold text-xs text-slate-900 truncate">
+                              {isCounter ? "🔔 Farmer Counter Offer Received" : n.title}
+                            </span>
+                            {isUnread && (
+                              <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase shrink-0 ${
+                                isCounter ? "bg-amber-500 text-slate-950" : "bg-blue-600 text-white"
+                              }`}>
+                                NEW
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 shrink-0">
+                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-slate-600 text-[11px] leading-relaxed">{n.message}</p>
+                        {isCounter && (
+                          <div className="flex items-center justify-between pt-1 text-[11px]">
+                            {n.counterPrice && (
+                              <span className="font-black text-amber-950 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300">
+                                Counter: ₹{n.counterPrice}/Qtl
+                              </span>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTab("offers");
+                              }}
+                              className="text-xs font-black text-blue-700 hover:text-blue-800 flex items-center gap-1 ml-auto"
+                            >
+                              View Offer →
+                            </button>
+                          </div>
                         )}
                       </div>
-                      <p className="text-slate-600 text-[11px] leading-relaxed">{n.message}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {notifications.length === 0 && (
                     <p className="text-xs text-slate-400 text-center py-4">No notifications yet.</p>
                   )}
@@ -632,13 +683,13 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
               {filteredLots.map((lot) => (
                 <div
                   key={lot.lotId || lot._id}
-                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3.5 text-xs flex flex-col justify-between"
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3 text-xs flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] font-bold text-slate-400">{lot.lotId}</span>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
-                        {lot.grade || "Grade A"}
+                        {lot.provisionalGrade || lot.grade || "Grade A"}
                       </span>
                     </div>
 
@@ -647,6 +698,29 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       <MapPin className="w-3 h-3 text-slate-400" />
                       {lot.origin || "Farm Gate"}, {lot.district || "Nashik"}
                     </p>
+                  </div>
+
+                  {/* Quality Passport Summary Pill */}
+                  <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        Quality Passport
+                      </span>
+                      <span className="text-[10px] font-black text-emerald-800 bg-emerald-200/70 px-2 py-0.5 rounded">
+                        Score: {lot.qualityScore || 85}/100
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-600">
+                      <span>Confidence: {lot.evidenceConfidence || 80}%</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLotForPassport(lot)}
+                        className="font-bold text-blue-700 hover:text-blue-900 underline cursor-pointer"
+                      >
+                        View Quality Passport →
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -665,7 +739,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       setSelectedLotForBid(lot);
                       setBidPrice(String(lot.expectedPricePerQtl || 3000));
                     }}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer"
                   >
                     <DollarSign className="w-3.5 h-3.5" />
                     Submit Binding Offer
@@ -772,13 +846,17 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                           b.offerStatus === "ACCEPTED"
                             ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                             : b.offerStatus === "COUNTERED"
-                            ? "bg-amber-100 text-amber-800 border border-amber-200 animate-pulse"
+                            ? b.counterBy === "BUYER"
+                              ? "bg-blue-100 text-blue-900 border border-blue-200"
+                              : "bg-amber-100 text-amber-800 border border-amber-200 animate-pulse"
                             : b.offerStatus === "REJECTED"
                             ? "bg-red-100 text-red-800 border border-red-200"
                             : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {b.offerStatus}
+                        {b.offerStatus === "COUNTERED" && b.counterBy === "BUYER"
+                          ? "AWAITING FARMER RESPONSE"
+                          : b.offerStatus}
                       </span>
                     </div>
 
@@ -792,8 +870,14 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         <span className="font-black text-blue-700">₹{b.pricePerQtl}/Qtl</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 font-bold block">GROSS VALUE</span>
-                        <span className="font-bold text-slate-700">₹{b.grossValue?.toLocaleString("en-IN")}</span>
+                        <span className="text-[10px] text-slate-500 font-bold block">
+                          {b.counterPricePerQtl ? "COUNTER PRICE" : "GROSS VALUE"}
+                        </span>
+                        <span className="font-bold text-slate-700">
+                          {b.counterPricePerQtl
+                            ? `₹${b.counterPricePerQtl}/Qtl`
+                            : `₹${b.grossValue?.toLocaleString("en-IN")}`}
+                        </span>
                       </div>
                       <div>
                         <span className="text-[10px] text-slate-500 font-bold block">PAYMENT TERMS</span>
@@ -801,18 +885,22 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       </div>
                     </div>
 
-                    {/* Counter Offer Actions */}
-                    {b.offerStatus === "COUNTERED" && b.counterPricePerQtl && (
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-amber-900">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-extrabold text-sm">
-                          <span>Farmer Countered at: ₹{b.counterPricePerQtl}/Qtl</span>
+                    {/* Counter Offer Actions: Farmer Countered -> Buyer responds */}
+                    {b.offerStatus === "COUNTERED" && b.counterPricePerQtl && (b.counterBy === "FARMER" || !b.counterBy) && (
+                      <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-amber-900">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-extrabold text-sm">
+                          <div>
+                            <span className="block text-xs font-bold text-amber-800 uppercase tracking-wide">Farmer Counter Offer:</span>
+                            <span className="text-base font-black text-amber-950">₹{b.counterPricePerQtl}/Qtl</span>
+                            <span className="text-xs font-medium text-amber-800 ml-2">(Original: ₹{b.pricePerQtl}/Qtl)</span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleAcceptCounterOffer(b._id || b.offerId)}
                               disabled={actionInProgressId === b._id}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm text-xs flex items-center gap-1"
+                              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <CheckCircle2 className="w-4 h-4" />
                               Accept Counter (₹{b.counterPricePerQtl})
                             </button>
                             <button
@@ -820,21 +908,64 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                                 setCounterModalOffer(b);
                                 setBuyerCounterPrice(String(b.counterPricePerQtl));
                               }}
-                              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-sm text-xs flex items-center gap-1"
+                              className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-sm text-xs flex items-center gap-1.5 cursor-pointer"
                             >
-                              <MessageSquare className="w-3.5 h-3.5" />
+                              <MessageSquare className="w-4 h-4" />
                               Counter Again
                             </button>
                             <button
                               onClick={() => handleRejectOffer(b._id || b.offerId)}
                               disabled={actionInProgressId === b._id}
-                              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg text-xs"
+                              className="px-3 py-2 bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-50"
                             >
                               Reject
                             </button>
                           </div>
                         </div>
-                        {b.counterMessage && <p className="text-xs text-amber-800">Note: {b.counterMessage}</p>}
+                        {b.counterMessage && (
+                          <p className="text-xs text-amber-800 font-medium italic border-t border-amber-200/60 pt-1.5">
+                            Farmer Note: "{b.counterMessage}"
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Counter Offer Waiting State: Buyer Countered -> Waiting for Farmer */}
+                    {b.offerStatus === "COUNTERED" && b.counterPricePerQtl && b.counterBy === "BUYER" && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5 text-blue-900">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span>Your Revised Counter: ₹{b.counterPricePerQtl}/Qtl</span>
+                          <span className="px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-black uppercase">
+                            Awaiting Farmer Action
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-blue-700 font-medium">
+                          You have countered this trade. Waiting for the farmer to accept or counter.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Accepted Deal Confirmed Box */}
+                    {b.offerStatus === "ACCEPTED" && (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>Deal Confirmed at ₹{b.pricePerQtl}/Qtl • Escrow & Delivery Order Active</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => setActiveTab("purchases")}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 shadow-xs cursor-pointer"
+                          >
+                            Track Delivery →
+                          </button>
+                          <button
+                            onClick={() => setActiveTab("payments")}
+                            className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 shadow-xs cursor-pointer"
+                          >
+                            View Payment
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -954,50 +1085,110 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           <div className="space-y-6">
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-lg text-slate-900">Real-Time Notification Feed</h3>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900">Real-Time Notification Feed</h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Live alerts for farmer counter-offers, trade acceptance, and delivery updates.
+                  </p>
+                </div>
                 <button
                   onClick={loadNotificationsData}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
+                  <RefreshCw className="w-3.5 h-3.5" />
                   Refresh Feed
                 </button>
               </div>
 
-              <div className="space-y-2.5">
-                {notifications.map((n) => (
-                  <div
-                    key={n._id || n.notificationId}
-                    onClick={async () => {
-                      if (!n.isRead && n._id) {
-                        await markNotificationReadApi(n._id);
-                        loadNotificationsData();
-                      }
-                    }}
-                    className={`p-4 rounded-2xl border transition-all text-xs space-y-1.5 cursor-pointer ${
-                      n.isRead
-                        ? "bg-white border-slate-200 text-slate-600"
-                        : "bg-blue-50/50 border-blue-200 text-slate-900 shadow-sm"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-slate-900">{n.title}</span>
-                        {!n.isRead && (
-                          <span className="px-2 py-0.2 rounded-full text-[9px] font-black bg-blue-600 text-white">
-                            NEW
+              <div className="space-y-3">
+                {notifications.map((n) => {
+                  const isUnread = n.isRead === false || n.read === false;
+                  const isCounter = n.type === "COUNTER_OFFER";
+
+                  return (
+                    <div
+                      key={n._id || n.notificationId}
+                      onClick={async () => {
+                        if (isUnread && n._id) {
+                          await markNotificationReadApi(n._id);
+                          loadNotificationsData();
+                        }
+                      }}
+                      className={`p-4 rounded-2xl border transition-all text-xs space-y-2.5 cursor-pointer ${
+                        isCounter && isUnread
+                          ? "bg-amber-50/90 border-amber-300 shadow-md ring-2 ring-amber-400/30"
+                          : isCounter
+                          ? "bg-amber-50/40 border-amber-200 text-slate-800"
+                          : isUnread
+                          ? "bg-blue-50/70 border-blue-200 text-slate-900 shadow-sm"
+                          : "bg-white border-slate-200 text-slate-600"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                            {isCounter ? "🔔 Farmer Counter Offer Received" : n.title}
                           </span>
-                        )}
+                          {isUnread && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              isCounter ? "bg-amber-500 text-slate-950" : "bg-blue-600 text-white"
+                            }`}>
+                              NEW
+                            </span>
+                          )}
+                          {isCounter && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                              COUNTER OFFER
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {new Date(n.createdAt).toLocaleString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
-                      <span className="text-[10px] text-slate-400">
-                        {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+
+                      <p className="text-slate-700 text-xs leading-relaxed font-medium">{n.message}</p>
+
+                      {isCounter && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-amber-200/70">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-amber-900 font-semibold">Farmer Counter Price:</span>
+                            <span className="font-black text-sm text-amber-950 bg-amber-200/80 px-2.5 py-0.5 rounded-lg border border-amber-300">
+                              ₹{n.counterPrice || '3200'}/Qtl
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (isUnread && n._id) {
+                                await markNotificationReadApi(n._id);
+                                loadNotificationsData();
+                              }
+                              setActiveTab("offers");
+                            }}
+                            className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all"
+                          >
+                            <span>View Offer & Respond</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-slate-600 text-xs leading-relaxed">{n.message}</p>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {notifications.length === 0 && (
-                  <p className="text-center py-10 text-slate-400 font-medium">No notifications in feed.</p>
+                  <div className="text-center py-12 text-slate-400 space-y-1">
+                    <Bell className="w-8 h-8 mx-auto opacity-40 mb-1" />
+                    <p className="font-bold text-sm">No notifications in feed.</p>
+                    <p className="text-xs">Real-time alerts will appear here when farmers counter or accept offers.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -1228,6 +1419,40 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Quality Passport Viewer Modal for Buyers */}
+      {selectedLotForPassport && (
+        <QualityPassportModal
+          isOpen={!!selectedLotForPassport}
+          onClose={() => setSelectedLotForPassport(null)}
+          assessment={
+            selectedLotForPassport.qualityPassport
+              ? ({
+                  assessmentId: selectedLotForPassport.qualityAssessmentId || selectedLotForPassport.lotId,
+                  cropName: selectedLotForPassport.cropName,
+                  variety: selectedLotForPassport.variety,
+                  qualityScore: selectedLotForPassport.qualityScore || 85,
+                  provisionalGrade: selectedLotForPassport.provisionalGrade || selectedLotForPassport.grade || "Grade A",
+                  evidenceConfidence: selectedLotForPassport.evidenceConfidence || 80,
+                  criticalFlags: [],
+                  positiveFactors: [
+                    `Standard grade declaration for ${selectedLotForPassport.cropName}`,
+                    "Harvest quality declared from verified grower",
+                  ],
+                  riskFactors: ["Provisional assessment awaiting delivery hub inspection"],
+                  passportSummary: selectedLotForPassport.qualityPassport,
+                } as any)
+              : null
+          }
+          lotId={selectedLotForPassport.lotId}
+          onMakeOffer={() => {
+            const lot = selectedLotForPassport;
+            setSelectedLotForPassport(null);
+            setSelectedLotForBid(lot);
+            setBidPrice(String(lot.expectedPricePerQtl || 3000));
+          }}
+        />
       )}
     </div>
   );

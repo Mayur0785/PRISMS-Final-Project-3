@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle, AlertTriangle, ArrowRight, TrendingUp, Sparkles, Building2, Layers, Check, Info, Truck, DollarSign, AlertCircle, RefreshCw } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, ArrowRight, TrendingUp, Sparkles, Building2, Layers, Check, Info, Truck, DollarSign, AlertCircle, RefreshCw, Clock } from 'lucide-react';
 import { TradeLot, Offer, fetchOffersForLot, acceptOfferApi, createDeliveryOrderApi, rejectOfferApi, counterOfferApi, recordOfferAcceptance, getAcceptedOfferForLot, getAuthMode } from '../lib/prisms';
 
 interface OfferComparisonModalProps {
@@ -351,15 +351,35 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
       await counterOfferApi(offerId, counterPrice, counterNote);
       setCounteringOfferId(null);
       setOffers(prev =>
-        prev.map(o => (o.offerId === offerId || o._id === offerId ? { ...o, offerStatus: 'COUNTERED' } : o))
+        prev.map(o =>
+          o.offerId === offerId || o._id === offerId
+            ? {
+                ...o,
+                offerStatus: 'COUNTERED',
+                counterBy: 'FARMER',
+                counterPricePerQtl: counterPrice,
+                counterMessage: counterNote || o.counterMessage,
+              }
+            : o
+        )
       );
-      setActionMessage(lang === "mr" ? "काउंटर ऑफर सबमिट केली." : "Counter offer submitted successfully.");
+      setActionMessage(lang === "mr" ? "✓ काउंटर ऑफर यशस्वीरित्या सबमिट केली." : "✓ Counter offer submitted successfully.");
     } catch {
       setCounteringOfferId(null);
       setOffers(prev =>
-        prev.map(o => (o.offerId === offerId || o._id === offerId ? { ...o, offerStatus: 'COUNTERED' } : o))
+        prev.map(o =>
+          o.offerId === offerId || o._id === offerId
+            ? {
+                ...o,
+                offerStatus: 'COUNTERED',
+                counterBy: 'FARMER',
+                counterPricePerQtl: counterPrice,
+                counterMessage: counterNote || o.counterMessage,
+              }
+            : o
+        )
       );
-      setActionMessage(lang === "mr" ? "डेमो काउंटर ऑफर सबमिट केली." : "Demo counter offer submitted.");
+      setActionMessage(lang === "mr" ? "✓ काउंटर ऑफर सबमिट केली." : "✓ Counter offer submitted successfully.");
     }
   };
 
@@ -522,6 +542,9 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                       const isBest = idx === 0;
                       const isAccepted = off.offerStatus === 'ACCEPTED';
                       const isRejected = off.offerStatus === 'REJECTED' || (hasAcceptedOffer && !isAccepted);
+                      const isCountered = off.offerStatus === 'COUNTERED';
+                      const isAwaitingBuyer = isCountered && (off.counterBy === 'FARMER' || (!off.counterBy && Boolean(off.counterPricePerQtl)));
+                      const isCounteredByBuyer = isCountered && off.counterBy === 'BUYER';
 
                       return (
                         <div
@@ -531,6 +554,8 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                               ? 'bg-emerald-50 border-emerald-300 shadow-sm'
                               : isRejected
                               ? 'bg-slate-100 border-slate-200 opacity-60'
+                              : isAwaitingBuyer
+                              ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-200 shadow-sm'
                               : isBest
                               ? 'bg-white border-emerald-500/50 shadow-md ring-1 ring-emerald-200'
                               : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
@@ -544,9 +569,9 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                   {off.buyer?.businessName || off.buyerId}
                                 </span>
                                 <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                                  Demo Offer
+                                  {off.isDemo ? "Demo Offer" : "Verified Buyer"}
                                 </span>
-                                {isBest && !isAccepted && !isRejected && (
+                                {isBest && !isAccepted && !isRejected && !isCountered && (
                                   <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1">
                                     <Sparkles className="w-3 h-3 text-emerald-600" /> BEST OFFER
                                   </span>
@@ -557,6 +582,10 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                                       : isRejected
                                       ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                                      : isAwaitingBuyer
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-300 font-black'
+                                      : isCounteredByBuyer
+                                      ? 'bg-blue-100 text-blue-900 border border-blue-300 font-black'
                                       : 'bg-amber-50 text-amber-800 border border-amber-200'
                                   }`}
                                 >
@@ -564,12 +593,16 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                     ? (lang === "mr" ? "स्वीकृत" : "ACCEPTED")
                                     : isRejected
                                     ? (lang === "mr" ? "नाकारले" : "REJECTED")
+                                    : isAwaitingBuyer
+                                    ? (lang === "mr" ? "खरेदीदाराच्या प्रतिसादाची प्रतीक्षा" : "AWAITING BUYER RESPONSE")
+                                    : isCounteredByBuyer
+                                    ? (lang === "mr" ? "खरेदीदाराची काउंटर ऑफर" : "COUNTERED BY BUYER")
                                     : (lang === "mr" ? "प्रलंबित" : "PENDING")}
                                 </span>
                               </div>
 
                               <p className="text-xs text-slate-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-medium">
-                                <span>{off.buyer?.buyerType || 'Verified Buyer'}</span>
+                                <span>{off.buyer?.buyerType || 'Commercial Buyer'}</span>
                                 <span>•</span>
                                 <span>{off.buyer?.district || 'Hub'}</span>
                                 <span>•</span>
@@ -579,20 +612,88 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
 
                             <div className="text-right">
                               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                {lang === "mr" ? "ऑफर दर" : "Offered Price"}
+                                {isAwaitingBuyer
+                                  ? (lang === "mr" ? "काउंटर दर" : "Counter Price")
+                                  : (lang === "mr" ? "ऑफर दर" : "Offered Price")}
                               </span>
                               <span className="text-lg font-black text-slate-900">
-                                ₹{off.pricePerQtl.toLocaleString('en-IN')}
+                                ₹{(isAwaitingBuyer && off.counterPricePerQtl ? off.counterPricePerQtl : off.pricePerQtl).toLocaleString('en-IN')}
                                 <span className="text-xs font-normal text-slate-500"> /Qtl</span>
                               </span>
                             </div>
                           </div>
 
+                          {/* Awaiting Buyer Response State Box */}
+                          {isAwaitingBuyer && !isAccepted && !isRejected && (
+                            <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 space-y-2">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+                                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  <span>{lang === "mr" ? "✓ काउंटर ऑफर यशस्वीरित्या सबमिट केली." : "✓ Counter offer submitted successfully."}</span>
+                                </div>
+                                <span className="text-[10px] px-2 py-0.5 rounded font-black bg-amber-200/80 text-amber-950 uppercase border border-amber-300">
+                                  {lang === "mr" ? "स्थिती: खरेदीदाराच्या प्रतिसादाची प्रतीक्षा" : "Status: AWAITING BUYER RESPONSE"}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-white p-2.5 rounded-lg border border-amber-200">
+                                <div>
+                                  <span className="text-[10px] text-slate-500 font-bold block">{lang === "mr" ? "मूळ खरेदीदार ऑफर" : "Original Buyer Offer"}</span>
+                                  <span className="font-bold text-slate-700">₹{off.pricePerQtl.toLocaleString('en-IN')}/Qtl</span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-amber-800 font-bold block">{lang === "mr" ? "आपली काउंटर किंमत" : "Your Counter Price"}</span>
+                                  <span className="font-black text-amber-900 text-sm">₹{off.counterPricePerQtl?.toLocaleString('en-IN')}/Qtl</span>
+                                </div>
+                                <div className="col-span-2 sm:col-span-1">
+                                  <span className="text-[10px] text-slate-500 font-bold block">{lang === "mr" ? "पुढील पायरी" : "Next Action"}</span>
+                                  <span className="font-semibold text-slate-600">{lang === "mr" ? "खरेदीदाराच्या निर्णयाची प्रतीक्षा करत आहे" : "Awaiting Buyer Response"}</span>
+                                </div>
+                              </div>
+                              {off.counterMessage && (
+                                <p className="text-[11px] text-amber-900 font-medium italic">
+                                  Note: "{off.counterMessage}"
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Buyer Countered State Box */}
+                          {isCounteredByBuyer && !isAccepted && !isRejected && (
+                            <div className="p-3.5 bg-blue-50 rounded-xl border border-blue-300 space-y-2">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900">
+                                  <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                                  <span>{lang === "mr" ? "खरेदीदाराने नवीन काउंटर दर दिला आहे." : "Buyer has submitted a revised counter offer."}</span>
+                                </div>
+                                <span className="text-[10px] px-2 py-0.5 rounded font-black bg-blue-100 text-blue-900 uppercase border border-blue-300">
+                                  {lang === "mr" ? "खरेदीदार काउंटर" : "BUYER COUNTERED"}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs bg-white p-2.5 rounded-lg border border-blue-200">
+                                <div>
+                                  <span className="text-[10px] text-slate-500 font-bold block">{lang === "mr" ? "मूळ ऑफर" : "Original Offer"}</span>
+                                  <span className="font-bold text-slate-700">₹{off.pricePerQtl.toLocaleString('en-IN')}/Qtl</span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-blue-800 font-bold block">{lang === "mr" ? "खरेदीदाराचा काउंटर दर" : "Buyer Counter Price"}</span>
+                                  <span className="font-black text-blue-900 text-sm">₹{off.counterPricePerQtl?.toLocaleString('en-IN')}/Qtl</span>
+                                </div>
+                              </div>
+                              {off.counterMessage && (
+                                <p className="text-[11px] text-blue-900 font-medium italic">
+                                  Note: "{off.counterMessage}"
+                                </p>
+                              )}
+                            </div>
+                          )}
+
                           {/* Net Waterfall Breakdown */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
                             <div>
                               <span className="text-[10px] text-slate-500 font-semibold block">{lang === "mr" ? "एकूण मूल्य" : "Gross Value"}</span>
-                              <span className="font-bold text-slate-800">₹{off.grossValue.toLocaleString('en-IN')}</span>
+                              <span className="font-bold text-slate-800">
+                                ₹{(isAwaitingBuyer && off.counterPricePerQtl ? Math.round(off.counterPricePerQtl * off.quantityQtl) : off.grossValue).toLocaleString('en-IN')}
+                              </span>
                             </div>
                             <div>
                               <span className="text-[10px] text-slate-500 font-semibold block">{lang === "mr" ? "वाहतूक भाडे" : "Transit Freight"}</span>
@@ -604,7 +705,12 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                             </div>
                             <div className="bg-emerald-100/60 p-1.5 rounded-lg border border-emerald-300 text-center">
                               <span className="text-[10px] text-emerald-800 font-extrabold block uppercase tracking-wide">{lang === "mr" ? "निव्वळ हाती" : "Est. Net Take-Home"}</span>
-                              <span className="font-black text-emerald-700 text-sm">₹{off.estimatedNetRealization.toLocaleString('en-IN')}</span>
+                              <span className="font-black text-emerald-700 text-sm">
+                                ₹{(isAwaitingBuyer && off.counterPricePerQtl
+                                  ? Math.round(off.counterPricePerQtl * off.quantityQtl) - off.estimatedTransportCost - off.estimatedMarketHandlingCharges - off.estimatedSpoilage
+                                  : off.estimatedNetRealization
+                                ).toLocaleString('en-IN')}
+                              </span>
                             </div>
                           </div>
 
@@ -637,13 +743,13 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                 />
                                 <button
                                   onClick={() => handleCounterSubmit(off.offerId)}
-                                  className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-sm"
+                                  className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-sm cursor-pointer"
                                 >
                                   {lang === "mr" ? "सबमिट करा" : "Submit Counter"}
                                 </button>
                                 <button
                                   onClick={() => setCounteringOfferId(null)}
-                                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-100"
+                                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-100 cursor-pointer"
                                 >
                                   {lang === "mr" ? "रद्द करा" : "Cancel"}
                                 </button>
@@ -657,63 +763,25 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                               {lang === "mr" ? "मुदत:" : "Expires:"} {new Date(off.expiresAt).toLocaleDateString()}
                             </div>
 
-                            {!isAccepted && !isRejected ? (
-                              <div className="flex flex-wrap items-center gap-2">
-                                <button
-                                  onClick={() => setViewMode("compare")}
-                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-all flex items-center gap-1"
-                                >
-                                  <Layers className="w-3.5 h-3.5" />
-                                  {lang === "mr" ? "तुलना करा" : "Compare"}
-                                </button>
-
-                                <button
-                                  onClick={() => setCounteringOfferId(off._id)}
-                                  className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 text-xs font-bold border border-amber-300 transition-all shadow-sm"
-                                >
-                                  {lang === "mr" ? "काउंटर ऑफर" : "Counter Offer"}
-                                </button>
-
-                                <button
-                                  onClick={() => handleReject(off.offerId)}
-                                  className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-bold border border-rose-200 transition-all shadow-sm"
-                                >
-                                  {lang === "mr" ? "नाकारा" : "Reject"}
-                                </button>
-
-                                <button
-                                  onClick={() => handleAccept(off.offerId)}
-                                  disabled={Boolean(acceptingOfferId)}
-                                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-sm disabled:opacity-50"
-                                >
-                                  {lang === "mr" ? "ऑफर स्वीकारा" : "Accept Offer"}
-                                </button>
-                              </div>
-                            ) : isAccepted ? (
+                            {isAccepted ? (
                               <div className="w-full space-y-3 pt-2">
                                 {/* Deal Confirmed Card */}
                                 <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2">
                                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                                     <span className="font-bold text-emerald-800 flex items-center gap-1.5 text-sm">
                                       <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                                      {lang === "mr" ? "सौदा निश्चित (Deal Confirmed)" : "✅ Deal Confirmed"}
+                                      {lang === "mr" ? "✓ सौदा निश्चित (Deal Confirmed)" : "✓ Deal Confirmed — Buyer Accepted Counter Offer"}
                                     </span>
                                     <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold border border-emerald-300">
                                       Status: ACCEPTED
                                     </span>
                                   </div>
 
-                                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-800 font-medium bg-white p-3 rounded-lg border border-emerald-200 shadow-xs my-2">
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-800 font-medium bg-white p-3 rounded-lg border border-emerald-200 shadow-xs my-2">
                                     <div><strong>Buyer:</strong> {off.buyer?.businessName || off.buyerId}</div>
                                     <div><strong>Lot:</strong> {lot.lotId || lot._id}</div>
                                     <div><strong>Agreed Price:</strong> ₹{off.pricePerQtl.toLocaleString('en-IN')}/Qtl</div>
-                                    <div><strong>Estimated Net Take-Home:</strong> <span className="text-emerald-700 font-bold">₹{off.estimatedNetRealization.toLocaleString('en-IN')}</span></div>
-                                  </div>
-
-                                  <div className="text-[11px] text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-200 font-medium">
-                                    {lang === "mr"
-                                      ? "डेमो व्यवहार — वास्तविक पेमेंट किंवा वाहतूक प्रक्रिया सुरू होत नाही."
-                                      : "Demo Transaction — No real payment or delivery is initiated."}
+                                    <div><strong>Estimated Net:</strong> <span className="text-emerald-700 font-bold">₹{off.estimatedNetRealization.toLocaleString('en-IN')}</span></div>
                                   </div>
                                 </div>
 
@@ -724,7 +792,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       onClose();
                                       window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "delivery" }));
                                     }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                                   >
                                     <Truck className="w-3.5 h-3.5" />
                                     {lang === "mr" ? "वितरण ट्रॅक करा" : "Track Delivery"}
@@ -735,7 +803,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       onClose();
                                       window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "payments" }));
                                     }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                                   >
                                     <DollarSign className="w-3.5 h-3.5" />
                                     {lang === "mr" ? "पेमेंट पहा" : "View Payment"}
@@ -746,17 +814,95 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       onClose();
                                       window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "transactions" }));
                                     }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300 transition-all flex items-center gap-1.5"
+                                    className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer"
                                   >
                                     <ArrowRight className="w-3.5 h-3.5" />
                                     {lang === "mr" ? "व्यवहार इतिहास" : "View Transaction"}
                                   </button>
                                 </div>
                               </div>
-                            ) : (
+                            ) : isRejected ? (
                               <span className="text-xs text-rose-800 font-bold bg-rose-50 px-3 py-1 rounded-xl border border-rose-200">
-                                {lang === "mr" ? "नाकारलेली / बंद ऑफर" : "Demo Offer Closed"}
+                                {lang === "mr" ? "नाकारलेली / बंद ऑफर" : "Offer Rejected / Closed"}
                               </span>
+                            ) : isAwaitingBuyer ? (
+                              /* Farmer who just submitted counter: ONLY View Counter / Matrix & Awaiting Buyer Response! NO Accept or Reject buttons! */
+                              <div className="flex flex-wrap items-center justify-end gap-2 w-full pt-1">
+                                <button
+                                  onClick={() => setViewMode("compare")}
+                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Layers className="w-3.5 h-3.5" />
+                                  {lang === "mr" ? "काउंटर पहा" : "View Counter"}
+                                </button>
+                                <div className="px-3.5 py-1.5 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-xs">
+                                  <Clock className="w-3.5 h-3.5 text-amber-700 animate-spin" />
+                                  {lang === "mr" ? "खरेदीदाराच्या प्रतिसादाची प्रतीक्षा" : "Awaiting Buyer Response"}
+                                </div>
+                              </div>
+                            ) : isCounteredByBuyer ? (
+                              /* Buyer countered back: Farmer can Accept Counter, Reject, Counter Again */
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    setCounteringOfferId(off._id);
+                                    setCounterPrice(off.counterPricePerQtl || off.pricePerQtl);
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 text-xs font-bold border border-amber-300 transition-all shadow-sm cursor-pointer"
+                                >
+                                  {lang === "mr" ? "पुन्हा काउंटर करा" : "Counter Again"}
+                                </button>
+                                <button
+                                  onClick={() => handleReject(off.offerId)}
+                                  className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-bold border border-rose-200 transition-all shadow-sm cursor-pointer"
+                                >
+                                  {lang === "mr" ? "नाकारा" : "Reject"}
+                                </button>
+                                <button
+                                  onClick={() => handleAccept(off.offerId)}
+                                  disabled={Boolean(acceptingOfferId)}
+                                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  {lang === "mr" ? `काउंटर स्वीकारा (₹${off.counterPricePerQtl})` : `Accept Counter (₹${off.counterPricePerQtl})`}
+                                </button>
+                              </div>
+                            ) : (
+                              /* Normal PENDING offer: Farmer can Compare, Counter Offer, Reject, Accept */
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => setViewMode("compare")}
+                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Layers className="w-3.5 h-3.5" />
+                                  {lang === "mr" ? "तुलना करा" : "Compare"}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setCounteringOfferId(off._id);
+                                    setCounterPrice(off.pricePerQtl);
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 text-xs font-bold border border-amber-300 transition-all shadow-sm cursor-pointer"
+                                >
+                                  {lang === "mr" ? "काउंटर ऑफर" : "Counter Offer"}
+                                </button>
+
+                                <button
+                                  onClick={() => handleReject(off.offerId)}
+                                  className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-bold border border-rose-200 transition-all shadow-sm cursor-pointer"
+                                >
+                                  {lang === "mr" ? "नाकारा" : "Reject"}
+                                </button>
+
+                                <button
+                                  onClick={() => handleAccept(off.offerId)}
+                                  disabled={Boolean(acceptingOfferId)}
+                                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                                >
+                                  {lang === "mr" ? "ऑफर स्वीकारा" : "Accept Offer"}
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -844,30 +990,56 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                       </tr>
                       <tr>
                         <td className="p-3.5 font-semibold text-slate-600">{lang === "mr" ? "कृती" : "Action"}</td>
-                        {offers.map(off => (
-                          <td key={off.offerId} className="p-3.5 text-center border-l border-slate-200">
-                            {off.offerStatus === 'ACCEPTED' ? (
-                              <span className="text-emerald-700 font-bold text-xs">{lang === "mr" ? "स्वीकृत" : "Accepted"}</span>
-                            ) : off.offerStatus === 'REJECTED' ? (
-                              <span className="text-rose-700 font-semibold text-xs">{lang === "mr" ? "नाकारले" : "Rejected"}</span>
-                            ) : (
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => handleReject(off.offerId)}
-                                  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 text-[11px] font-bold hover:bg-rose-100 border border-rose-200"
-                                >
-                                  {lang === "mr" ? "नाकारा" : "Reject"}
-                                </button>
-                                <button
-                                  onClick={() => handleAccept(off.offerId)}
-                                  className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 shadow-sm"
-                                >
-                                  {lang === "mr" ? "स्वीकारा" : "Accept"}
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        ))}
+                        {offers.map(off => {
+                          const isAccepted = off.offerStatus === 'ACCEPTED';
+                          const isRejected = off.offerStatus === 'REJECTED';
+                          const isAwaitingBuyer = off.offerStatus === 'COUNTERED' && (off.counterBy === 'FARMER' || (!off.counterBy && Boolean(off.counterPricePerQtl)));
+                          const isCounteredByBuyer = off.offerStatus === 'COUNTERED' && off.counterBy === 'BUYER';
+
+                          return (
+                            <td key={off.offerId} className="p-3.5 text-center border-l border-slate-200">
+                              {isAccepted ? (
+                                <span className="text-emerald-700 font-bold text-xs">{lang === "mr" ? "स्वीकृत" : "Accepted"}</span>
+                              ) : isRejected ? (
+                                <span className="text-rose-700 font-semibold text-xs">{lang === "mr" ? "नाकारले" : "Rejected"}</span>
+                              ) : isAwaitingBuyer ? (
+                                <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-950 font-bold text-[11px] border border-amber-300">
+                                  {lang === "mr" ? "प्रतीक्षा करत आहे" : "Awaiting Buyer Response"}
+                                </span>
+                              ) : isCounteredByBuyer ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={() => handleReject(off.offerId)}
+                                    className="px-2 py-1 rounded-lg bg-rose-50 text-rose-800 text-[11px] font-bold hover:bg-rose-100 border border-rose-200 cursor-pointer"
+                                  >
+                                    {lang === "mr" ? "नाकारा" : "Reject"}
+                                  </button>
+                                  <button
+                                    onClick={() => handleAccept(off.offerId)}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 shadow-sm cursor-pointer"
+                                  >
+                                    {lang === "mr" ? `स्वीकारा (₹${off.counterPricePerQtl})` : `Accept (₹${off.counterPricePerQtl})`}
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={() => handleReject(off.offerId)}
+                                    className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 text-[11px] font-bold hover:bg-rose-100 border border-rose-200 cursor-pointer"
+                                  >
+                                    {lang === "mr" ? "नाकारा" : "Reject"}
+                                  </button>
+                                  <button
+                                    onClick={() => handleAccept(off.offerId)}
+                                    className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 shadow-sm cursor-pointer"
+                                  >
+                                    {lang === "mr" ? "स्वीकारा" : "Accept"}
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
                       </tr>
                     </tbody>
                   </table>
