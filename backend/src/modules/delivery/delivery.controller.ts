@@ -29,12 +29,30 @@ export const getUserDeliveries = async (req: Request, res: Response, next: NextF
 
 export const createDeliveryOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user._id || (req as any).user.id;
+    const rawUserId = (req as any).user?._id || (req as any).user?.id || (req as any).user;
+    const userId = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+
     const { offerId, vehicleType, plannedPickupDate, notes } = req.body;
 
     const offer = await Offer.findOne({
-      $or: [{ _id: mongoose.isValidObjectId(offerId) ? offerId : null }, { offerId }],
-      sellerUserId: userId,
+      $and: [
+        {
+          $or: [
+            { _id: mongoose.isValidObjectId(offerId) ? offerId : null },
+            { offerId },
+            { _id: offerId }
+          ]
+        },
+        {
+          $or: [
+            { sellerUserId: rawUserId },
+            { sellerUserId: userId },
+            { sellerUserId: String(rawUserId) }
+          ]
+        }
+      ]
     });
 
     if (!offer) {
@@ -46,18 +64,21 @@ export const createDeliveryOrder = async (req: Request, res: Response, next: Nex
 
     const existingDelivery = await DeliveryOrder.findOne({ offerId: offer._id as any });
     if (existingDelivery) {
-      return res.status(400).json({
-        success: false,
-        error: { code: 'DELIVERY_EXISTS', message: 'A delivery order already exists for this offer.' },
+      return res.status(200).json({
+        success: true,
+        data: existingDelivery,
       });
     }
 
-    const deliveryId = await generateDeliveryId();
+    const count = await DeliveryOrder.countDocuments();
+    const hex = (count + 401).toString(16).toUpperCase().padStart(4, '0');
+    const deliveryId = `DLV-2026-${hex}`;
+
     const pickupDate = plannedPickupDate ? new Date(plannedPickupDate) : new Date();
     const deliveryDate = new Date(pickupDate);
     deliveryDate.setDate(deliveryDate.getDate() + 1);
 
-    const delivery = await DeliveryOrder.create({
+    const delivery: any = await DeliveryOrder.create({
       deliveryId,
       lotId: offer.lotId as any,
       offerId: offer._id as any,
@@ -65,20 +86,76 @@ export const createDeliveryOrder = async (req: Request, res: Response, next: Nex
       buyerId: offer.buyerId,
       vehicleType: vehicleType || 'Medium Pickup (Bolero MaxiTruck)',
       quantityQtl: offer.quantityQtl,
-      origin: offer.pickupLocation,
-      destination: offer.deliveryLocation,
+      origin: offer.pickupLocation || 'Farm Gate, Nashik',
+      destination: offer.deliveryLocation || 'Mandi Terminal',
       plannedPickupDate: pickupDate,
       expectedDeliveryDate: deliveryDate,
-      deliveryStatus: 'PLANNED',
+      deliveryStatus: 'PLANNED' as any,
       notes,
       isDemo: true,
     });
 
-    // Update Transaction to IN_DELIVERY
-    const transaction: any = await Transaction.findOne({ offerId: offer._id as any });
-    if (transaction) {
+    // 1. Find or Create Transaction Record
+    let transaction: any = await Transaction.findOne({ offerId: offer._id as any });
+    if (!transaction) {
+      const countTxn = await Transaction.countDocuments();
+      const txnHex = (countTxn + 301).toString(16).toUpperCase().padStart(4, '0');
+      const transactionId = `TXN-2026-${txnHex}`;
+
+      const totalDeductions = offer.estimatedTransportCost + offer.estimatedLabourCost + offer.estimatedSpoilage + offer.estimatedMarketHandlingCharges;
+
+      transaction = await Transaction.create({
+        transactionId,
+        lotId: offer.lotId as any,
+        offerId: offer._id as any,
+        deliveryId: delivery._id as any,
+        farmerId: userId as any,
+        buyerId: offer.buyerId,
+        crop: offer.commodity || 'Red Onion',
+        variety: offer.variety || 'Garwa',
+        grade: offer.grade || 'Grade A',
+        quantityQtl: offer.quantityQtl,
+        agreedPricePerQtl: offer.pricePerQtl,
+        grossAmount: offer.grossValue,
+        totalDeductions: totalDeductions || (offer.grossValue - offer.estimatedNetRealization),
+        finalNetAmount: offer.estimatedNetRealization,
+        transactionStatus: 'OFFER_ACCEPTED',
+        isDemo: true,
+      });
+    } else {
       transaction.deliveryId = delivery._id as any;
       transaction.transactionStatus = 'IN_DELIVERY';
+      await transaction.save();
+    }
+
+    // 2. Find or Create Payment Ledger Record (Status: PENDING)
+    let payment: any = await PaymentLedger.findOne({ offerId: offer._id as any });
+    if (!payment) {
+      const countPay = await PaymentLedger.countDocuments();
+      const payHex = (countPay + 501).toString(16).toUpperCase().padStart(4, '0');
+      const paymentId = `PAY-2026-${payHex}`;
+      const refId = `DEMO-TXN-${payHex}`;
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3);
+
+      payment = await PaymentLedger.create({
+        paymentId,
+        transactionId: transaction._id as any,
+        lotId: offer.lotId as any,
+        offerId: offer._id as any,
+        farmerId: userId as any,
+        buyerId: offer.buyerId,
+        grossAmount: offer.grossValue,
+        deductions: offer.grossValue - offer.estimatedNetRealization,
+        netPayable: offer.estimatedNetRealization,
+        paymentMode: 'DEMO_BANK_TRANSFER',
+        dueDate,
+        paymentStatus: 'PENDING',
+        referenceId: refId,
+        isDemo: true,
+      });
+
+      transaction.paymentId = payment._id as any;
       await transaction.save();
     }
 
@@ -87,6 +164,7 @@ export const createDeliveryOrder = async (req: Request, res: Response, next: Nex
       data: delivery,
     });
   } catch (err) {
+    console.error('Error creating delivery order on backend:', err);
     next(err);
   }
 };

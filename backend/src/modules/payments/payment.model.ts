@@ -27,10 +27,10 @@ export interface IPaymentLedger extends Document {
 const PaymentLedgerSchema = new Schema<IPaymentLedger>(
   {
     paymentId: { type: String, required: true, unique: true, index: true },
-    transactionId: { type: Schema.Types.ObjectId, ref: 'Transaction', required: true, index: true },
-    lotId: { type: Schema.Types.ObjectId, ref: 'Lot', required: true },
-    offerId: { type: Schema.Types.ObjectId, ref: 'Offer', required: true },
-    farmerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    transactionId: { type: Schema.Types.Mixed, required: true, index: true },
+    lotId: { type: Schema.Types.Mixed, required: true },
+    offerId: { type: Schema.Types.Mixed, required: true },
+    farmerId: { type: Schema.Types.Mixed, required: true, index: true },
     buyerId: { type: String, required: true },
     grossAmount: { type: Number, required: true },
     deductions: { type: Number, required: true, default: 0 },

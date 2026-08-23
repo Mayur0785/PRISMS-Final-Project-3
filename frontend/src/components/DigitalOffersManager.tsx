@@ -85,20 +85,48 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
     return () => window.removeEventListener("prisms:reset_demo_data", handleReset);
   }, [loadData]);
 
-  const handleAcceptOffer = (offer: Offer, lot: TradeLot) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [acceptError, setAcceptError] = useState("");
+
+  const handleAcceptOffer = async (offer: Offer, lot: TradeLot) => {
     const lotKey = lot._id || lot.lotId;
-    if (acceptedOffersMap[lotKey]) return;
+    if (acceptedOffersMap[lotKey] || submitting) return;
 
-    // Record acceptance & create delivery, payment, transaction demo records
-    recordOfferAcceptance(offer, lot);
+    setSubmitting(true);
+    setAcceptError("");
 
-    // Update state
-    setAcceptedOffersMap(prev => ({
-      ...prev,
-      [lotKey]: offer.offerId || offer._id
-    }));
+    const token = localStorage.getItem("prisms_token");
+    const isProductionAuth = Boolean(token && !token.startsWith("demo_token_"));
 
-    setDealConfirmedModal({ offer, lot });
+    if (isProductionAuth) {
+      try {
+        const acceptRes = await acceptOfferApi(offer._id || offer.offerId);
+        const acceptedOfferId = acceptRes?.offer?._id || offer._id || offer.offerId;
+
+        // Create linked DeliveryOrder, PaymentLedger, and Transaction records on backend
+        await createDeliveryOrderApi(acceptedOfferId, "Medium Pickup (Bolero MaxiTruck)");
+
+        setAcceptedOffersMap(prev => ({
+          ...prev,
+          [lotKey]: acceptedOfferId
+        }));
+        setDealConfirmedModal({ offer, lot });
+      } catch (err: any) {
+        console.error("Error accepting offer via API:", err);
+        setAcceptError(err?.response?.data?.error?.message || err?.message || "Failed to accept offer. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      // Demo / Local Mode
+      recordOfferAcceptance(offer, lot);
+      setAcceptedOffersMap(prev => ({
+        ...prev,
+        [lotKey]: offer.offerId || offer._id
+      }));
+      setDealConfirmedModal({ offer, lot });
+      setSubmitting(false);
+    }
   };
 
   const handleRejectOffer = (offerId: string) => {

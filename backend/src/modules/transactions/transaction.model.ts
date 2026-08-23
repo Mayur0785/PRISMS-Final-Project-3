@@ -36,11 +36,11 @@ export interface ITransaction extends Document {
 const TransactionSchema = new Schema<ITransaction>(
   {
     transactionId: { type: String, required: true, unique: true, index: true },
-    lotId: { type: Schema.Types.ObjectId, ref: 'Lot', required: true, index: true },
-    offerId: { type: Schema.Types.ObjectId, ref: 'Offer', required: true },
-    deliveryId: { type: Schema.Types.ObjectId, ref: 'DeliveryOrder' },
-    paymentId: { type: Schema.Types.ObjectId, ref: 'PaymentLedger' },
-    farmerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    lotId: { type: Schema.Types.Mixed, required: true, index: true },
+    offerId: { type: Schema.Types.Mixed, required: true },
+    deliveryId: { type: Schema.Types.Mixed },
+    paymentId: { type: Schema.Types.Mixed },
+    farmerId: { type: Schema.Types.Mixed, required: true, index: true },
     buyerId: { type: String, required: true },
     crop: { type: String, required: true },
     variety: { type: String, default: 'Standard' },

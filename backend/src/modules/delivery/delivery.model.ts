@@ -25,9 +25,9 @@ export interface IDeliveryOrder extends Document {
 const DeliveryOrderSchema = new Schema<IDeliveryOrder>(
   {
     deliveryId: { type: String, required: true, unique: true, index: true },
-    lotId: { type: Schema.Types.ObjectId, ref: 'Lot', required: true, index: true },
-    offerId: { type: Schema.Types.ObjectId, ref: 'Offer', required: true },
-    farmerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    lotId: { type: Schema.Types.Mixed, required: true, index: true },
+    offerId: { type: Schema.Types.Mixed, required: true },
+    farmerId: { type: Schema.Types.Mixed, required: true, index: true },
     buyerId: { type: String, required: true },
     vehicleType: { type: String, default: 'Medium Pickup (Bolero MaxiTruck)' },
     quantityQtl: { type: Number, required: true },
