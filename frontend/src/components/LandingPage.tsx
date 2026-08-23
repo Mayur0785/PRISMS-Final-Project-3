@@ -193,19 +193,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ───────────────────────────────────────────────────────────────────────── */}
       <section
         id="hero"
-        className="relative bg-gradient-to-b from-[#f7f9f6] via-white to-white text-slate-900 py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80"
+        className="relative bg-gradient-to-b from-[#f7f9f6] via-white to-white text-slate-900 py-10 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80"
       >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          {/* Hero Left (50% on Desktop) */}
-          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-10">
+          {/* Hero Left (45% on Desktop) */}
+          <div className="w-full lg:w-[46%] space-y-5 text-center lg:text-left flex-shrink-0">
             {/* Small badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-emerald-600" />
               <span>Digital Agricultural Command Center</span>
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12] text-slate-900 font-serif">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-slate-900 font-serif">
               Smarter Agricultural Trading.
               <span className="block text-emerald-800 mt-1">
                 Better Market Decisions.
@@ -213,15 +213,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </h1>
 
             {/* Subheading */}
-            <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
+            <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed max-w-lg mx-auto lg:mx-0">
               PRISMS connects farmers and buyers through intelligent market discovery, digital offers, negotiation, logistics and settlement.
             </p>
 
             {/* Action Buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+            <div className="pt-1 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <button
                 onClick={() => onOpenAuth("farmer", "login")}
-                className="w-full sm:w-auto px-7 py-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2.5"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2"
               >
                 <span>🚜</span>
                 <span>{lang === "mr" ? "शेतकरी लॉग इन" : "Login as Farmer"}</span>
@@ -230,7 +230,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               <button
                 onClick={() => onOpenAuth("buyer", "login")}
-                className="w-full sm:w-auto px-7 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2.5"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2"
               >
                 <span>🏢</span>
                 <span>{lang === "mr" ? "खरेदीदार लॉग इन" : "Login as Buyer"}</span>
@@ -239,7 +239,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Minimal Trust Indicators */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-500 font-semibold">
+            <div className="pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs text-slate-500 font-semibold border-t border-slate-100">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Zero Brokerage</span>
@@ -255,13 +255,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Hero Right (50% on Desktop): High Quality Realistic Agricultural Photo */}
-          <div className="lg:col-span-6 flex justify-center">
-            <div className="w-full max-w-lg lg:max-w-none rounded-3xl overflow-hidden bg-white p-2.5 border border-emerald-100 shadow-xl shadow-emerald-950/5">
-              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-100">
+          {/* Hero Right (55% on Desktop): Premium Indian Agriculture Photograph */}
+          <div className="w-full lg:w-[54%] flex justify-center lg:justify-end">
+            <div className="w-full max-w-lg lg:max-w-none rounded-2xl overflow-hidden bg-white p-2 border border-emerald-100/90 shadow-lg shadow-emerald-950/5">
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-slate-100">
                 <img
                   src="/images/prisms_field_hero.jpg"
-                  alt="Indian farmer in agricultural field with harvested produce"
+                  alt="Indian farmer with fresh harvest produce in agricultural field"
                   className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/hero-farm.jpg";
