@@ -611,7 +611,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                             </span>
                             {isUnread && (
                               <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase shrink-0 ${
-                                isCounter ? "bg-amber-500 text-slate-950" : "bg-blue-600 text-white"
+                                isCounter ? "bg-amber-500 text-slate-950" : "bg-emerald-700 text-white"
                               }`}>
                                 NEW
                               </span>
@@ -634,7 +634,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                                 e.stopPropagation();
                                 setActiveTab("offers");
                               }}
-                              className="text-xs font-black text-blue-700 hover:text-blue-800 flex items-center gap-1 ml-auto"
+                              className="text-xs font-black text-emerald-800 hover:text-emerald-950 flex items-center gap-1 ml-auto"
                             >
                               View Offer →
                             </button>
@@ -981,7 +981,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                             ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                             : b.offerStatus === "COUNTERED"
                             ? b.counterBy === "BUYER"
-                              ? "bg-blue-100 text-blue-900 border border-blue-200"
+                              ? "bg-slate-100 text-slate-800 border border-slate-300"
                               : "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
                             : b.offerStatus === "REJECTED"
                             ? "bg-red-100 text-red-800 border border-red-200"
@@ -1066,14 +1066,14 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
                     {/* Counter Offer Waiting State: Buyer Countered -> Waiting for Farmer */}
                     {b.offerStatus === "COUNTERED" && b.counterPricePerQtl && b.counterBy === "BUYER" && (
-                      <div className="p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-xl space-y-1.5 text-blue-900">
+                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-slate-800">
                         <div className="flex items-center justify-between text-xs font-bold">
                           <span>Your Revised Counter: ₹{b.counterPricePerQtl}/Qtl</span>
-                          <span className="px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-black uppercase">
+                          <span className="px-2.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[10px] font-black uppercase">
                             Awaiting Farmer Action
                           </span>
                         </div>
-                        <p className="text-[11px] text-blue-700 font-medium">
+                        <p className="text-[11px] text-slate-600 font-medium">
                           You have countered this trade. Waiting for the farmer to accept or counter.
                         </p>
                       </div>

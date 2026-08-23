@@ -278,7 +278,7 @@ export const IntelligenceSuite: React.FC<IntelligenceSuiteProps> = ({ lang = 'en
               </div>
 
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-xl ${saleWindowData.recommendation === 'SELL_NOW' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                <div className={`p-3 rounded-xl ${saleWindowData.recommendation === 'SELL_NOW' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
                   <TrendingUp className="w-6 h-6" />
                 </div>
                 <div>
@@ -310,13 +310,13 @@ export const IntelligenceSuite: React.FC<IntelligenceSuiteProps> = ({ lang = 'en
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Storage Recommendation</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-md font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="text-xs px-2.5 py-0.5 rounded-md font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                   Ambient & Thermal Model
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
+                <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
                   <Warehouse className="w-6 h-6" />
                 </div>
                 <div>

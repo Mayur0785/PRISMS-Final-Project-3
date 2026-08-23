@@ -79,7 +79,7 @@ export const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = (
                   <div><span className="text-slate-500 font-medium">Quantity:</span> <strong className="text-slate-900">{summary.tradeDetails.quantityQtl} Qtl</strong></div>
                   <div><span className="text-slate-500 font-medium">Agreed Price:</span> <strong className="text-slate-900">₹{summary.tradeDetails.agreedPricePerQtl}/Qtl</strong></div>
                   <div><span className="text-slate-500 font-medium">Gross Value:</span> <strong className="text-emerald-700">₹{summary.tradeDetails.grossSaleValue.toLocaleString('en-IN')}</strong></div>
-                  <div><span className="text-slate-500 font-medium">Status:</span> <strong className="text-blue-700">{summary.status}</strong></div>
+                  <div><span className="text-slate-500 font-medium">Status:</span> <strong className="text-emerald-700">{summary.status}</strong></div>
                 </div>
               </div>
 

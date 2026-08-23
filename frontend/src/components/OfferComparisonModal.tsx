@@ -371,7 +371,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                 <span className="font-bold text-slate-900 text-base">
                                   {off.buyer?.businessName || off.buyerId}
                                 </span>
-                                <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                                   {off.isDemo ? "Demo Offer" : "Verified Buyer"}
                                 </span>
                                 {isBest && !isAccepted && !isRejected && !isCountered && (
@@ -388,7 +388,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       : isAwaitingBuyer
                                       ? 'bg-amber-100 text-amber-900 border border-amber-300 font-black'
                                       : isCounteredByBuyer
-                                      ? 'bg-blue-100 text-blue-900 border border-blue-300 font-black'
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-300 font-black'
                                       : 'bg-amber-50 text-amber-800 border border-amber-200'
                                   }`}
                                 >
@@ -462,13 +462,13 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
 
                           {/* Buyer Countered State Box */}
                           {isCounteredByBuyer && !isAccepted && !isRejected && (
-                            <div className="p-3.5 bg-blue-50 rounded-xl border border-blue-300 space-y-2">
+                            <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 space-y-2">
                               <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900">
-                                  <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+                                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
                                   <span>{lang === "mr" ? "खरेदीदाराने नवीन काउंटर दर दिला आहे." : "Buyer has submitted a revised counter offer."}</span>
                                 </div>
-                                <span className="text-[10px] px-2 py-0.5 rounded font-black bg-blue-100 text-blue-900 uppercase border border-blue-300">
+                                <span className="text-[10px] px-2 py-0.5 rounded font-black bg-amber-100 text-amber-900 uppercase border border-amber-300">
                                   {lang === "mr" ? "खरेदीदार काउंटर" : "BUYER COUNTERED"}
                                 </span>
                               </div>
@@ -478,12 +478,12 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                   <span className="font-bold text-slate-700">₹{off.pricePerQtl.toLocaleString('en-IN')}/Qtl</span>
                                 </div>
                                 <div>
-                                  <span className="text-[10px] text-blue-800 font-bold block">{lang === "mr" ? "खरेदीदाराचा काउंटर दर" : "Buyer Counter Price"}</span>
-                                  <span className="font-black text-blue-900 text-sm">₹{off.counterPricePerQtl?.toLocaleString('en-IN')}/Qtl</span>
+                                  <span className="text-[10px] text-amber-800 font-bold block">{lang === "mr" ? "खरेदीदाराचा काउंटर दर" : "Buyer Counter Price"}</span>
+                                  <span className="font-black text-amber-950 text-sm">₹{off.counterPricePerQtl?.toLocaleString('en-IN')}/Qtl</span>
                                 </div>
                               </div>
                               {off.counterMessage && (
-                                <p className="text-[11px] text-blue-900 font-medium italic">
+                                <p className="text-[11px] text-amber-950 font-medium italic">
                                   Note: "{off.counterMessage}"
                                 </p>
                               )}
@@ -606,7 +606,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
                                       onClose();
                                       window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "payments" }));
                                     }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                                    className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                                   >
                                     <DollarSign className="w-3.5 h-3.5" />
                                     {lang === "mr" ? "पेमेंट पहा" : "View Payment"}

@@ -174,8 +174,8 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                           {lot.cropName}
                         </span>
                         {acceptedOfferId && (
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                             DEAL CONFIRMED
                           </span>
                         )}
@@ -254,7 +254,7 @@ export const DigitalOffersManager: React.FC<DigitalOffersManagerProps> = ({ lang
                                   : isAwaitingBuyer
                                   ? 'bg-amber-100 text-amber-900 border-amber-300'
                                   : isCounteredByBuyer
-                                  ? 'bg-blue-100 text-blue-900 border-blue-300'
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
                                   : 'bg-amber-50 text-amber-800 border-amber-200'
                               }`}>
                                 {isAccepted

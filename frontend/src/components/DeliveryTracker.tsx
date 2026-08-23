@@ -298,7 +298,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                 {/* Top Info Header */}
                 <div className="flex flex-wrap sm:flex-nowrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
                   <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                    <div className="p-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 shrink-0 mt-0.5">
+                    <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0 mt-0.5">
                       <Truck className="w-6 h-6" />
                     </div>
                     <div className="space-y-1.5 flex-1 min-w-0">
@@ -312,7 +312,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                         <span className={`px-2.5 py-0.5 rounded text-[11px] font-bold border ${
                           isDelivered
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                            : 'bg-blue-50 text-blue-800 border-blue-300'
+                            : 'bg-amber-50 text-amber-800 border-amber-300'
                         }`}>
                           {getStatusLabel(delivery.deliveryStatus)}
                         </span>
@@ -335,7 +335,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                       <button
                         disabled={advancingId === (delivery._id || delivery.deliveryId)}
                         onClick={() => handleAdvanceStatus(delivery)}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                        className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                       >
                         {advancingId === (delivery._id || delivery.deliveryId) ? (
                           <>
@@ -354,7 +354,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                               onNavigateToPayment(delivery.paymentId, delivery.lotId);
                             }
                           }}
-                          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                         >
                           Proceed to Payment →
                         </button>
@@ -385,9 +385,9 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                         key={step.status}
                         className={`p-3 rounded-xl border flex flex-col justify-between text-xs transition-all ${
                           step.isCurrent
-                            ? 'bg-blue-50 border-blue-300 text-blue-900 font-bold shadow-xs'
+                            ? 'bg-emerald-100/70 border-emerald-300 text-emerald-950 font-bold shadow-xs'
                             : step.isComplete
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 font-semibold'
                             : 'bg-slate-50 border-slate-200 text-slate-400'
                         }`}
                       >
@@ -395,7 +395,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                           {step.isComplete ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           ) : step.isCurrent ? (
-                            <Clock className="w-4 h-4 text-blue-600 animate-pulse shrink-0" />
+                            <Clock className="w-4 h-4 text-amber-600 animate-pulse shrink-0" />
                           ) : (
                             <div className="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[10px] text-slate-400 font-bold shrink-0">
                               {idx + 1}

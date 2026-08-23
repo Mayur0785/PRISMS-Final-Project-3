@@ -125,7 +125,7 @@ export const GrievanceManager: React.FC = () => {
                         ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         : isOpen
                         ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                        : 'bg-blue-50 text-blue-800 border border-blue-200'
+                        : 'bg-slate-100 text-slate-800 border border-slate-300'
                     }`}
                   >
                     Status: {grv.status}

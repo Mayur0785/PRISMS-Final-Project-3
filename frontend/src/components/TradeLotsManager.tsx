@@ -478,7 +478,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                             : lot.lotStatus === "OFFERED"
                             ? "bg-amber-50 text-amber-800 border-amber-200"
                             : lot.lotStatus === "MATCHED" || lot.lotStatus === "PUBLISHED"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                             : "bg-slate-100 text-slate-700 border-slate-300"
                         }`}
                       >
@@ -530,7 +530,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                           Score: {lot.qualityScore}/100
                         </span>
                         <span className="text-[10px] text-slate-400">•</span>
-                        <span className="text-blue-700 font-semibold text-[11px]">
+                        <span className="text-emerald-800 font-semibold text-[11px]">
                           Conf: {lot.evidenceConfidence || 75}%
                         </span>
                       </div>
@@ -655,9 +655,9 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                         onClick={() => {
                           window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "payments" }));
                         }}
-                        className="inline-flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-semibold h-9 px-2.5 rounded-xl border border-blue-200 shadow-sm transition-all text-center whitespace-nowrap"
+                        className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold h-9 px-2.5 rounded-xl border border-slate-300 shadow-xs transition-all text-center whitespace-nowrap"
                       >
-                        <DollarSign className="w-3.5 h-3.5 shrink-0 text-blue-600" />
+                        <DollarSign className="w-3.5 h-3.5 shrink-0 text-slate-600" />
                         <span>{lang === "mr" ? "पेमेंट पहा" : "View Payment"}</span>
                       </button>
 

@@ -245,7 +245,7 @@ export function BuyerMatchModal({ lot, isOpen, onClose, lang }: BuyerMatchModalP
                       </div>
 
                       <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <Store className="w-4.5 h-4.5 text-blue-600 shrink-0" />
+                        <Store className="w-4.5 h-4.5 text-emerald-700 shrink-0" />
                         {decision.bestMandi.mandiName}
                       </h4>
                       <p className="text-xs text-slate-600 mt-0.5">{lang === "mr" ? "शासकीय APMC लिलाव बाजार" : "Government APMC Auction Market"}</p>

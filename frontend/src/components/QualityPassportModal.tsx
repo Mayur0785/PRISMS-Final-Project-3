@@ -127,15 +127,15 @@ export function QualityPassportModal({
           </div>
 
           {/* Evidence Confidence */}
-          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-blue-950 space-y-1">
-            <span className="text-[11px] font-extrabold text-blue-800 uppercase tracking-wider flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 space-y-1">
+            <span className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center justify-between">
               Evidence Confidence
-              <Info className="w-3.5 h-3.5 text-blue-600" />
+              <Info className="w-3.5 h-3.5 text-slate-500" />
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-blue-900">{confidence}%</span>
+              <span className="text-3xl font-black text-slate-900">{confidence}%</span>
             </div>
-            <p className="text-[10px] text-blue-700 leading-tight font-medium">
+            <p className="text-[10px] text-slate-500 leading-tight font-medium">
               Based on sample physical checks & observation.
             </p>
           </div>
