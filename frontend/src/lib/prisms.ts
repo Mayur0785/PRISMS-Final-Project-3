@@ -1799,26 +1799,45 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
   if (token && !token.startsWith("demo_token_")) {
     try {
       const res = await apiClient.get(`${API_URL}/deliveries`);
-      apiDeliveries = res.data.data || [];
+      apiDeliveries = res.data?.data || [];
     } catch (error) {
-      console.error("Error fetching deliveries", error);
+      console.error("Error fetching deliveries from API", error);
     }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_deliveries");
   const localDeliveries: DeliveryOrder[] = rawLocal ? JSON.parse(rawLocal) : [];
-  const filteredLocal = localDeliveries.filter(d => isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail));
 
   const STATUS_ORDER = ['OFFER_ACCEPTED_PLANNED', 'PLANNED', 'PICKUP_READY', 'DISPATCHED', 'IN_TRANSIT', 'DELIVERED'];
   const getStatusRank = (s?: string) => Math.max(0, STATUS_ORDER.indexOf(s || ''));
 
-  const map = new Map<string, DeliveryOrder>();
-  [...apiDeliveries, ...filteredLocal].forEach(d => {
+  const apiMap = new Map<string, DeliveryOrder>();
+
+  // 1. Process authenticated API records WITHOUT isRecordOwnedByUser()
+  apiDeliveries.forEach(d => {
     const key = d.deliveryId || d._id;
     if (!key) return;
-    const existing = map.get(key);
-    if (!existing) {
-      map.set(key, {
+    apiMap.set(key, {
+      ...d,
+      crop: d.crop && d.crop !== "Produce" ? d.crop : "Red Onion (Nashik)",
+      agreedPricePerQtl: d.agreedPricePerQtl || 3200,
+      vehicleType: d.vehicleType || "Medium Pickup (Bolero MaxiTruck)",
+      freightRate: d.freightRate || "₹1.35/km/Qtl",
+      estimatedFreight: d.estimatedFreight || Math.round(1.35 * 35 * (d.quantityQtl || 30)),
+    });
+  });
+
+  // 2. Process local demo records WITH isRecordOwnedByUser()
+  localDeliveries.forEach(d => {
+    if (!isRecordOwnedByUser(d.farmerId, activeUserId, activeUserEmail)) {
+      return;
+    }
+
+    const key = d.deliveryId || d._id;
+    if (!key) return;
+
+    if (!apiMap.has(key)) {
+      apiMap.set(key, {
         ...d,
         crop: d.crop && d.crop !== "Produce" ? d.crop : "Red Onion (Nashik)",
         agreedPricePerQtl: d.agreedPricePerQtl || 3200,
@@ -1827,6 +1846,7 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
         estimatedFreight: d.estimatedFreight || Math.round(1.35 * 35 * (d.quantityQtl || 30)),
       });
     } else {
+      const existing = apiMap.get(key)!;
       const rankExisting = getStatusRank(existing.deliveryStatus);
       const rankNew = getStatusRank(d.deliveryStatus);
       const winner = rankNew >= rankExisting ? d : existing;
@@ -1834,7 +1854,7 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
         ? existing.timeline
         : (d.timeline || existing.timeline);
 
-      map.set(key, {
+      apiMap.set(key, {
         ...existing,
         ...winner,
         deliveryStatus: winner.deliveryStatus as any,
@@ -1849,7 +1869,7 @@ export async function fetchUserDeliveries(): Promise<DeliveryOrder[]> {
     }
   });
 
-  return Array.from(map.values());
+  return Array.from(apiMap.values());
 }
 
 export async function createDeliveryOrderApi(offerId: string, vehicleType?: string, plannedPickupDate?: string): Promise<DeliveryOrder> {
@@ -1872,31 +1892,44 @@ export async function fetchUserPayments(): Promise<PaymentLedger[]> {
   if (token && !token.startsWith("demo_token_")) {
     try {
       const res = await apiClient.get(`${API_URL}/payments`);
-      apiPayments = res.data.data || [];
+      apiPayments = res.data?.data || [];
     } catch (error) {
-      console.error("Error fetching payments", error);
+      console.error("Error fetching payments from API", error);
     }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_payments");
   const localPayments: PaymentLedger[] = rawLocal ? JSON.parse(rawLocal) : [];
-  const filteredLocal = localPayments.filter(p => isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail));
 
-  const map = new Map<string, PaymentLedger>();
-  [...apiPayments, ...filteredLocal].forEach(p => {
+  const apiMap = new Map<string, PaymentLedger>();
+
+  // 1. Process authenticated API records WITHOUT isRecordOwnedByUser()
+  apiPayments.forEach(p => {
     const key = p.paymentId || p._id;
     if (!key) return;
-    const existing = map.get(key);
-    if (!existing) {
-      map.set(key, p);
+    apiMap.set(key, p);
+  });
+
+  // 2. Process local demo records WITH isRecordOwnedByUser()
+  localPayments.forEach(p => {
+    if (!isRecordOwnedByUser(p.farmerId, activeUserId, activeUserEmail)) {
+      return;
+    }
+
+    const key = p.paymentId || p._id;
+    if (!key) return;
+
+    if (!apiMap.has(key)) {
+      apiMap.set(key, p);
     } else {
+      const existing = apiMap.get(key)!;
       const isPaidNew = p.paymentStatus === 'PAID' || p.paymentStatus === 'RELEASED' || Boolean(p.paidDate);
       const winner = isPaidNew ? p : existing;
-      map.set(key, { ...existing, ...winner });
+      apiMap.set(key, { ...existing, ...winner });
     }
   });
 
-  return Array.from(map.values());
+  return Array.from(apiMap.values());
 }
 
 export async function updatePaymentStatusApi(paymentId: string, status: string, paymentMode?: string): Promise<PaymentLedger> {
@@ -1914,23 +1947,38 @@ export async function fetchUserTransactions(): Promise<TransactionItem[]> {
   if (token && !token.startsWith("demo_token_")) {
     try {
       const res = await apiClient.get(`${API_URL}/transactions`);
-      apiTxns = res.data.data || [];
+      apiTxns = res.data?.data || [];
     } catch (error) {
-      console.error("Error fetching transactions", error);
+      console.error("Error fetching transactions from API", error);
     }
   }
 
   const rawLocal = localStorage.getItem("prisms_demo_transactions");
   const localTxns: TransactionItem[] = rawLocal ? JSON.parse(rawLocal) : [];
-  const filteredLocal = localTxns.filter(t => isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail));
 
-  const map = new Map<string, TransactionItem>();
-  [...apiTxns, ...filteredLocal].forEach(t => {
+  const apiMap = new Map<string, TransactionItem>();
+
+  // 1. Process authenticated API records WITHOUT isRecordOwnedByUser()
+  apiTxns.forEach(t => {
     const key = t.transactionId || t._id;
-    if (key && !map.has(key)) map.set(key, t);
+    if (key && !apiMap.has(key)) {
+      apiMap.set(key, t);
+    }
   });
 
-  return Array.from(map.values());
+  // 2. Process local demo records WITH isRecordOwnedByUser()
+  localTxns.forEach(t => {
+    if (!isRecordOwnedByUser(t.farmerId, activeUserId, activeUserEmail)) {
+      return;
+    }
+
+    const key = t.transactionId || t._id;
+    if (key && !apiMap.has(key)) {
+      apiMap.set(key, t);
+    }
+  });
+
+  return Array.from(apiMap.values());
 }
 
 export async function fetchTransactionSummaryApi(transactionId: string): Promise<any> {
