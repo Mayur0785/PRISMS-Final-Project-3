@@ -1,7 +1,18 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-const API_URL = API_BASE_URL;
+const rawBaseUrl =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api/v1";
+
+const cleanBaseUrl = rawBaseUrl.trim().replace(/\/+$/, "");
+export const API_BASE_URL = cleanBaseUrl.endsWith("/api/v1")
+  ? cleanBaseUrl
+  : cleanBaseUrl.endsWith("/api")
+  ? `${cleanBaseUrl}/v1`
+  : `${cleanBaseUrl}/api/v1`;
+
+export const API_URL = API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
