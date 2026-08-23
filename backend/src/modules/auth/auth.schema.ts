@@ -20,7 +20,7 @@ export const registerSchema = z.object({
     email: emailOrPhone,
     password: z.string().min(6, 'Password must be at least 6 characters'),
     name: z.string().optional(),
-    role: z.enum(['farmer', 'fpo', 'advisor']).optional(),
+    role: z.enum(['farmer', 'buyer', 'fpo', 'advisor']).optional(),
   }),
 });
 

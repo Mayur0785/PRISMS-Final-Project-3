@@ -522,9 +522,10 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "farmer" | "fpo" | "advisor";
+  role: "farmer" | "buyer" | "fpo" | "advisor";
   phone?: string;
   village?: string;
+  businessName?: string;
 }
 
 export interface AuthResponse {
@@ -538,9 +539,10 @@ interface StoredAccount {
   email: string;
   phone?: string;
   password: string;
-  role: "farmer" | "fpo" | "advisor";
+  role: "farmer" | "buyer" | "fpo" | "advisor";
   village?: string;
   district?: string;
+  businessName?: string;
 }
 
 const DEFAULT_AUTH_ACCOUNTS: StoredAccount[] = [
@@ -553,6 +555,17 @@ const DEFAULT_AUTH_ACCOUNTS: StoredAccount[] = [
     role: "farmer",
     village: "Karjat",
     district: "Raigad",
+  },
+  {
+    id: "user_demo_buyer_001",
+    name: "Nashik Agro Processors Ltd.",
+    email: "buyer.nashik@prisms.gov.in",
+    phone: "9876543220",
+    password: "Kisan@2024",
+    role: "buyer",
+    village: "Dindori",
+    district: "Nashik",
+    businessName: "Nashik Agro Processors Ltd.",
   },
   {
     id: "user_demo_002",
@@ -718,7 +731,7 @@ export async function registerUser(
   name: string,
   email: string,
   password: string,
-  role: "farmer" | "fpo" | "advisor" = "farmer"
+  role: "farmer" | "buyer" | "fpo" | "advisor" = "farmer"
 ): Promise<AuthResponse> {
   const normalizedEmail = normalizeUserIdentifier(email);
   const cleanPhone = email.trim().replace(/\D/g, "");

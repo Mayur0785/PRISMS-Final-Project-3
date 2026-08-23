@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { loginUser, registerUser, type AuthUser } from "@/lib/prisms";
 import { BorderBeam } from "@/components/BorderBeam";
 
@@ -7,6 +7,8 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess: (user: AuthUser) => void;
   lang?: "en" | "mr";
+  initialRole?: "farmer" | "buyer" | "fpo" | "advisor";
+  initialMode?: "login" | "signup";
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -14,18 +16,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onSuccess,
   lang = "en",
+  initialRole = "farmer",
+  initialMode = "login",
 }) => {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"farmer" | "fpo" | "advisor">("farmer");
+  const [role, setRole] = useState<"farmer" | "buyer" | "fpo" | "advisor">(initialRole);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<"password" | "otp">("password");
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setRole(initialRole);
+      setError("");
+      setOtpSent(false);
+      setAuthMethod("password");
+      if (initialRole === "buyer") {
+        setEmail("buyer.nashik@prisms.gov.in");
+        setPassword("Kisan@2024");
+        setName("Nashik Agro Processors Ltd.");
+      } else {
+        setEmail("farmer.lasalgaon@prisms.gov.in");
+        setPassword("Kisan@2024");
+        setName("Mayur Kapse (नवी मुंबई)");
+      }
+    }
+  }, [isOpen, initialRole, initialMode]);
 
   if (!isOpen) return null;
 
@@ -64,8 +87,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onSuccess(res.user);
           onClose();
         } catch {
-          // Auto-create farmer user on first-time OTP
-          const defaultName = name.trim() || (lang === "mr" ? `शेतकरी (${email.slice(-4)})` : `Farmer (${email.slice(-4)})`);
+          // Auto-create user on first-time OTP
+          const defaultName = name.trim() || (role === "buyer" ? (lang === "mr" ? `खरेदीदार (${email.slice(-4)})` : `Buyer (${email.slice(-4)})`) : (lang === "mr" ? `शेतकरी (${email.slice(-4)})` : `Farmer (${email.slice(-4)})`));
           const regRes = await registerUser(defaultName, targetEmail, "Kisan@2024", role);
           onSuccess(regRes.user);
           onClose();
@@ -78,7 +101,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onSuccess(res.user);
         onClose();
       } else {
-        const res = await registerUser(name || "Farmer User", targetEmail, password, role);
+        const res = await registerUser(name || (role === "buyer" ? "Registered Buyer" : "Farmer User"), targetEmail, password, role);
         onSuccess(res.user);
         onClose();
       }
@@ -100,31 +123,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  const isBuyer = role === "buyer";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200">
       <div className="bg-surface rounded-2xl border border-outline-variant max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative">
-        <BorderBeam size={220} duration={6} colorFrom="#3b6934" colorTo="#fe932c" />
+        <BorderBeam size={220} duration={6} colorFrom={isBuyer ? "#1d4ed8" : "#3b6934"} colorTo="#fe932c" />
 
         {/* Modal Header */}
         <div className="p-6 bg-surface-container-high border-b border-outline-variant flex justify-between items-start relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-lg shadow-md">
-              🌾
+            <div className={`w-11 h-11 rounded-xl ${isBuyer ? "bg-blue-600" : "bg-primary"} text-on-primary flex items-center justify-center font-bold text-xl shadow-md`}>
+              {isBuyer ? "🏢" : "🌾"}
             </div>
             <div>
-              <h3 className="text-[20px] font-extrabold text-on-surface leading-tight">
-                {mode === "login"
-                  ? lang === "mr"
-                    ? "PRISMS मध्ये लॉग इन करा"
-                    : "Sign in to PRISMS"
-                  : lang === "mr"
-                  ? "नवीन शेतकरी नोंदणी"
-                  : "Join PRISMS Command"}
-              </h3>
-              <p className="text-[12px] text-on-surface-variant font-medium">
-                {lang === "mr"
-                  ? "थेट APMC भाव, हमीभाव आणि AI नफा विश्लेषण"
-                  : "Live APMC prices, MSP benchmarks & AI profit"}
+              <div className="flex items-center gap-2">
+                <h3 className="text-[20px] font-extrabold text-on-surface leading-tight">
+                  {mode === "login"
+                    ? isBuyer
+                      ? lang === "mr" ? "खरेदीदार लॉग इन" : "Buyer Sign In"
+                      : lang === "mr" ? "शेतकरी लॉग इन" : "Farmer Sign In"
+                    : isBuyer
+                    ? lang === "mr" ? "नवीन खरेदीदार नोंदणी" : "Register as Buyer"
+                    : lang === "mr" ? "नवीन शेतकरी नोंदणी" : "Register as Farmer"}
+                </h3>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${isBuyer ? "bg-blue-100 text-blue-800 border border-blue-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"}`}>
+                  {role}
+                </span>
+              </div>
+              <p className="text-[12px] text-on-surface-variant font-medium mt-0.5">
+                {isBuyer
+                  ? lang === "mr" ? "थेट शेतकरी पुरवठा, डिजिटल खरेदी आणि सुरक्षित व्यापार" : "Direct farmer supply discovery, digital offers & procurement"
+                  : lang === "mr" ? "थेट APMC भाव, हमीभाव आणि AI नफा विश्लेषण" : "Live APMC prices, MSP benchmarks & AI profit"}
               </p>
             </div>
           </div>
@@ -171,9 +201,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         </div>
 
+        {/* Role Selector */}
+        <div className="px-6 pt-3 pb-1">
+          <label className="block text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider mb-1.5">
+            {lang === "mr" ? "भूमिका निवडा (Select Role)" : "Selected Role"}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            {[
+              { id: "farmer", label: lang === "mr" ? "🚜 शेतकरी" : "🚜 Farmer" },
+              { id: "buyer", label: lang === "mr" ? "🏢 खरेदीदार" : "🏢 Buyer" },
+              { id: "fpo", label: lang === "mr" ? "🌾 FPO" : "🌾 FPO" },
+              { id: "advisor", label: lang === "mr" ? "📊 सल्लागार" : "📊 Advisor" },
+            ].map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  setRole(r.id as any);
+                  if (r.id === "buyer") {
+                    setEmail("buyer.nashik@prisms.gov.in");
+                    setName("Nashik Agro Processors Ltd.");
+                  } else if (r.id === "farmer") {
+                    setEmail("farmer.lasalgaon@prisms.gov.in");
+                    setName("Mayur Kapse (नवी मुंबई)");
+                  }
+                }}
+                className={`py-2 px-1 rounded-lg border text-center font-bold text-[11px] transition-all ${
+                  role === r.id
+                    ? isBuyer && r.id === "buyer"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-primary text-on-primary border-primary shadow-sm"
+                    : "bg-surface-container-low border-outline-variant text-on-surface-variant hover:bg-surface-container"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Alternate Auth Method Toggle (Password vs Mobile OTP) */}
         {mode === "login" && (
-          <div className="px-6 pt-4 flex items-center justify-between text-[12px] font-bold border-b border-outline-variant/40 pb-3">
+          <div className="px-6 pt-3 flex items-center justify-between text-[12px] font-bold border-b border-outline-variant/40 pb-3">
             <span className="text-on-surface-variant">
               {lang === "mr" ? "लॉग इन पर्याय:" : "Sign In Option:"}
             </span>
@@ -212,7 +281,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[13px] relative z-10">
+        <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-[13px] relative z-10">
           {error && (
             <div className="p-3 bg-alert-terracotta/10 border border-alert-terracotta/30 text-alert-terracotta rounded-lg font-bold text-[12px] flex items-center gap-2">
               <span className="material-symbols-outlined text-[16px]">error</span>
@@ -223,14 +292,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === "signup" && (
             <div>
               <label className="block font-bold text-on-surface-variant mb-1">
-                {lang === "mr" ? "पूर्ण नाव (Full Name)" : "Full Name"}
+                {isBuyer
+                  ? lang === "mr" ? "कंपनी / व्यवसाय नाव (Business Name)" : "Business / Company Name"
+                  : lang === "mr" ? "पूर्ण नाव (Full Name)" : "Full Name"}
               </label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={lang === "mr" ? "आपले पूर्ण नाव प्रविष्ट करा" : "Enter your full name"}
+                placeholder={isBuyer ? "e.g. Pune Fresh Foods Pvt Ltd" : lang === "mr" ? "आपले पूर्ण नाव प्रविष्ट करा" : "Enter your full name"}
                 className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 text-on-surface font-medium focus:ring-2 focus:ring-primary outline-none"
               />
             </div>
@@ -256,6 +327,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ? lang === "mr"
                     ? "उदा. 9876543210"
                     : "e.g. 9876543210"
+                  : isBuyer
+                  ? "e.g. buyer.nashik@prisms.gov.in"
                   : lang === "mr"
                   ? "ईमेल किंवा १० अंकी मोबाईल नंबर"
                   : "Enter email or mobile number"
@@ -264,35 +337,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             />
           </div>
 
-          {mode === "signup" && (
-            <div>
-              <label className="block font-bold text-on-surface-variant mb-1">
-                {lang === "mr" ? "खाते प्रकार (Role)" : "Account Type (Role)"}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "farmer", label: lang === "mr" ? "🚜 शेतकरी" : "🚜 Farmer" },
-                  { id: "fpo", label: lang === "mr" ? "🏢 FPO / व्यापारी" : "🏢 FPO / Trader" },
-                  { id: "advisor", label: lang === "mr" ? "🌾 सल्लागार" : "🌾 Advisor" },
-                ].map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setRole(r.id as any)}
-                    className={`py-2 px-1 rounded-lg border text-center font-bold text-[11px] transition-all ${
-                      role === r.id
-                        ? "bg-primary text-on-primary border-primary shadow-sm"
-                        : "bg-surface-container-low border-outline-variant text-on-surface-variant hover:bg-surface-container"
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Password Input (Visible when authMethod === 'password' or Mode === 'signup') */}
+          {/* Password Input */}
           {(authMethod === "password" || mode === "signup") && (
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -360,7 +405,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-[14px] hover:bg-primary-container transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-4"
+            className={`w-full py-3 ${isBuyer ? "bg-blue-600 hover:bg-blue-700" : "bg-primary hover:bg-primary-container"} text-on-primary rounded-xl font-bold text-[14px] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-4`}
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
@@ -379,34 +424,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       ? "OTP मिळवा"
                       : "Send OTP Code"
                     : mode === "login"
-                    ? lang === "mr"
-                      ? "लॉग इन करा"
-                      : "Sign In"
-                    : lang === "mr"
-                    ? "नोंदणी पूर्ण करा"
-                    : "Complete Registration"}
+                    ? isBuyer
+                      ? lang === "mr" ? "खरेदीदार लॉग इन करा" : "Sign In as Buyer"
+                      : lang === "mr" ? "शेतकरी लॉग इन करा" : "Sign In as Farmer"
+                    : isBuyer
+                    ? lang === "mr" ? "खरेदीदार नोंदणी पूर्ण करा" : "Complete Buyer Registration"
+                    : lang === "mr" ? "शेतकरी नोंदणी पूर्ण करा" : "Complete Farmer Registration"}
                 </span>
               </>
             )}
           </button>
 
-          {/* Quick Demo Credentials Pill */}
-          <div className="pt-2 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                setEmail("farmer.lasalgaon@prisms.gov.in");
-                setPassword("Kisan@2024");
-                setName("Mayur Kapse (नवी मुंबई)");
-                setRole("farmer");
-                setAuthMethod("password");
-                setError("");
-              }}
-              className="text-[11px] text-on-surface-variant/80 hover:text-primary font-bold underline"
-            >
-              ⚡ {lang === "mr" ? "डेमो शेतकरी क्रेडेंशियल्स वापरा" : "Fill Demo Verified Farmer Credentials"}
-            </button>
+          {/* Quick Demo Credentials Autofill */}
+          <div className="pt-2 flex flex-col gap-1.5 text-center">
+            <div className="text-[11px] text-on-surface-variant font-medium">Quick Demo Accounts:</div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setEmail("farmer.lasalgaon@prisms.gov.in");
+                  setPassword("Kisan@2024");
+                  setName("Mayur Kapse (नवी मुंबई)");
+                  setRole("farmer");
+                  setAuthMethod("password");
+                  setError("");
+                }}
+                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all"
+              >
+                🚜 Demo Farmer
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setEmail("buyer.nashik@prisms.gov.in");
+                  setPassword("Kisan@2024");
+                  setName("Nashik Agro Processors Ltd.");
+                  setRole("buyer");
+                  setAuthMethod("password");
+                  setError("");
+                }}
+                className="text-[11px] bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-full hover:bg-blue-100 font-bold transition-all"
+              >
+                🏢 Demo Buyer
+              </button>
+            </div>
           </div>
         </form>
       </div>

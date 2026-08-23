@@ -5,7 +5,7 @@ export interface IUser extends Document {
   passwordHash: string;
   refreshToken?: string;
   name?: string;
-  role: 'farmer' | 'fpo' | 'advisor';
+  role: 'farmer' | 'buyer' | 'fpo' | 'advisor';
   phone?: string;
   village?: string;
   district?: string;
@@ -20,7 +20,7 @@ const UserSchema = new Schema(
     passwordHash: { type: String, required: true },
     refreshToken: { type: String },
     name: { type: String },
-    role: { type: String, enum: ['farmer', 'fpo', 'advisor'], default: 'farmer' },
+    role: { type: String, enum: ['farmer', 'buyer', 'fpo', 'advisor'], default: 'farmer' },
     phone: { type: String },
     village: { type: String },
     district: { type: String },

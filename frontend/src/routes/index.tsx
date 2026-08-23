@@ -41,6 +41,8 @@ import { GrievanceManager } from "@/components/GrievanceManager";
 import { FpoGroupManager } from "@/components/FpoGroupManager";
 import { IntelligenceSuite } from "@/components/IntelligenceSuite";
 import { DigitalOffersManager } from "@/components/DigitalOffersManager";
+import { LandingPage } from "@/components/LandingPage";
+import { BuyerDashboard } from "@/components/BuyerDashboard";
 import { getCurrentUser, logoutUser, resetDemoDataApi, type AuthUser } from "@/lib/prisms";
 
 export const Route = createFileRoute("/")({
@@ -93,6 +95,9 @@ export function Index() {
 
   // Auth & Profile State
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalRole, setAuthModalRole] = useState<"farmer" | "buyer">("farmer");
+  const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
+  const [viewLanding, setViewLanding] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getCurrentUser());
   const [profileOpen, setProfileOpen] = useState(false);
   const [farmerName, setFarmerName] = useState(() => currentUser?.name || "");
@@ -1129,6 +1134,88 @@ export function Index() {
     }, 350);
   }
 
+  // 1. PUBLIC LANDING PAGE (Public entry point - NO private dashboard data)
+  if (!currentUser || viewLanding) {
+    return (
+      <>
+        <LandingPage
+          onOpenAuth={(role, mode = "login") => {
+            setAuthModalRole(role);
+            setAuthModalMode(mode);
+            setAuthModalOpen(true);
+          }}
+          onExploreFarmer={() => {
+            setAuthModalRole("farmer");
+            setAuthModalMode("login");
+            setAuthModalOpen(true);
+          }}
+          onExploreBuyer={() => {
+            setAuthModalRole("buyer");
+            setAuthModalMode("login");
+            setAuthModalOpen(true);
+          }}
+          lang={lang}
+          onToggleLang={(newLang) => setLang(newLang)}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          onSuccess={(user) => {
+            setCurrentUser(user);
+            setViewLanding(false);
+            setAuthModalOpen(false);
+            setFarmerName(user.name);
+            if (user.phone) setFarmerPhone(user.phone);
+            if (user.village) setFarmerVillage(user.village);
+            setSavedToastMsg(
+              lang === "mr"
+                ? `स्वागत आहे, ${user.name}! आपण यशस्वीरित्या जोडले गेला आहात.`
+                : `Welcome, ${user.name}! Logged in successfully.`
+            );
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 3500);
+          }}
+          lang={lang}
+          initialRole={authModalRole}
+          initialMode={authModalMode}
+        />
+      </>
+    );
+  }
+
+  // 2. DEDICATED BUYER COMMAND DASHBOARD (Commercial Buyer Procurement)
+  if (currentUser.role === "buyer") {
+    return (
+      <>
+        <BuyerDashboard
+          currentUser={currentUser}
+          onLogout={() => {
+            logoutUser();
+            setCurrentUser(null);
+            setViewLanding(true);
+            setSavedToastMsg(lang === "mr" ? "यशस्वीरित्या लॉग आऊट झाले" : "Logged out successfully");
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 3000);
+          }}
+          onSwitchToLanding={() => setViewLanding(true)}
+          lang={lang}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          onSuccess={(user) => {
+            setCurrentUser(user);
+            setAuthModalOpen(false);
+          }}
+          lang={lang}
+          initialRole={authModalRole}
+          initialMode={authModalMode}
+        />
+      </>
+    );
+  }
+
+  // 3. FARMER COMMAND CENTER DASHBOARD (Producers & FPOs)
   return (
     <div className="flex h-screen overflow-hidden bg-surface-container-lowest text-on-background font-sans">
       {/* SideNavBar */}
@@ -1681,15 +1768,16 @@ export function Index() {
         </div>
 
         {/* Trailing Icon Actions */}
-        <div className="flex items-center gap-2.5">
-          <a
-            href="/landing"
-            title="View Public Landing Page / मुख्य लँडिंग पान"
-            className="h-10 px-3.5 rounded-full flex items-center gap-1.5 text-on-surface hover:bg-surface-container transition-all active:scale-95 text-xs font-bold border border-outline-variant shadow-sm"
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <button
+            type="button"
+            onClick={() => setViewLanding(true)}
+            title="Public Landing Page / मुख्य पोर्टल"
+            className="h-10 px-3 rounded-full flex items-center gap-1.5 text-on-surface hover:bg-surface-container transition-all active:scale-95 text-xs font-bold border border-outline-variant shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px] text-primary">public</span>
-            <span className="hidden md:inline">{lang === "mr" ? "मुख्य पान" : "Landing Page"}</span>
-          </a>
+            <span className="material-symbols-outlined text-[18px] text-primary">storefront</span>
+            <span className="hidden md:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
+          </button>
 
           <button
             type="button"
