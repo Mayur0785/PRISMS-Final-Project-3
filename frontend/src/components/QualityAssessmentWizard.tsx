@@ -44,7 +44,7 @@ export function QualityAssessmentWizard({
   const [config, setConfig] = useState<CropQualityQuestionsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, { value: any; evidenceSource: string }>>({});
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [evaluating, setEvaluating] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState<QualityAssessmentResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -67,10 +67,10 @@ export function QualityAssessmentWizard({
       setLoading(true);
       setErrorMsg("");
       setEvaluationResult(null);
-      setCurrentStep(0);
+      setCurrentQuestionIndex(0);
 
       const res = await fetchQualityQuestionsApi(cropName || "Red Onion");
-      if (res) {
+      if (res && res.questions && res.questions.length > 0) {
         setConfig(res);
 
         // Pre-populate sensible defaults
@@ -97,15 +97,8 @@ export function QualityAssessmentWizard({
 
   if (!isOpen) return null;
 
-  // Group questions by section
-  const sections = config
-    ? Array.from(new Set(config.questions.map((q) => q.section)))
-    : [];
-
-  const currentSectionName = sections[currentStep] || "Assessment Details";
-  const currentQuestions = config
-    ? config.questions.filter((q) => q.section === currentSectionName)
-    : [];
+  const totalQuestions = config?.questions.length || 0;
+  const currentQuestion: QualityQuestionConfig | undefined = config?.questions[currentQuestionIndex];
 
   const handleValueChange = (questionId: string, val: any) => {
     setAnswers((prev) => ({
@@ -129,34 +122,32 @@ export function QualityAssessmentWizard({
 
   const handleNext = () => {
     setErrorMsg("");
-    // Validate current step questions
-    for (const q of currentQuestions) {
-      const val = answers[q.id]?.value;
-      if (q.required && (val === undefined || val === null || val === "")) {
-        setErrorMsg(`Please answer: "${q.questionText}"`);
+    if (!currentQuestion) return;
+
+    const val = answers[currentQuestion.id]?.value;
+    if (currentQuestion.required && (val === undefined || val === null || val === "")) {
+      setErrorMsg(lang === "mr" ? "कृपया या प्रश्नाचे उत्तर निवडा किंवा प्रविष्ट करा." : "Please answer this question to proceed.");
+      return;
+    }
+    if (currentQuestion.inputType === "PERCENTAGE" || currentQuestion.inputType === "NUMBER") {
+      const num = Number(val);
+      if (isNaN(num) || num < 0 || num > 100) {
+        setErrorMsg(lang === "mr" ? "कृपया वैध संख्या किंवा टक्केवारी (०-१००) प्रविष्ट करा." : "Please enter a valid percentage (0–100).");
         return;
-      }
-      if (q.inputType === "PERCENTAGE" || q.inputType === "NUMBER") {
-        const num = Number(val);
-        if (isNaN(num) || num < 0 || num > 100) {
-          setErrorMsg(`Please enter a valid percentage (0–100) for "${q.questionText}"`);
-          return;
-        }
       }
     }
 
-    if (currentStep < sections.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+    if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      // Final step -> submit assessment to backend engine
       handleSubmitEvaluation();
     }
   };
 
   const handlePrev = () => {
     setErrorMsg("");
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
@@ -178,7 +169,7 @@ export function QualityAssessmentWizard({
 
       const res = await submitQualityAssessmentApi({
         cropName,
-        variety: variety || "Garwa",
+        variety: variety || "Standard",
         cropBatchId,
         answers: answersPayload,
       });
@@ -186,7 +177,7 @@ export function QualityAssessmentWizard({
       if (res) {
         setEvaluationResult(res);
       } else {
-        setErrorMsg("Failed to calculate quality assessment. Please try again.");
+        setErrorMsg(lang === "mr" ? "गुणवत्ता विश्लेषण अयशस्वी झाले. कृपया पुन्हा प्रयत्न करा." : "Failed to calculate quality assessment. Please try again.");
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to submit assessment.");
@@ -216,7 +207,7 @@ export function QualityAssessmentWizard({
 
       {/* Sharp, Centered Wizard Card */}
       <div
-        className="relative z-[110] bg-white rounded-3xl border border-slate-200/90 max-w-2xl sm:max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl shadow-black/30 animate-in zoom-in-95 max-h-[88vh] overflow-y-auto flex flex-col justify-between text-slate-900"
+        className="relative z-[110] bg-white rounded-3xl border border-slate-200 max-w-xl sm:max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl shadow-black/30 animate-in zoom-in-95 max-h-[88vh] overflow-y-auto flex flex-col justify-between text-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -226,40 +217,31 @@ export function QualityAssessmentWizard({
               <ShieldCheck className="w-6 h-6" />
             </span>
             <div>
-              <h3 className="font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight">
-                {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Crop Quality Assessment)" : "Crop Quality Assessment"}
+              <h3 className="font-serif font-black text-xl sm:text-2xl text-slate-900 tracking-tight">
+                {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन (Quality Assessment)" : "Crop Quality Assessment"}
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-                {cropName} {variety ? `• ${variety}` : ""} • Dynamic Quality Scoring Engine
+                {cropName} {variety ? `• ${variety}` : ""} • Dynamic Crop-Specific Engine
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2.5">
-            <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold">
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                1. Lot Details
-              </span>
-              <span className="text-slate-300 font-bold">→</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white shadow-xs">
-                2. Quality Assessment
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
-              title="Close Quality Assessment"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+            title="Close Quality Assessment"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="py-12 text-center text-slate-400 space-y-2">
-            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs font-bold">Loading quality criteria for {cropName}...</p>
+            <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs font-bold">
+              {lang === "mr" ? `${cropName} साठी गुणवत्ता निकष लोड होत आहेत...` : `Loading quality criteria for ${cropName}...`}
+            </p>
           </div>
         )}
 
@@ -269,17 +251,17 @@ export function QualityAssessmentWizard({
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between">
               <div className="space-y-0.5">
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">
-                  Assessment Complete
+                  {lang === "mr" ? "मूल्यांकन पूर्ण" : "Assessment Complete"}
                 </span>
-                <h4 className="text-lg font-black text-emerald-900">
+                <h4 className="text-xl font-black text-emerald-900 font-serif">
                   {evaluationResult.provisionalGrade}
                 </h4>
                 <p className="text-xs text-emerald-800">
-                  Quality Score: <span className="font-bold">{evaluationResult.qualityScore}/100</span> • Confidence:{" "}
+                  Quality Score: <span className="font-bold">{evaluationResult.qualityScore}/100</span> • Evidence Confidence:{" "}
                   <span className="font-bold">{evaluationResult.evidenceConfidence}%</span>
                 </p>
               </div>
-              <span className="p-3 bg-emerald-600 text-white rounded-2xl shadow-sm">
+              <span className="p-3 bg-emerald-700 text-white rounded-2xl shadow-sm">
                 <FileCheck className="w-6 h-6" />
               </span>
             </div>
@@ -289,7 +271,7 @@ export function QualityAssessmentWizard({
               <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-amber-950">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span>Quality Warnings Triggered:</span>
+                  <span>{lang === "mr" ? "गुणवत्ता सतर्कता (Quality Flags):" : "Quality Warnings Triggered:"}</span>
                 </div>
                 <ul className="list-disc pl-5 space-y-0.5 text-[11px]">
                   {evaluationResult.criticalFlags.map((f, i) => (
@@ -301,8 +283,10 @@ export function QualityAssessmentWizard({
 
             {/* Strengths & Risks */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                <span className="font-bold text-emerald-800 block text-[11px]">Top Quality Strengths</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <span className="font-bold text-emerald-800 block text-[11px]">
+                  {lang === "mr" ? "प्रमुख जमेच्या बाजू (Strengths)" : "Top Quality Strengths"}
+                </span>
                 <ul className="space-y-1 text-[10px] text-slate-700">
                   {(evaluationResult.positiveFactors || []).map((p, i) => (
                     <li key={i}>✓ {p}</li>
@@ -310,8 +294,10 @@ export function QualityAssessmentWizard({
                 </ul>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                <span className="font-bold text-amber-900 block text-[11px]">Risk Considerations</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <span className="font-bold text-amber-900 block text-[11px]">
+                  {lang === "mr" ? "जोखीम घटक (Risk Factors)" : "Risk Considerations"}
+                </span>
                 <ul className="space-y-1 text-[10px] text-slate-700">
                   {(evaluationResult.riskFactors || []).map((r, i) => (
                     <li key={i}>⚠ {r}</li>
@@ -321,161 +307,165 @@ export function QualityAssessmentWizard({
             </div>
 
             {/* Provisional Disclaimer */}
-            <p className="text-[11px] text-slate-500 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              * Assessment is provisional and based on farmer-submitted measurements. Quality Passport will be attached to
-              your trade lot.
+            <p className="text-[11px] text-slate-500 italic bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+              * Provisional — Farmer Declared. Quality Passport will be attached to your trade lot for buyers to review.
             </p>
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-2">
               <button
+                type="button"
                 onClick={() => setEvaluationResult(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold cursor-pointer transition-colors"
               >
-                ← Edit Answers
+                {lang === "mr" ? "← उत्तरे बदला" : "← Edit Answers"}
               </button>
 
               <button
+                type="button"
                 onClick={handleConfirmPassport}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
               >
-                <span>Attach Passport & Continue</span>
+                <span>{lang === "mr" ? "पासपोर्ट संलग्न करा व सुरू ठेवा" : "Attach Passport & Continue"}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Step-by-Step Questionnaire Form */}
-        {!loading && !evaluationResult && config && (
-          <div className="space-y-5">
-            {/* Step Progress Indicator */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] font-extrabold text-slate-500">
-                <span>
-                  Step {currentStep + 1} of {sections.length}: {currentSectionName}
+        {/* ONE QUESTION AT A TIME Questionnaire Form */}
+        {!loading && !evaluationResult && currentQuestion && (
+          <div className="space-y-6">
+            {/* Progress Bar & Counter */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-extrabold text-slate-600">
+                <span className="text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  {lang === "mr" ? `प्रश्न ${currentQuestionIndex + 1} / ${totalQuestions}` : `Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
                 </span>
-                <span>{Math.round(((currentStep + 1) / sections.length) * 100)}%</span>
+                <span className="text-slate-400 font-medium">
+                  {currentQuestion.section} ({Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100)}%)
+                </span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-emerald-600 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${((currentStep + 1) / sections.length) * 100}%` }}
+                  className="bg-emerald-700 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
                 />
               </div>
             </div>
 
-            {/* Questions List */}
-            <div className="space-y-4">
-              {currentQuestions.map((q) => {
-                const currentAnswer = answers[q.id] || { value: "", evidenceSource: "Physical sample" };
+            {/* Single Question Box */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/90 border border-slate-200 space-y-4 text-xs">
+              <div>
+                <label className="font-serif font-black text-slate-900 block text-base sm:text-lg leading-snug">
+                  {currentQuestion.questionText} {currentQuestion.required && <span className="text-emerald-600">*</span>}
+                </label>
+                {currentQuestion.helpText && (
+                  <p className="text-xs text-slate-500 mt-1">{currentQuestion.helpText}</p>
+                )}
+              </div>
 
-                return (
-                  <div
-                    key={q.id}
-                    className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-2.5 transition-all text-xs"
-                  >
-                    <div>
-                      <label className="font-extrabold text-slate-900 block text-xs">
-                        {q.questionText} {q.required && <span className="text-red-500">*</span>}
-                      </label>
-                      {q.helpText && <p className="text-[11px] text-slate-500 mt-0.5">{q.helpText}</p>}
-                    </div>
-
-                    {/* SELECT / RADIO Input */}
-                    {q.inputType === "SELECT" && q.options && (
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {q.options.map((opt) => (
-                          <label
-                            key={opt.value}
-                            className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                              currentAnswer.value === opt.value
-                                ? "bg-emerald-50/80 border-emerald-400 text-emerald-950 font-bold"
-                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                            }`}
-                          >
-                            <span className="text-xs">{opt.label}</span>
-                            <input
-                              type="radio"
-                              name={q.id}
-                              value={opt.value}
-                              checked={currentAnswer.value === opt.value}
-                              onChange={(e) => handleValueChange(q.id, e.target.value)}
-                              className="w-4 h-4 text-emerald-600 accent-emerald-600"
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* PERCENTAGE / NUMBER Input */}
-                    {(q.inputType === "PERCENTAGE" || q.inputType === "NUMBER") && (
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex-1">
-                          <input
-                            type="number"
-                            min={q.min ?? 0}
-                            max={q.max ?? 100}
-                            value={currentAnswer.value}
-                            onChange={(e) => handleValueChange(q.id, Number(e.target.value))}
-                            className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 font-black text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            placeholder="0"
-                          />
-                          {q.unit && (
-                            <span className="absolute right-3 top-2 text-xs font-extrabold text-slate-400">
-                              {q.unit}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Evidence Source Selector */}
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 text-[10px]">
-                      <span className="text-slate-500 font-semibold">Evidence Source:</span>
-                      <select
-                        value={currentAnswer.evidenceSource}
-                        onChange={(e) => handleEvidenceChange(q.id, e.target.value)}
-                        className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold focus:outline-none text-[10px] cursor-pointer"
+              {/* SELECT / RADIO Options */}
+              {currentQuestion.inputType === "SELECT" && currentQuestion.options && (
+                <div className="grid grid-cols-1 gap-2 pt-1">
+                  {currentQuestion.options.map((opt) => {
+                    const isSelected = answers[currentQuestion.id]?.value === opt.value;
+                    return (
+                      <label
+                        key={opt.value}
+                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                          isSelected
+                            ? "bg-emerald-50 border-emerald-500 text-emerald-950 font-bold shadow-xs"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100/80"
+                        }`}
                       >
-                        <option value="Physical sample">Physical sample (78% confidence)</option>
-                        <option value="Farmer observation">Farmer observation (62% confidence)</option>
-                        <option value="Moisture/meter">Moisture/meter (88% confidence)</option>
-                        <option value="Lab/Test">Lab/Test Certified (95% confidence)</option>
-                        <option value="Estimated">Estimated (45% confidence)</option>
-                      </select>
-                    </div>
+                        <span className="text-xs sm:text-sm">{opt.label}</span>
+                        <input
+                          type="radio"
+                          name={currentQuestion.id}
+                          value={opt.value}
+                          checked={isSelected}
+                          onChange={(e) => handleValueChange(currentQuestion.id, e.target.value)}
+                          className="w-4 h-4 text-emerald-700 accent-emerald-700"
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* PERCENTAGE / NUMBER Input */}
+              {(currentQuestion.inputType === "PERCENTAGE" || currentQuestion.inputType === "NUMBER") && (
+                <div className="pt-2">
+                  <div className="relative max-w-xs">
+                    <input
+                      type="number"
+                      min={currentQuestion.min ?? 0}
+                      max={currentQuestion.max ?? 100}
+                      value={answers[currentQuestion.id]?.value ?? 0}
+                      onChange={(e) => handleValueChange(currentQuestion.id, Number(e.target.value))}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 font-black text-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600"
+                      placeholder="0"
+                    />
+                    {currentQuestion.unit && (
+                      <span className="absolute right-3.5 top-3 text-xs font-black text-slate-400">
+                        {currentQuestion.unit}
+                      </span>
+                    )}
                   </div>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Evidence Source Selector */}
+              <div className="flex flex-wrap items-center justify-between pt-3 border-t border-slate-200/80 text-[11px] gap-2">
+                <span className="text-slate-500 font-medium">Evidence Source:</span>
+                <select
+                  value={answers[currentQuestion.id]?.evidenceSource || "Physical sample"}
+                  onChange={(e) => handleEvidenceChange(currentQuestion.id, e.target.value)}
+                  className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold focus:outline-none text-[11px] cursor-pointer"
+                >
+                  <option value="Physical sample">Physical sample (78% confidence)</option>
+                  <option value="Farmer observation">Farmer observation (62% confidence)</option>
+                  <option value="Moisture/meter">Moisture meter test (88% confidence)</option>
+                  <option value="Lab/Test">Certified Lab Assay (95% confidence)</option>
+                  <option value="Estimated">Estimated (45% confidence)</option>
+                </select>
+              </div>
             </div>
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="p-3 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs font-bold flex items-center gap-2">
+              <div className="p-3 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+            {/* Navigation Controls */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={handlePrev}
-                disabled={currentStep === 0}
-                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-30 font-bold text-xs text-slate-700 transition-all cursor-pointer"
+                disabled={currentQuestionIndex === 0}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-30 font-bold text-xs text-slate-700 transition-all cursor-pointer flex items-center gap-1"
               >
-                Back
+                <ChevronLeft className="w-4 h-4" />
+                <span>{lang === "mr" ? "मागे (Back)" : "Back"}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleNext}
                 disabled={evaluating}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
               >
-                <span>{currentStep === sections.length - 1 ? "Generate Quality Passport" : "Continue"}</span>
+                <span>
+                  {evaluating
+                    ? lang === "mr" ? "गणना करत आहे..." : "Calculating Quality..."
+                    : currentQuestionIndex === totalQuestions - 1
+                    ? lang === "mr" ? "गुणवत्ता मोजा (Calculate Quality)" : "Calculate Quality"
+                    : lang === "mr" ? "पुढे (Next)" : "Next"}
+                </span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

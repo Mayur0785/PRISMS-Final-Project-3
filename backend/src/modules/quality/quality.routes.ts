@@ -9,12 +9,12 @@ import {
 
 export const qualityRouter = Router();
 
-// Crop Questions Configuration
-qualityRouter.get('/quality/crops/:crop/questions', requireAuth, getQualityQuestions);
+// Crop Questions Configuration (publicly queryable schema)
+qualityRouter.get('/quality/crops/:crop/questions', getQualityQuestions);
 
 // Quality Assessments
 qualityRouter.post('/quality/assessments', requireAuth, createQualityAssessment);
-qualityRouter.get('/quality/assessments/:id', requireAuth, getQualityAssessmentById);
+qualityRouter.get('/quality/assessments/:id', getQualityAssessmentById);
 qualityRouter.get('/quality/assessments', requireAuth, getUserAssessments);
 
 // Legacy routes compatibility

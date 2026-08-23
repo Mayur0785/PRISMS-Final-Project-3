@@ -1044,6 +1044,7 @@ export interface QualityAssessmentResult {
     provisionalGrade: string;
     qualityScore: number;
     evidenceConfidence: number;
+    parametersList?: Array<{ name: string; value: string | number; unit: string; score: number }>;
     bulbSize?: string;
     rotPercent?: number;
     sproutingPercent?: number;
@@ -1055,6 +1056,7 @@ export interface QualityAssessmentResult {
     storageCondition?: string;
     verificationStatus: string;
     disclaimer: string;
+    [key: string]: any;
   };
   isProvisional?: boolean;
   createdAt?: string;

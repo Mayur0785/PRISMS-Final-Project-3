@@ -158,65 +158,59 @@ export function QualityPassportModal({
 
         {/* Measured Quality Parameters Breakdown */}
         <div className="space-y-3">
-          <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-slate-500" />
+          <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5 font-serif">
+            <Layers className="w-4 h-4 text-emerald-700" />
             Crop Quality Parameters & Measurements
           </h4>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Bulb Size & Uniformity</span>
-              <span className="font-black text-slate-800">{summary.bulbSize || "Large / Uniform"}</span>
+          {summary.parametersList && summary.parametersList.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              {summary.parametersList.map((p: any, idx: number) => (
+                <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold block">{p.name}</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-black text-slate-800">
+                      {p.value !== undefined ? (p.unit === "%" ? `${p.value}%` : String(p.value)) : "N/A"}
+                    </span>
+                    {p.score !== undefined && (
+                      <span className="text-[10px] font-bold text-emerald-700">{p.score}/100</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Rot / Disease</span>
-              <span className="font-black text-slate-800">
-                {summary.rotPercent !== undefined ? `${summary.rotPercent}%` : "0%"}
-              </span>
+          ) : assessment.parameterScores ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              {Object.entries(assessment.parameterScores).map(([key, p]: [string, any]) => (
+                <div key={key} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold block">{p.name}</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-black text-slate-800">
+                      {p.value !== undefined ? (p.unit === "%" ? `${p.value}%` : String(p.value)) : "N/A"}
+                    </span>
+                    {p.score !== undefined && (
+                      <span className="text-[10px] font-bold text-emerald-700">{p.score}/100</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Sprouting Defect</span>
-              <span className="font-black text-slate-800">
-                {summary.sproutingPercent !== undefined ? `${summary.sproutingPercent}%` : "0%"}
-              </span>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
+                <span className="text-[10px] text-slate-400 font-bold block">Size & Grading</span>
+                <span className="font-black text-slate-800">{summary.bulbSize || "Standard Commercial"}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
+                <span className="text-[10px] text-slate-400 font-bold block">Defects / Damage</span>
+                <span className="font-black text-slate-800">{summary.rotPercent !== undefined ? `${summary.rotPercent}%` : "0%"}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
+                <span className="text-[10px] text-slate-400 font-bold block">Condition</span>
+                <span className="font-black text-slate-800">{summary.firmness || "Standard Quality"}</span>
+              </div>
             </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Neck Drying Status</span>
-              <span className="font-black text-slate-800">{summary.neckDrying || "Well Dried"}</span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Bulb Firmness</span>
-              <span className="font-black text-slate-800">{summary.firmness || "Firm"}</span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Skin Condition</span>
-              <span className="font-black text-slate-800">{summary.skinCondition || "Intact"}</span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Mechanical Cuts</span>
-              <span className="font-black text-slate-800">
-                {summary.cutsPercent !== undefined ? `${summary.cutsPercent}%` : "0%"}
-              </span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Foreign Matter / Soil</span>
-              <span className="font-black text-slate-800">
-                {summary.foreignMatterPercent !== undefined ? `${summary.foreignMatterPercent}%` : "0%"}
-              </span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
-              <span className="text-[10px] text-slate-400 font-bold block">Storage Facility</span>
-              <span className="font-black text-slate-800">{summary.storageCondition || "Ventilated Shed"}</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Positive Factors & Risk Considerations */}

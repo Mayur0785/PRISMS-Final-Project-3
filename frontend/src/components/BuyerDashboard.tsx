@@ -709,27 +709,36 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                   </div>
 
                   {/* Quality Passport Summary Pill */}
-                  <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                        Quality Passport
-                      </span>
-                      <span className="text-[10px] font-black text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">
-                        Score: {lot.qualityScore || 85}/100
+                  {lot.qualityScore || lot.qualityPassport ? (
+                    <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-xs text-emerald-900 flex items-center gap-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>{lot.provisionalGrade || lot.grade || "Grade A"}</span>
+                        </span>
+                        <span className="text-[10px] font-black text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">
+                          Score: {lot.qualityScore}/100
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-600">
+                        <span>Confidence: {lot.evidenceConfidence || 75}%</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLotForPassport(lot)}
+                          className="font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                        >
+                          View Quality Passport →
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2 text-slate-500">
+                      <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="text-[11px] font-medium text-slate-500">
+                        Quality Assessment Not Provided
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-600">
-                      <span>Confidence: {lot.evidenceConfidence || 80}%</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedLotForPassport(lot)}
-                        className="font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
-                      >
-                        View Quality Passport →
-                      </button>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-2 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
                     <div>
