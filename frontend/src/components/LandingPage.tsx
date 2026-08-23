@@ -15,13 +15,14 @@ import {
   Handshake,
   BadgeCheck,
 } from "lucide-react";
+import { t, type Lang } from "@/lib/i18n";
 
 interface LandingPageProps {
   onOpenAuth: (role: "farmer" | "buyer", mode?: "login" | "signup") => void;
   onExploreFarmer: () => void;
   onExploreBuyer: () => void;
-  lang?: "en" | "mr";
-  onToggleLang?: (lang: "en" | "mr") => void;
+  lang?: Lang;
+  onToggleLang?: (lang: Lang) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -57,11 +58,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="flex items-center gap-2">
                 <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
-                  Agri-Tech
+                  {t(lang, "agriTech")}
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium tracking-wide">
-                Agricultural Market Realization & Trading
+                {t(lang, "landingSubBrand")}
               </p>
             </div>
           </div>
@@ -69,13 +70,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Desktop Center Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600">
             <button onClick={() => scrollToSection("home")} className="hover:text-emerald-800 transition-colors cursor-pointer">
-              {lang === "mr" ? "मुख्यपृष्ठ" : "Home"}
+              {t(lang, "home")}
             </button>
             <button onClick={() => scrollToSection("features")} className="hover:text-emerald-800 transition-colors cursor-pointer">
-              {lang === "mr" ? "वैशिष्ट्ये" : "Features"}
+              {t(lang, "features")}
             </button>
             <button onClick={() => scrollToSection("how-it-works")} className="hover:text-emerald-800 transition-colors cursor-pointer">
-              {lang === "mr" ? "कार्यपद्धती" : "How It Works"}
+              {t(lang, "howItWorks")}
             </button>
           </nav>
 
@@ -98,7 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer"
             >
               <span>🚜</span>
-              <span>{lang === "mr" ? "शेतकरी लॉग इन" : "Farmer Login"}</span>
+              <span>{t(lang, "farmerLogin")}</span>
             </button>
 
             {/* Buyer Login Button */}
@@ -107,7 +108,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer"
             >
               <span>🏢</span>
-              <span>{lang === "mr" ? "खरेदीदार लॉग इन" : "Buyer Login"}</span>
+              <span>{t(lang, "buyerLogin")}</span>
             </button>
           </div>
 
@@ -139,19 +140,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 onClick={() => scrollToSection("home")}
                 className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
               >
-                {lang === "mr" ? "मुख्यपृष्ठ" : "Home"}
+                {t(lang, "home")}
               </button>
               <button
                 onClick={() => scrollToSection("features")}
                 className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
               >
-                {lang === "mr" ? "वैशिष्ट्ये" : "Features"}
+                {t(lang, "features")}
               </button>
               <button
                 onClick={() => scrollToSection("how-it-works")}
                 className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
               >
-                {lang === "mr" ? "कार्यपद्धती" : "How It Works"}
+                {t(lang, "howItWorks")}
               </button>
             </div>
             <div className="pt-2 border-t border-slate-200 flex flex-col gap-2">
@@ -162,7 +163,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 }}
                 className="w-full py-2.5 rounded-xl bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer"
               >
-                🚜 {lang === "mr" ? "शेतकरी लॉग इन (Farmer Login)" : "Farmer Login"}
+                🚜 {t(lang, "farmerLogin")}
               </button>
               <button
                 onClick={() => {
@@ -171,7 +172,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 }}
                 className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer"
               >
-                🏢 {lang === "mr" ? "खरेदीदार लॉग इन (Buyer Login)" : "Buyer Login"}
+                🏢 {t(lang, "buyerLogin")}
               </button>
             </div>
           </div>
@@ -191,20 +192,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Small badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-emerald-600" />
-              <span>Digital Agricultural Command Center</span>
+              <span>{t(lang, "heroBadge")}</span>
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-slate-900 font-serif">
-              Smarter Agricultural Trading.
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.14] text-slate-900 font-serif">
+              {t(lang, "heroHeading1")}
               <span className="block text-emerald-800 mt-1">
-                Better Market Decisions.
+                {t(lang, "heroHeading2")}
               </span>
             </h1>
 
             {/* Subheading */}
             <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed max-w-lg mx-auto lg:mx-0">
-              PRISMS connects farmers and buyers through intelligent market discovery, digital offers, negotiation, logistics and settlement.
+              {t(lang, "heroDescription")}
             </p>
 
             {/* Action Buttons */}
@@ -214,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🚜</span>
-                <span>{lang === "mr" ? "शेतकरी लॉग इन" : "Login as Farmer"}</span>
+                <span>{t(lang, "loginAsFarmer")}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -223,7 +224,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🏢</span>
-                <span>{lang === "mr" ? "खरेदीदार लॉग इन" : "Login as Buyer"}</span>
+                <span>{t(lang, "loginAsBuyer")}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -232,15 +233,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs text-slate-500 font-semibold border-t border-slate-100">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Zero Brokerage</span>
+                <span>{t(lang, "zeroBrokerage")}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Verified APMC Rates</span>
+                <span>{t(lang, "verifiedApmcRates")}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-emerald-600" />
-                <span>Integrated Logistics</span>
+                <span>{t(lang, "integratedLogistics")}</span>
               </div>
             </div>
           </div>
@@ -251,7 +252,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-slate-100">
                 <img
                   src="/images/prisms_field_hero.jpg"
-                  alt="Indian farmer with fresh harvest produce in agricultural field"
+                  alt={t(lang, "farmerHeroAlt")}
                   className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/hero-farm.jpg";
@@ -273,14 +274,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 font-serif">
-              {lang === "mr"
-                ? "स्मार्ट कृषी व्यापारासाठी आवश्यक सर्व काही"
-                : "Everything You Need for Smarter Agricultural Trade"}
+              {t(lang, "featuresHeading")}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 font-normal">
-              {lang === "mr"
-                ? "शेतकरी आणि खरेदीदारांसाठी थेट, पारदर्शक आणि विश्वासार्ह डिजिटल मंच."
-                : "A unified platform built for transparent price realization, direct buyer offers, and verified settlements."}
+              {t(lang, "featuresSubheading")}
             </p>
           </div>
 
@@ -292,12 +289,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <Compass className="w-6 h-6" />
                 </div>
                 <h3 className="font-serif font-black text-lg text-slate-900">
-                  {lang === "mr" ? "बाजार शोध (Market Discovery)" : "Market Discovery"}
+                  {t(lang, "featDiscoveryTitle")}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {lang === "mr"
-                    ? "सत्यापित शेतकरी उत्पादन, बाजारभाव माहिती आणि व्यापार संधी शोधा."
-                    : "Discover verified farmer produce, mandi insights and market opportunities."}
+                  {t(lang, "featDiscoveryDesc")}
                 </p>
               </div>
             </div>
@@ -309,12 +304,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <ArrowLeftRight className="w-6 h-6" />
                 </div>
                 <h3 className="font-serif font-black text-lg text-slate-900">
-                  {lang === "mr" ? "डिजिटल वाटाघाटी (Digital Negotiation)" : "Digital Negotiation"}
+                  {t(lang, "featNegotiationTitle")}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {lang === "mr"
-                    ? "थेट खरेदीदार आणि शेतकऱ्यांशी ऑफर्स पाठवा, काउंटर ऑफर्स द्या आणि वाटाघाटी करा."
-                    : "Submit offers, exchange counter offers and negotiate directly with buyers and farmers."}
+                  {t(lang, "featNegotiationDesc")}
                 </p>
               </div>
             </div>
@@ -326,12 +319,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <FileCheck className="w-6 h-6" />
                 </div>
                 <h3 className="font-serif font-black text-lg text-slate-900">
-                  {lang === "mr" ? "व्यापार पूर्तता (Trade Execution)" : "Trade Execution"}
+                  {t(lang, "featExecutionTitle")}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {lang === "mr"
-                    ? "एकाच प्रणालीमध्ये वाहतूक, सुरक्षित पेमेंट आणि व्यवहार स्थिती ट्रॅक करा."
-                    : "Track delivery, payments and completed transactions in one connected workflow."}
+                  {t(lang, "featExecutionDesc")}
                 </p>
               </div>
             </div>
@@ -349,12 +340,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 font-serif">
-              {lang === "mr" ? "PRISMS कसे कार्य करते" : "How PRISMS Works"}
+              {t(lang, "howItWorksHeading")}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 font-normal">
-              {lang === "mr"
-                ? "लॉट तयार करण्यापासून ते सुरक्षित पेमेंट्सपर्यंत सोपे ४ टप्पे."
-                : "From trade lot creation to direct settlement in 4 simple steps."}
+              {t(lang, "howItWorksSubheading")}
             </p>
           </div>
 
@@ -368,12 +357,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <PackagePlus className="w-5 h-5 text-emerald-700" />
               </div>
               <h3 className="font-serif font-black text-base text-slate-900">
-                {lang === "mr" ? "ट्रेड लॉट तयार करा" : "Create a Trade Lot"}
+                {t(lang, "step1Title")}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                {lang === "mr"
-                  ? "शेतकरी प्रमाण, अपेक्षित दर आणि गुणवत्ता तपशिलांसह मालाची नोंद करतात."
-                  : "Farmers list their produce with quantity, price and quality details."}
+                {t(lang, "step1Desc")}
               </p>
             </div>
 
@@ -386,12 +373,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <Search className="w-5 h-5 text-emerald-700" />
               </div>
               <h3 className="font-serif font-black text-base text-slate-900">
-                {lang === "mr" ? "शोध व थेट ऑफर" : "Discover & Make an Offer"}
+                {t(lang, "step2Title")}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                {lang === "mr"
-                  ? "खरेदीदार उपलब्ध उत्पादन शोधतात आणि थेट खरेदी ऑफर पाठवतात."
-                  : "Buyers discover available produce and submit a direct offer."}
+                {t(lang, "step2Desc")}
               </p>
             </div>
 
@@ -404,12 +389,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <Handshake className="w-5 h-5 text-emerald-700" />
               </div>
               <h3 className="font-serif font-black text-base text-slate-900">
-                {lang === "mr" ? "वाटाघाटी व पुष्टी" : "Negotiate & Confirm"}
+                {t(lang, "step3Title")}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                {lang === "mr"
-                  ? "दोन्ही बाजूंची सहमती होईपर्यंत शेतकरी आणि खरेदीदार काउंटर ऑफर्स करू शकतात."
-                  : "Farmers and buyers can exchange counter offers until both agree."}
+                {t(lang, "step3Desc")}
               </p>
             </div>
 
@@ -422,12 +405,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <BadgeCheck className="w-5 h-5 text-emerald-700" />
               </div>
               <h3 className="font-serif font-black text-base text-slate-900">
-                {lang === "mr" ? "व्यापार ट्रॅकिंग" : "Track the Trade"}
+                {t(lang, "step4Title")}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                {lang === "mr"
-                  ? "एकाच करारातून वाहतूक, सुरक्षित पेमेंट आणि व्यवहार स्थिती ट्रॅक होते."
-                  : "Delivery, payment and transaction status stay connected from one deal."}
+                {t(lang, "step4Desc")}
               </p>
             </div>
           </div>
