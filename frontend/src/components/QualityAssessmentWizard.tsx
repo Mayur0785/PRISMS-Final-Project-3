@@ -308,7 +308,7 @@ export function QualityAssessmentWizard({
 
             {/* Provisional Disclaimer */}
             <p className="text-[11px] text-slate-500 italic bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
-              * Provisional — Farmer Declared. Quality Passport will be attached to your trade lot for buyers to review.
+              * Provisional — Farmer Submitted Assessment. Quality Passport will be attached to your trade lot for buyers to review.
             </p>
 
             {/* Actions */}

@@ -105,11 +105,6 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
       return;
     }
 
-    if (addQualityAssessment && !qualityResult) {
-      setQualityWizardOpen(true);
-      return;
-    }
-
     // Proceed to create the lot directly
     handleCreateLot();
   };
@@ -117,7 +112,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
   const handleCreateLot = async () => {
     try {
       setSubmitting(true);
-      const hasAssessment = Boolean(addQualityAssessment && qualityResult);
+      const hasAssessment = Boolean(qualityResult);
 
       await createTradeLot({
         cropBatchId: selectedBatchId || undefined,
@@ -135,7 +130,6 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
       });
       setCreateOpen(false);
       setQualityResult(null);
-      setAddQualityAssessment(false);
       await loadLots();
     } catch (err: any) {
       setFormError(err.response?.data?.error?.message || err.message || "Failed to create trade lot.");
@@ -174,9 +168,8 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
           onClick={() => {
             setCreateOpen(true);
             setQualityResult(null);
-            setAddQualityAssessment(false);
           }}
-          className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm"
+          className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           {lang === "mr" ? "नवीन व्यापार लॉट तयार करा" : "Create New Trade Lot"}
@@ -272,21 +265,95 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "दर्जा (Grade):" : "Grade:"}</label>
-                  <select
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
-                  >
-                    <option value="Grade A">Grade A (उत्कृष्ट)</option>
-                    <option value="Grade B">Grade B (मध्यम)</option>
-                    <option value="Grade C">Grade C (साधारण)</option>
-                    <option value="FAQ">FAQ (सर्वसाधारण)</option>
-                  </select>
+              {/* Compact Grade & Quality Assessment Section */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-800 font-bold block text-xs">
+                    {lang === "mr" ? "दर्जा (Grade):" : "Grade:"}
+                  </label>
+                  {qualityResult ? (
+                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      {lang === "mr" ? `मूल्यांकन: ${qualityResult.provisionalGrade}` : `Assessed: ${qualityResult.provisionalGrade}`}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                      {lang === "mr" ? "शेतकरी घोषित (Farmer Declared)" : "Farmer Declared"}
+                    </span>
+                  )}
                 </div>
 
+                <select
+                  value={qualityResult ? qualityResult.provisionalGrade : grade}
+                  onChange={(e) => {
+                    setGrade(e.target.value);
+                    setQualityResult(null);
+                  }}
+                  className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs font-semibold focus:border-emerald-600 focus:bg-white"
+                >
+                  <option value="Grade A">Grade A ({lang === "mr" ? "उत्तम" : "Grade A"})</option>
+                  <option value="Grade B">Grade B ({lang === "mr" ? "मध्यम" : "Grade B"})</option>
+                  <option value="Grade C">Grade C ({lang === "mr" ? "सामान्य" : "Grade C"})</option>
+                </select>
+
+                {/* Helper Information Message */}
+                <div className="text-[11px] text-slate-500 leading-relaxed space-y-0.5 pt-0.5">
+                  <p className="font-medium text-slate-600">
+                    {lang === "mr" ? "पिकाची गुणवत्ता ठाऊक आहे? वरील दर्जा निवडा." : "Know your crop quality? Select the grade above."}
+                  </p>
+                  <p className="text-slate-500">
+                    {lang === "mr"
+                      ? "खात्री नाही? PRISMS ला पीक-विशिष्ट प्रश्नावलीद्वारे गुणवत्ता मूल्यांकन करू द्या."
+                      : "Not sure? Let PRISMS assess your crop using a crop-specific quality questionnaire."}
+                  </p>
+                </div>
+
+                {/* Optional Assessment Action / Result */}
+                {qualityResult ? (
+                  <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200 text-emerald-950 flex items-center justify-between text-xs mt-1 animate-in fade-in">
+                    <div className="space-y-0.5">
+                      <div className="font-black text-emerald-900 flex items-center gap-2">
+                        <span>Assessed Grade: {qualityResult.provisionalGrade}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">•</span>
+                        <span className="text-emerald-700 font-bold">Score: {qualityResult.qualityScore}/100</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Confidence: {qualityResult.evidenceConfidence}% • Quality Passport Attached (Provisional)
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setQualityWizardOpen(true)}
+                        className="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer"
+                      >
+                        {lang === "mr" ? "बदला" : "Edit"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQualityResult(null)}
+                        className="p-1 text-slate-400 hover:text-rose-600 text-xs font-bold cursor-pointer"
+                        title="Remove Assessment"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-1 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setQualityWizardOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      <span>{lang === "mr" ? "पिक गुणवत्ता तपासा (Check Crop Quality)" : "Check Crop Quality"}</span>
+                    </button>
+                    <span className="text-[10px] text-slate-400 font-medium italic">Optional</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "प्रमाण (क्विंटल):" : "Quantity (Quintals):"}</label>
                   <input
@@ -298,9 +365,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                     className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "अपेक्षित भाव (₹/Qtl):" : "Expected Price (₹/Qtl):"}</label>
                   <input
@@ -311,68 +376,17 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                     className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
                   />
                 </div>
-
-                <div>
-                  <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "किरकोळ भाव मर्यादा (Min ₹):" : "Min Acceptable Price (₹):"}</label>
-                  <input
-                    type="number"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(Number(e.target.value))}
-                    required
-                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
-                  />
-                </div>
               </div>
 
-              {/* Optional Quality Assessment Checkbox Section */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-2">
-                <label className="flex items-start gap-2.5 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={addQualityAssessment}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setAddQualityAssessment(checked);
-                      if (checked && !qualityResult) {
-                        setQualityWizardOpen(true);
-                      }
-                    }}
-                    className="w-4 h-4 mt-0.5 text-emerald-700 accent-emerald-700 rounded cursor-pointer"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="font-extrabold text-xs text-emerald-900 block flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                      {lang === "mr" ? "पिक गुणवत्ता मूल्यांकन व पासपोर्ट जोडा" : "Add Quality Assessment & Quality Passport"}
-                    </span>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      {lang === "mr"
-                        ? "मार्गदर्शित पीक-विशिष्ट प्रश्नावलीद्वारे खरेदीदारांना आपल्या पिकाची गुणवत्ता समजण्यास मदत करा."
-                        : "Help buyers understand your crop quality through a guided crop-specific questionnaire."}
-                    </p>
-                  </div>
-                </label>
-
-                {addQualityAssessment && qualityResult && (
-                  <div className="p-2.5 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs mt-2 animate-in fade-in">
-                    <div className="space-y-0.5">
-                      <div className="font-black text-emerald-900 flex items-center gap-2">
-                        <span>{qualityResult.provisionalGrade}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">•</span>
-                        <span className="text-emerald-700 font-bold">Score: {qualityResult.qualityScore}/100</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500">
-                        Evidence Confidence: {qualityResult.evidenceConfidence}% • Quality Passport Attached
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setQualityWizardOpen(true)}
-                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer"
-                    >
-                      {lang === "mr" ? "बदला (Edit)" : "Edit"}
-                    </button>
-                  </div>
-                )}
+              <div>
+                <label className="text-slate-700 font-medium block mb-1">{lang === "mr" ? "किरकोळ भाव मर्यादा (Min ₹):" : "Min Acceptable Price (₹):"}</label>
+                <input
+                  type="number"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(Number(e.target.value))}
+                  required
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-2.5 text-xs focus:border-emerald-600 focus:bg-white"
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
@@ -381,7 +395,6 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                   onClick={() => {
                     setCreateOpen(false);
                     setQualityResult(null);
-                    setAddQualityAssessment(false);
                   }}
                   className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
@@ -399,7 +412,7 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                       ? lang === "mr"
                         ? "तयार करत आहे..."
                         : "Creating..."
-                      : addQualityAssessment && qualityResult
+                      : qualityResult
                       ? lang === "mr"
                         ? "लॉट तयार करा (पासपोर्ट संलग्न)"
                         : "Confirm & Create Trade Lot"
@@ -490,7 +503,14 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
                     <span>{lot.variety}</span>
                     <span>•</span>
-                    <span className="text-emerald-700 font-semibold">{lot.provisionalGrade || lot.grade}</span>
+                    <span className="text-emerald-700 font-semibold">
+                      {lot.provisionalGrade || lot.grade}
+                      {!(lot.qualityScore || lot.qualityPassport) && (
+                        <span className="text-[10px] text-slate-500 font-normal ml-1">
+                          ({lang === "mr" ? "शेतकरी घोषित" : "Farmer Declared"})
+                        </span>
+                      )}
+                    </span>
                     <span>•</span>
                     <span className="font-bold text-slate-800">{lot.quantityQtl} Qtl</span>
                   </div>

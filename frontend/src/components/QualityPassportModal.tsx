@@ -77,7 +77,7 @@ export function QualityPassportModal({
                   </span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-                  {summary.crop || assessment.cropName} • {lotId ? `Lot ${lotId}` : `ID: ${assessment.assessmentId}`}
+                  {summary.crop || assessment.cropName} • {lotId ? `Lot ${lotId}` : `ID: ${assessment.assessmentId}`} • Provisional — Farmer Submitted Assessment
                 </p>
               </div>
             </div>
@@ -101,7 +101,7 @@ export function QualityPassportModal({
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-black text-emerald-400">{grade}</span>
-              <span className="text-[10px] text-slate-400 font-medium">Farmer Declared</span>
+              <span className="text-[10px] text-slate-400 font-medium">Farmer Assessed</span>
             </div>
             <p className="text-[10px] text-slate-300 leading-tight">
               Subject to physical hub verification upon delivery.

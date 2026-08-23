@@ -698,6 +698,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       <span className="font-mono text-[10px] font-bold text-slate-400">{lot.lotId}</span>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300/60">
                         {lot.provisionalGrade || lot.grade || "Grade A"}
+                        {!(lot.qualityScore || lot.qualityPassport) && " • Farmer Declared"}
                       </span>
                     </div>
 
