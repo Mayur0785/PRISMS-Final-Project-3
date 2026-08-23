@@ -126,19 +126,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const isBuyer = role === "buyer";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-surface rounded-2xl border border-outline-variant max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative">
-        <BorderBeam size={220} duration={6} colorFrom={isBuyer ? "#1d4ed8" : "#3b6934"} colorTo="#fe932c" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-[#fbfbfa] text-slate-900 rounded-2xl border border-slate-200 max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative">
+        <BorderBeam size={220} duration={6} colorFrom="#047857" colorTo="#10b981" />
 
         {/* Modal Header */}
-        <div className="p-6 bg-surface-container-high border-b border-outline-variant flex justify-between items-start relative z-10">
-          <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl ${isBuyer ? "bg-blue-600" : "bg-primary"} text-on-primary flex items-center justify-center font-bold text-xl shadow-md`}>
+        <div className="p-6 bg-white border-b border-slate-200/80 flex justify-between items-start relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black text-xl shadow-sm shrink-0">
               {isBuyer ? "🏢" : "🌾"}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-[20px] font-extrabold text-on-surface leading-tight">
+                <h3 className="text-lg font-black text-slate-900 font-serif leading-tight">
                   {mode === "login"
                     ? isBuyer
                       ? lang === "mr" ? "खरेदीदार लॉग इन" : "Buyer Sign In"
@@ -147,11 +147,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     ? lang === "mr" ? "नवीन खरेदीदार नोंदणी" : "Register as Buyer"
                     : lang === "mr" ? "नवीन शेतकरी नोंदणी" : "Register as Farmer"}
                 </h3>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${isBuyer ? "bg-blue-100 text-blue-800 border border-blue-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"}`}>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300/60">
                   {role}
                 </span>
               </div>
-              <p className="text-[12px] text-on-surface-variant font-medium mt-0.5">
+              <p className="text-[12px] text-slate-500 font-medium mt-0.5">
                 {isBuyer
                   ? lang === "mr" ? "थेट शेतकरी पुरवठा, डिजिटल खरेदी आणि सुरक्षित व्यापार" : "Direct farmer supply discovery, digital offers & procurement"
                   : lang === "mr" ? "थेट APMC भाव, हमीभाव आणि AI नफा विश्लेषण" : "Live APMC prices, MSP benchmarks & AI profit"}
@@ -161,14 +161,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-variant text-on-surface-variant transition-colors"
+            className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
 
         {/* Mode Switcher Tabs */}
-        <div className="grid grid-cols-2 p-1.5 bg-surface-container border-b border-outline-variant text-[13px] font-bold text-center">
+        <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 border-b border-slate-200/80 text-[13px] font-bold text-center">
           <button
             type="button"
             onClick={() => {
@@ -176,10 +176,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setError("");
               setOtpSent(false);
             }}
-            className={`py-2.5 rounded-lg transition-all ${
+            className={`py-2.5 rounded-xl transition-all cursor-pointer ${
               mode === "login"
-                ? "bg-surface text-primary shadow-sm"
-                : "text-on-surface-variant hover:text-on-surface"
+                ? "bg-white text-emerald-950 shadow-xs font-bold border border-slate-200/60"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             {lang === "mr" ? "लॉग इन (Sign In)" : "Sign In"}
@@ -191,10 +191,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setError("");
               setOtpSent(false);
             }}
-            className={`py-2.5 rounded-lg transition-all ${
+            className={`py-2.5 rounded-xl transition-all cursor-pointer ${
               mode === "signup"
-                ? "bg-surface text-primary shadow-sm"
-                : "text-on-surface-variant hover:text-on-surface"
+                ? "bg-white text-emerald-950 shadow-xs font-bold border border-slate-200/60"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             {lang === "mr" ? "नोंदणी (Sign Up)" : "Create Account"}
@@ -202,8 +202,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Role Selector */}
-        <div className="px-6 pt-3 pb-1">
-          <label className="block text-[11px] font-extrabold text-on-surface-variant uppercase tracking-wider mb-1.5">
+        <div className="px-6 pt-3.5 pb-1">
+          <label className="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">
             {lang === "mr" ? "भूमिका निवडा (Select Role)" : "Selected Role"}
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -226,12 +226,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     setName("Mayur Kapse (नवी मुंबई)");
                   }
                 }}
-                className={`py-2 px-1 rounded-lg border text-center font-bold text-[11px] transition-all ${
+                className={`py-2 px-1 rounded-xl border text-center font-bold text-[11px] transition-all cursor-pointer ${
                   role === r.id
-                    ? isBuyer && r.id === "buyer"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                      : "bg-primary text-on-primary border-primary shadow-sm"
-                    : "bg-surface-container-low border-outline-variant text-on-surface-variant hover:bg-surface-container"
+                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100/80"
                 }`}
               >
                 {r.label}
@@ -242,8 +240,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Alternate Auth Method Toggle (Password vs Mobile OTP) */}
         {mode === "login" && (
-          <div className="px-6 pt-3 flex items-center justify-between text-[12px] font-bold border-b border-outline-variant/40 pb-3">
-            <span className="text-on-surface-variant">
+          <div className="px-6 pt-3 flex items-center justify-between text-[12px] font-bold border-b border-slate-200/60 pb-3">
+            <span className="text-slate-500">
               {lang === "mr" ? "लॉग इन पर्याय:" : "Sign In Option:"}
             </span>
             <div className="flex gap-2">
@@ -254,10 +252,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setOtpSent(false);
                   setError("");
                 }}
-                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all border ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all border cursor-pointer ${
                   authMethod === "password"
-                    ? "bg-primary text-on-primary border-primary shadow-sm"
-                    : "bg-surface-container border-outline-variant text-on-surface-variant hover:text-on-surface"
+                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
                 }`}
               >
                 🔑 {lang === "mr" ? "पासवर्ड" : "Password"}
@@ -268,10 +266,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setAuthMethod("otp");
                   setError("");
                 }}
-                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all border ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all border cursor-pointer ${
                   authMethod === "otp"
-                    ? "bg-primary text-on-primary border-primary shadow-sm"
-                    : "bg-surface-container border-outline-variant text-on-surface-variant hover:text-on-surface"
+                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
                 }`}
               >
                 📱 {lang === "mr" ? "मोबाईल OTP" : "Mobile OTP"}
@@ -283,7 +281,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-[13px] relative z-10">
           {error && (
-            <div className="p-3 bg-alert-terracotta/10 border border-alert-terracotta/30 text-alert-terracotta rounded-lg font-bold text-[12px] flex items-center gap-2">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold text-[12px] flex items-center gap-2">
               <span className="material-symbols-outlined text-[16px]">error</span>
               <span>{error}</span>
             </div>
@@ -291,7 +289,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode === "signup" && (
             <div>
-              <label className="block font-bold text-on-surface-variant mb-1">
+              <label className="block font-bold text-slate-700 mb-1">
                 {isBuyer
                   ? lang === "mr" ? "कंपनी / व्यवसाय नाव (Business Name)" : "Business / Company Name"
                   : lang === "mr" ? "पूर्ण नाव (Full Name)" : "Full Name"}
@@ -302,13 +300,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={isBuyer ? "e.g. Pune Fresh Foods Pvt Ltd" : lang === "mr" ? "आपले पूर्ण नाव प्रविष्ट करा" : "Enter your full name"}
-                className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 text-on-surface font-medium focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
               />
             </div>
           )}
 
           <div>
-            <label className="block font-bold text-on-surface-variant mb-1">
+            <label className="block font-bold text-slate-700 mb-1">
               {authMethod === "otp"
                 ? lang === "mr"
                   ? "१० अंकी मोबाईल नंबर"
@@ -333,7 +331,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ? "ईमेल किंवा १० अंकी मोबाईल नंबर"
                   : "Enter email or mobile number"
               }
-              className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 text-on-surface font-medium focus:ring-2 focus:ring-primary outline-none"
+              className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
             />
           </div>
 
@@ -341,7 +339,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {(authMethod === "password" || mode === "signup") && (
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="font-bold text-on-surface-variant">
+                <label className="font-bold text-slate-700">
                   {lang === "mr" ? "पासवर्ड (Password)" : "Password"}
                 </label>
                 {mode === "login" && (
@@ -352,7 +350,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       setOtpSent(true);
                       setOtpCode("490218");
                     }}
-                    className="text-[11px] font-bold text-primary hover:underline"
+                    className="text-[11px] font-bold text-emerald-800 hover:underline cursor-pointer"
                   >
                     {lang === "mr" ? "OTP ने साइन इन करा" : "Sign in via OTP"}
                   </button>
@@ -364,12 +362,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required={authMethod === "password" || mode === "signup"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 pr-10 text-on-surface font-medium focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-2.5 pr-10 text-slate-900 font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     {showPassword ? "visibility_off" : "visibility"}
@@ -381,13 +379,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Mobile OTP Verification Step */}
           {authMethod === "otp" && mode === "login" && otpSent && (
-            <div className="p-3 bg-surface-container-high border border-primary/30 rounded-xl space-y-2 animate-in fade-in duration-200">
+            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-2 animate-in fade-in duration-200">
               <div className="flex justify-between items-center text-[12px] font-bold">
-                <span className="text-primary flex items-center gap-1">
+                <span className="text-emerald-800 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">sms</span>
                   {lang === "mr" ? "SMS द्वारे OTP पाठवला गेला" : "OTP Code Sent via SMS"}
                 </span>
-                <span className="text-[11px] text-on-surface-variant font-mono bg-primary/10 px-2 py-0.5 rounded">
+                <span className="text-[11px] text-emerald-900 font-mono bg-emerald-200/80 px-2 py-0.5 rounded border border-emerald-300">
                   Demo Code: {otpCode}
                 </span>
               </div>
@@ -397,7 +395,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onChange={(e) => setOtpCode(e.target.value)}
                 maxLength={6}
                 placeholder="Enter 6-digit OTP"
-                className="w-full bg-surface border border-outline-variant rounded-lg p-2.5 text-center font-mono font-bold tracking-widest text-[16px] text-on-surface focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-center font-mono font-bold tracking-widest text-[16px] text-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none"
               />
             </div>
           )}
@@ -405,7 +403,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 ${isBuyer ? "bg-blue-600 hover:bg-blue-700" : "bg-primary hover:bg-primary-container"} text-on-primary rounded-xl font-bold text-[14px] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-4`}
+            className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-[14px] transition-all shadow-sm active:scale-98 flex items-center justify-center gap-2 mt-4 cursor-pointer"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
@@ -437,7 +435,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Quick Demo Credentials Autofill */}
           <div className="pt-2 flex flex-col gap-1.5 text-center">
-            <div className="text-[11px] text-on-surface-variant font-medium">Quick Demo Accounts:</div>
+            <div className="text-[11px] text-slate-500 font-medium">Quick Demo Accounts:</div>
             <div className="flex flex-wrap justify-center gap-2">
               <button
                 type="button"
@@ -450,7 +448,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setAuthMethod("password");
                   setError("");
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all"
+                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer"
               >
                 🚜 Demo Farmer
               </button>
@@ -465,7 +463,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setAuthMethod("password");
                   setError("");
                 }}
-                className="text-[11px] bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-full hover:bg-blue-100 font-bold transition-all"
+                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer"
               >
                 🏢 Demo Buyer
               </button>
