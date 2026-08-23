@@ -557,7 +557,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
         userId: offer.sellerUserId,
         type: 'OFFER_ACCEPTED',
         title: 'Deal Confirmed! Buyer Accepted Counter Offer',
-        message: `Buyer accepted your counter offer at ₹${finalPrice}/Qtl.`,
+        message: `Buyer has accepted your counter offer at ₹${finalPrice}/Qtl.`,
         relatedCrop: offer.commodity,
         relatedLotId: offer.lotId,
         relatedOfferId: offer._id,
