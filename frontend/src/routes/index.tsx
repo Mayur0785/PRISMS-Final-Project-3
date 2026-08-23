@@ -1682,6 +1682,15 @@ export function Index() {
 
         {/* Trailing Icon Actions */}
         <div className="flex items-center gap-2.5">
+          <a
+            href="/landing"
+            title="View Public Landing Page / मुख्य लँडिंग पान"
+            className="h-10 px-3.5 rounded-full flex items-center gap-1.5 text-on-surface hover:bg-surface-container transition-all active:scale-95 text-xs font-bold border border-outline-variant shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary">public</span>
+            <span className="hidden md:inline">{lang === "mr" ? "मुख्य पान" : "Landing Page"}</span>
+          </a>
+
           <button
             type="button"
             onClick={() => setLang(lang === "en" ? "mr" : "en")}
