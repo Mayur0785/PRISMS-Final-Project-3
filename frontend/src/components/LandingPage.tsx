@@ -7,6 +7,13 @@ import {
   Menu,
   X,
   Globe,
+  Compass,
+  ArrowLeftRight,
+  FileCheck,
+  PackagePlus,
+  Search,
+  Handshake,
+  BadgeCheck,
 } from "lucide-react";
 
 interface LandingPageProps {
@@ -35,14 +42,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa] text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen bg-[#fbfbfa] text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900 scroll-smooth">
       {/* ───────────────────────────────────────────────────────────────────────── */}
       {/* 1. NAVBAR */}
       {/* ───────────────────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 text-slate-900 shadow-sm transition-all flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Brand Logo & Title */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection("hero")}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection("home")}>
             <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white shadow-sm flex items-center justify-center flex-shrink-0 text-xl font-black">
               🌾
             </div>
@@ -61,13 +68,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Desktop Center Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600">
-            <button onClick={() => scrollToSection("hero")} className="hover:text-emerald-800 transition-colors">
+            <button onClick={() => scrollToSection("home")} className="hover:text-emerald-800 transition-colors cursor-pointer">
               {lang === "mr" ? "मुख्यपृष्ठ" : "Home"}
             </button>
-            <button onClick={() => scrollToSection("hero")} className="hover:text-emerald-800 transition-colors">
+            <button onClick={() => scrollToSection("features")} className="hover:text-emerald-800 transition-colors cursor-pointer">
               {lang === "mr" ? "वैशिष्ट्ये" : "Features"}
             </button>
-            <button onClick={() => scrollToSection("hero")} className="hover:text-emerald-800 transition-colors">
+            <button onClick={() => scrollToSection("how-it-works")} className="hover:text-emerald-800 transition-colors cursor-pointer">
               {lang === "mr" ? "कार्यपद्धती" : "How It Works"}
             </button>
           </nav>
@@ -78,7 +85,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <button
                 type="button"
                 onClick={() => onToggleLang(lang === "en" ? "mr" : "en")}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-slate-100 border border-slate-200 text-slate-700 hover:text-emerald-900 hover:bg-slate-200 transition-all flex items-center gap-1.5 mr-1"
+                className="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-slate-100 border border-slate-200 text-slate-700 hover:text-emerald-900 hover:bg-slate-200 transition-all flex items-center gap-1.5 mr-1 cursor-pointer"
               >
                 <Globe className="w-3.5 h-3.5 text-emerald-700" />
                 <span>{lang === "en" ? "मराठी" : "English"}</span>
@@ -117,7 +124,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -127,16 +134,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Mobile Dropdown Drawer */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 p-4 space-y-3 shadow-lg animate-in slide-in-from-top duration-200">
-            <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+            <div className="grid grid-cols-3 gap-2 text-xs font-bold text-center">
               <button
-                onClick={() => scrollToSection("hero")}
-                className="p-2 text-left text-slate-700 hover:text-emerald-800"
+                onClick={() => scrollToSection("home")}
+                className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
+              >
+                {lang === "mr" ? "मुख्यपृष्ठ" : "Home"}
+              </button>
+              <button
+                onClick={() => scrollToSection("features")}
+                className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
               >
                 {lang === "mr" ? "वैशिष्ट्ये" : "Features"}
               </button>
               <button
-                onClick={() => scrollToSection("hero")}
-                className="p-2 text-left text-slate-700 hover:text-emerald-800"
+                onClick={() => scrollToSection("how-it-works")}
+                className="p-2 rounded-lg bg-slate-50 text-slate-700 hover:text-emerald-800"
               >
                 {lang === "mr" ? "कार्यपद्धती" : "How It Works"}
               </button>
@@ -166,11 +179,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </header>
 
       {/* ───────────────────────────────────────────────────────────────────────── */}
-      {/* 2. HERO SECTION (ONLY SECTION BELOW NAVBAR) */}
+      {/* 2. HERO / HOME SECTION */}
       {/* ───────────────────────────────────────────────────────────────────────── */}
       <section
-        id="hero"
-        className="flex-1 flex items-center justify-center relative bg-gradient-to-b from-[#f7f9f6] via-white to-white text-slate-900 py-10 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8"
+        id="home"
+        className="flex items-center justify-center relative bg-gradient-to-b from-[#f7f9f6] via-white to-white text-slate-900 py-10 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8 border-b border-slate-100"
       >
         <div className="max-w-6xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-10">
           {/* Hero Left (46% on Desktop) */}
@@ -245,6 +258,177 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   }}
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      {/* 3. FEATURES SECTION */}
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      <section
+        id="features"
+        className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#fbfbfa] border-b border-slate-200/80"
+      >
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 font-serif">
+              {lang === "mr"
+                ? "स्मार्ट कृषी व्यापारासाठी आवश्यक सर्व काही"
+                : "Everything You Need for Smarter Agricultural Trade"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-normal">
+              {lang === "mr"
+                ? "शेतकरी आणि खरेदीदारांसाठी थेट, पारदर्शक आणि विश्वासार्ह डिजिटल मंच."
+                : "A unified platform built for transparent price realization, direct buyer offers, and verified settlements."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Feature 1: Market Discovery */}
+            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all space-y-3.5 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center font-black text-xl">
+                  <Compass className="w-6 h-6" />
+                </div>
+                <h3 className="font-serif font-black text-lg text-slate-900">
+                  {lang === "mr" ? "बाजार शोध (Market Discovery)" : "Market Discovery"}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {lang === "mr"
+                    ? "सत्यापित शेतकरी उत्पादन, बाजारभाव माहिती आणि व्यापार संधी शोधा."
+                    : "Discover verified farmer produce, mandi insights and market opportunities."}
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 2: Digital Negotiation */}
+            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all space-y-3.5 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center font-black text-xl">
+                  <ArrowLeftRight className="w-6 h-6" />
+                </div>
+                <h3 className="font-serif font-black text-lg text-slate-900">
+                  {lang === "mr" ? "डिजिटल वाटाघाटी (Digital Negotiation)" : "Digital Negotiation"}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {lang === "mr"
+                    ? "थेट खरेदीदार आणि शेतकऱ्यांशी ऑफर्स पाठवा, काउंटर ऑफर्स द्या आणि वाटाघाटी करा."
+                    : "Submit offers, exchange counter offers and negotiate directly with buyers and farmers."}
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 3: Trade Execution */}
+            <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all space-y-3.5 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center font-black text-xl">
+                  <FileCheck className="w-6 h-6" />
+                </div>
+                <h3 className="font-serif font-black text-lg text-slate-900">
+                  {lang === "mr" ? "व्यापार पूर्तता (Trade Execution)" : "Trade Execution"}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {lang === "mr"
+                    ? "एकाच प्रणालीमध्ये वाहतूक, सुरक्षित पेमेंट आणि व्यवहार स्थिती ट्रॅक करा."
+                    : "Track delivery, payments and completed transactions in one connected workflow."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      {/* 4. HOW IT WORKS SECTION */}
+      {/* ───────────────────────────────────────────────────────────────────────── */}
+      <section
+        id="how-it-works"
+        className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 bg-white"
+      >
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 font-serif">
+              {lang === "mr" ? "PRISMS कसे कार्य करते" : "How PRISMS Works"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-normal">
+              {lang === "mr"
+                ? "लॉट तयार करण्यापासून ते सुरक्षित पेमेंट्सपर्यंत सोपे ४ टप्पे."
+                : "From trade lot creation to direct settlement in 4 simple steps."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Step 1 */}
+            <div className="bg-[#fbfbfa] p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                  1
+                </span>
+                <PackagePlus className="w-5 h-5 text-emerald-700" />
+              </div>
+              <h3 className="font-serif font-black text-base text-slate-900">
+                {lang === "mr" ? "ट्रेड लॉट तयार करा" : "Create a Trade Lot"}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {lang === "mr"
+                  ? "शेतकरी प्रमाण, अपेक्षित दर आणि गुणवत्ता तपशिलांसह मालाची नोंद करतात."
+                  : "Farmers list their produce with quantity, price and quality details."}
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-[#fbfbfa] p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                  2
+                </span>
+                <Search className="w-5 h-5 text-emerald-700" />
+              </div>
+              <h3 className="font-serif font-black text-base text-slate-900">
+                {lang === "mr" ? "शोध व थेट ऑफर" : "Discover & Make an Offer"}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {lang === "mr"
+                  ? "खरेदीदार उपलब्ध उत्पादन शोधतात आणि थेट खरेदी ऑफर पाठवतात."
+                  : "Buyers discover available produce and submit a direct offer."}
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-[#fbfbfa] p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                  3
+                </span>
+                <Handshake className="w-5 h-5 text-emerald-700" />
+              </div>
+              <h3 className="font-serif font-black text-base text-slate-900">
+                {lang === "mr" ? "वाटाघाटी व पुष्टी" : "Negotiate & Confirm"}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {lang === "mr"
+                  ? "दोन्ही बाजूंची सहमती होईपर्यंत शेतकरी आणि खरेदीदार काउंटर ऑफर्स करू शकतात."
+                  : "Farmers and buyers can exchange counter offers until both agree."}
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-[#fbfbfa] p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                  4
+                </span>
+                <BadgeCheck className="w-5 h-5 text-emerald-700" />
+              </div>
+              <h3 className="font-serif font-black text-base text-slate-900">
+                {lang === "mr" ? "व्यापार ट्रॅकिंग" : "Track the Trade"}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {lang === "mr"
+                  ? "एकाच करारातून वाहतूक, सुरक्षित पेमेंट आणि व्यवहार स्थिती ट्रॅक होते."
+                  : "Delivery, payment and transaction status stay connected from one deal."}
+              </p>
             </div>
           </div>
         </div>
