@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build & output directories
+dist/
+build/
+.output/
+.vite/
+coverage/
+
+# Logs
+*.log
+
+# Temporary & local workspace folders/files
+scratch/
+frontend-broken/
+test_api.js
+
+# OS metadata
+.DS_Store
+Thumbs.db

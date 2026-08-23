@@ -1,0 +1,51 @@
+import { Router } from 'express';
+import { authRouter } from '../modules/auth/auth.routes';
+import { userRouter } from '../modules/users/user.routes';
+import { marketRouter } from '../modules/markets/market.routes';
+import { priceRouter } from '../modules/prices/price.routes';
+import { forecastRouter } from '../modules/forecast/forecast.routes';
+import { netEarningRouter } from '../modules/netEarning/netEarning.routes';
+import { distanceRouter } from '../modules/distance/distance.routes';
+import { advisorRouter } from '../modules/advisor/advisor.routes';
+import { newsRouter } from '../modules/news/news.routes';
+import { cropRouter } from '../modules/crops/crop.routes';
+import { buyerRouter, buyerDemandRouter } from '../modules/buyers/buyer.routes';
+import { lotRouter } from '../modules/lots/lot.routes';
+import { offerRouter } from '../modules/offers/offer.routes';
+import { deliveryRouter } from '../modules/delivery/delivery.routes';
+import { paymentRouter } from '../modules/payments/payment.routes';
+import { transactionRouter } from '../modules/transactions/transaction.routes';
+import { grievanceRouter } from '../modules/grievances/grievance.routes';
+import { fpoRouter } from '../modules/fpos/fpo.routes';
+import { qualityRouter } from '../modules/quality/quality.routes';
+import { intelligenceRouter } from '../modules/intelligence/intelligence.routes';
+import { notificationRouter } from '../modules/notifications/notification.routes';
+import { priceAlertRouter } from '../modules/notifications/priceAlert.routes';
+
+export const apiRouter = Router();
+
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/users', userRouter);
+apiRouter.use('/markets', marketRouter);
+apiRouter.use('/prices', priceRouter);
+apiRouter.use('/forecast', forecastRouter);
+apiRouter.use('/net-earning', netEarningRouter);
+apiRouter.use('/distance-matrix', distanceRouter);
+apiRouter.use('/advisor', advisorRouter);
+apiRouter.use('/news', newsRouter);
+apiRouter.use('/crops', cropRouter);
+apiRouter.use('/buyers', buyerRouter);
+apiRouter.use('/buyer-demands', buyerDemandRouter);
+apiRouter.use('/lots', lotRouter);
+apiRouter.use('/offers', offerRouter);
+apiRouter.use('/deliveries', deliveryRouter);
+apiRouter.use('/payments', paymentRouter);
+apiRouter.use('/transactions', transactionRouter);
+apiRouter.use('/grievances', grievanceRouter);
+apiRouter.use('/', fpoRouter);
+apiRouter.use('/', qualityRouter);
+apiRouter.use('/intelligence', intelligenceRouter);
+apiRouter.use('/', notificationRouter);
+apiRouter.use('/', priceAlertRouter);
+
+
