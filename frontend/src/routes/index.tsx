@@ -700,9 +700,11 @@ export function Index() {
       dist: Math.round(r.market.distance_km * 10) / 10,
       tag: idx === 0 ? "Highest Take-Home Profit" : "APMC Regulated Market",
       tag_mr: idx === 0 ? "सर्वोच्च निव्वळ नफा" : "कृषी उत्पन्न बाजार समिती",
+      pricePerQtl: r.pricePerQtl,
       gross: r.gross,
       logistics: r.transport,
       labour: r.labour,
+      spoilage: r.spoilage,
       handling: r.commission,
       net: r.net,
       type: r.market.type || "APMC Regulated",
@@ -1984,7 +1986,7 @@ export function Index() {
                     </label>
                     <input
                       className="w-full accent-primary cursor-pointer"
-                      max={200}
+                      max={500}
                       min={10}
                       type="range"
                       value={searchRadius}
@@ -1992,7 +1994,7 @@ export function Index() {
                     />
                     <div className="flex justify-between text-[11px] font-semibold text-outline mt-1">
                       <span>10 km</span>
-                      <span>200 km</span>
+                      <span>500 km</span>
                     </div>
                   </div>
 
@@ -2060,29 +2062,41 @@ export function Index() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-[22px] font-extrabold ${mandiCard.tagColor} leading-none`}>₹{mandiCard.gross}</p>
-                        <p className="text-[11px] font-bold text-outline mt-1">/ Qtl ({discoveryCrop.split(" ")[0]})</p>
+                        <p className={`text-[20px] font-extrabold ${mandiCard.tagColor} leading-none`}>₹{mandiCard.pricePerQtl?.toLocaleString("en-IN")}/Qtl</p>
+                        <p className="text-[11px] font-bold text-on-surface-variant mt-1">Gross: ₹{mandiCard.gross?.toLocaleString("en-IN")}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 mt-3 bg-surface-container-highest rounded-lg p-2.5">
-                      <div className="text-center">
-                        <p className="text-[11px] font-bold text-on-surface-variant">
-                          {lang === "mr" ? "वाहतूक खर्च" : "Logistics"}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3 bg-surface-container-highest rounded-lg p-2.5 text-center">
+                      <div>
+                        <p className="text-[10px] font-bold text-on-surface-variant">
+                          {lang === "mr" ? "वाहतूक" : "Logistics"}
                         </p>
-                        <p className="text-[13px] font-extrabold text-alert-terracotta">-₹{mandiCard.logistics}</p>
+                        <p className="text-[12px] font-extrabold text-alert-terracotta">-₹{mandiCard.logistics?.toLocaleString("en-IN")}</p>
                       </div>
-                      <div className="text-center border-x border-outline-variant">
-                        <p className="text-[11px] font-bold text-on-surface-variant">
-                          {lang === "mr" ? "हमाली/सेस" : "Handling"}
+                      <div className="border-l sm:border-x border-outline-variant">
+                        <p className="text-[10px] font-bold text-on-surface-variant">
+                          {lang === "mr" ? "हमाली" : "Labour"}
                         </p>
-                        <p className="text-[13px] font-extrabold text-alert-terracotta">-₹{mandiCard.handling}</p>
+                        <p className="text-[12px] font-extrabold text-alert-terracotta">-₹{mandiCard.labour?.toLocaleString("en-IN")}</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-[11px] font-bold text-primary">
-                          {lang === "mr" ? "निव्वळ नफा" : "Net Return"}
+                      <div className="border-t sm:border-t-0 sm:border-r border-outline-variant pt-1 sm:pt-0">
+                        <p className="text-[10px] font-bold text-on-surface-variant">
+                          {lang === "mr" ? "साठवण नुकसान" : "Spoilage"}
                         </p>
-                        <p className="text-[14px] font-extrabold text-primary">₹{mandiCard.net}</p>
+                        <p className="text-[12px] font-extrabold text-alert-terracotta">-₹{mandiCard.spoilage?.toLocaleString("en-IN")}</p>
+                      </div>
+                      <div className="border-t sm:border-t-0 sm:border-r border-outline-variant pt-1 sm:pt-0">
+                        <p className="text-[10px] font-bold text-on-surface-variant">
+                          {lang === "mr" ? "बाजार फी" : "Handling"}
+                        </p>
+                        <p className="text-[12px] font-extrabold text-alert-terracotta">-₹{mandiCard.handling?.toLocaleString("en-IN")}</p>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 border-outline-variant pt-1 sm:pt-0">
+                        <p className="text-[10px] font-extrabold text-primary">
+                          {lang === "mr" ? "अंदाजित निव्वळ परतावा" : "Est. Net Take-Home"}
+                        </p>
+                        <p className="text-[13px] font-extrabold text-primary">₹{mandiCard.net?.toLocaleString("en-IN")}</p>
                       </div>
                     </div>
                   </div>
