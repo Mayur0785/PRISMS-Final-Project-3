@@ -16,6 +16,7 @@ import {
   nearestDistrict,
   fetchUserCrops,
   fetchUserLots,
+  fetchUserOffers,
   createTradeLot,
   createUserCrop,
   deleteUserCrop,
@@ -356,6 +357,12 @@ export function Index() {
   const userLotsQ = useQuery({
     queryKey: ["userLots", currentUser?.id || currentUser?.email],
     queryFn: fetchUserLots,
+    enabled: Boolean(currentUser),
+  });
+
+  const userOffersQ = useQuery({
+    queryKey: ["userOffers", currentUser?.id || currentUser?.email],
+    queryFn: fetchUserOffers,
     enabled: Boolean(currentUser),
   });
 
@@ -725,10 +732,7 @@ export function Index() {
     });
   }, [searchTabMandis, mandiSearchQuery, searchRadius]);
 
-  const currentCropValue = useMemo(() => {
-    if (!currentUser || activeBatches.length === 0) return 0;
-    return activeBatches.reduce((sum, b) => sum + (Number(b.estimatedRealization) || 0), 0);
-  }, [currentUser, activeBatches]);
+
 
   const marketOutlook = useMemo(() => {
     if (results.length === 0) {
@@ -1422,48 +1426,49 @@ export function Index() {
                 </p>
               </div>
 
-              {/* Quick Summary Cards with Spotlight Hover */}
+              {/* Summary Cards: Real Trade Lots & Active Offers KPIs */}
               <div className="col-span-12 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between shadow-sm">
+                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between shadow-sm cursor-pointer" onClick={() => setActiveTab("crops")}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[12px] font-bold text-on-surface-variant tracking-wide">
-                      {lang === "mr" ? "सध्याचे पीक मूल्य" : "Current Crop Value"}
+                      {lang === "mr" ? "सक्रिय व्यापार लॉट्स" : "Active Trade Lots"}
                     </span>
-                    <div className="w-7 h-7 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
-                      <span className="material-symbols-outlined text-[16px]">account_balance</span>
+                    <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800">
+                      <Package className="w-4 h-4" />
                     </div>
                   </div>
                   <div>
                     <p className="text-[26px] font-extrabold text-on-surface tracking-tight leading-none">
-                      <CountUp to={currentCropValue} prefix="₹" />
+                      <CountUp to={activeLots.length} />
                     </p>
                     <div className="flex items-center gap-1.5 mt-2 text-on-surface-variant text-[11px] font-bold">
-                      <span className="material-symbols-outlined text-[14px] text-outline">eco</span>
+                      <span className="text-emerald-700 font-extrabold">✓</span>
                       <span>
-                        {activeBatches.length > 0 && currentUser
-                          ? (lang === "mr" ? "आपल्या सक्रिय पिकांवर आधारित" : "Based on your active crops")
-                          : (lang === "mr" ? "सध्या कोणतेही पीक नोंदवलेले नाही" : "No active crop batches")}
+                        {activeLots.length > 0
+                          ? (lang === "mr" ? "बाजारपेठेत विक्रीसाठी उपलब्ध" : "Published in PRISMS Marketplace")
+                          : (lang === "mr" ? "अद्याप कोणताही लॉट नाही" : "Calculate market to publish lot")}
                       </span>
                     </div>
                   </div>
                 </SpotlightCard>
 
-                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm" spotlightColor="rgba(254, 147, 44, 0.15)">
-                  <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-success-sage/10 rounded-full blur-xl pointer-events-none" />
+                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm cursor-pointer" spotlightColor="rgba(16, 185, 129, 0.15)" onClick={() => setActiveTab("offers")}>
                   <div className="flex items-center justify-between mb-2 relative z-10">
                     <span className="text-[12px] font-bold text-on-surface-variant tracking-wide">
-                      {lang === "mr" ? "बाजार दिशा व कल" : "Market Outlook"}
+                      {lang === "mr" ? "प्राप्त डिजिटल ऑफर्स" : "Active Buyer Bids"}
                     </span>
-                    <div className="w-7 h-7 rounded-full bg-success-sage/15 flex items-center justify-center text-success-sage">
-                      <span className="material-symbols-outlined text-[16px]">stacked_line_chart</span>
+                    <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800">
+                      <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="relative z-10">
-                    <p className={`text-[19px] font-extrabold leading-tight ${marketOutlook.color}`}>
-                      {lang === "mr" ? marketOutlook.status_mr : marketOutlook.status}
+                    <p className="text-[26px] font-extrabold text-emerald-800 tracking-tight leading-none">
+                      <CountUp to={(userOffersQ.data ?? []).length} />
                     </p>
-                    <p className="text-[11px] font-semibold text-on-surface-variant mt-1 leading-snug">
-                      {lang === "mr" ? marketOutlook.text_mr : marketOutlook.text}
+                    <p className="text-[11px] font-semibold text-on-surface-variant mt-2 leading-snug">
+                      {(userOffersQ.data ?? []).length > 0
+                        ? (lang === "mr" ? "खरेदीदारांकडून प्रस्ताव प्राप्त" : "Binding offers received for negotiation")
+                        : (lang === "mr" ? "प्रस्ताव वाट पाहत आहे" : "Awaiting buyer bids")}
                     </p>
                   </div>
                 </SpotlightCard>
