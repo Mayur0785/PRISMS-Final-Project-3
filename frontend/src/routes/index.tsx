@@ -1216,60 +1216,66 @@ export function Index() {
   // 3. FARMER COMMAND CENTER DASHBOARD (Producers & FPOs)
   return (
     <div className="min-h-screen bg-[#fbfbfa] text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Top Header Navbar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-emerald-900/40 text-white shadow-lg flex-shrink-0">
+      {/* Top Header Navbar - Light Theme */}
+      <header className="sticky top-0 z-40 bg-[#f4f1ea]/90 backdrop-blur-xl border-b border-[#e2ddd3] text-slate-900 shadow-xs flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Left Brand Identity */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab("dashboard")}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center font-black text-xl shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform flex-shrink-0 border border-emerald-400/30">
-              🌾
+            <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+              🚜
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-white font-serif bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent">
-                  PRISMS
-                </span>
-                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider shadow-inner">
-                  Farmer Command Center
-                </span>
+                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
               </div>
-              <p className="text-[11px] text-emerald-200/70 font-medium tracking-wide flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{farmerName}</span>
-                <span className="text-emerald-500/50">•</span>
-                <span className="truncate max-w-[180px] sm:max-w-[240px] text-slate-300">{currentUser?.email || "farmer.lasalgaon@prisms.gov.in"}</span>
+              <p className="text-[10px] text-slate-500 font-extrabold tracking-wider uppercase">
+                Digital Command Center
               </p>
             </div>
           </div>
 
-          {/* Header Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Center Search Input */}
+          <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder={lang === "mr" ? "बाजार, पिके किंवा प्रदेश शोधा..." : "Search markets, crops, or regions..."}
+                className="w-full bg-[#eae6dc] border border-[#dad4c7] rounded-xl pl-10 pr-9 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-white/70 px-1.5 py-0.5 rounded border border-slate-300">
+                /
+              </span>
+            </div>
+          </div>
+
+          {/* Right Header Controls */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setLang(lang === "en" ? "mr" : "en")}
-              className="px-3 py-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 text-emerald-200 hover:bg-slate-700 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer backdrop-blur-sm"
-              title="Toggle Language / भाषा बदला"
+              onClick={() => setViewLanding(true)}
+              className="px-3.5 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
             >
-              <span className="text-emerald-400">🌐</span>
-              <span>{lang === "en" ? "मराठी" : "English"}</span>
+              <Store className="w-3.5 h-3.5 text-emerald-800" />
+              <span className="hidden sm:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
             </button>
 
             <button
               type="button"
-              onClick={() => setViewLanding(true)}
-              className="px-3 py-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-              title="Public Landing Page"
+              onClick={() => setLang(lang === "en" ? "mr" : "en")}
+              className="px-3 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
             >
-              <Store className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden md:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
+              <span className="text-emerald-800 font-extrabold">🌐</span>
+              <span>{lang === "en" ? "EN" : "MR"}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 bg-slate-800/50 transition-all cursor-pointer"
+              className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-[#e4e0d7] border border-[#dad4c7] bg-[#efece6] transition-all cursor-pointer"
               title="Settings"
             >
-              <Settings className="w-4 h-4 text-slate-300" />
+              <Settings className="w-4 h-4" />
             </button>
 
             {currentUser ? (
@@ -1277,30 +1283,19 @@ export function Index() {
                 <button
                   type="button"
                   onClick={() => setProfileOpen(true)}
-                  className="px-3.5 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-emerald-200 hover:bg-emerald-900/60 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                  title="Profile"
+                  className="px-3 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-2 transition-all shadow-2xs cursor-pointer"
                 >
-                  <UserIcon className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="hidden sm:inline">{farmerName.split(" ")[0]}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await logoutUser();
-                    setCurrentUser(null);
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-rose-950/40 cursor-pointer"
-                  title="Sign Out"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{lang === "mr" ? "बाहेर पडा" : "Logout"}</span>
+                  <div className="w-5 h-5 rounded-full bg-emerald-800 text-white flex items-center justify-center text-[10px] font-black">
+                    {farmerName.charAt(0)}
+                  </div>
+                  <span className="hidden sm:inline font-bold">{farmerName.split(" ")[0]}</span>
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setAuthModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
               >
                 {lang === "mr" ? "लॉग इन" : "Sign In"}
               </button>
@@ -1309,55 +1304,128 @@ export function Index() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
-        {/* Horizontal Navigation Tabs Bar (Enhanced Ribbon) */}
-        <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/90 shadow-xs">
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-            {[
-              { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
-              { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
-              { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: crops.length },
-              { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
-              { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
-              { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
-              { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
-              { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
-              { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
-              { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Advisor", icon: Sparkles },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? "bg-emerald-700 text-white shadow-md shadow-emerald-900/20 scale-[1.02]"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500"}`} />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                        isActive ? "bg-emerald-800 text-emerald-100 border border-emerald-600/50" : "bg-emerald-100 text-emerald-800"
+      {/* Main Container with Left Sidebar & Right Content Canvas */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Vertical Sidebar (3 cols) - Light Warm Theme */}
+        <aside className="lg:col-span-3 bg-[#f2eee5] border border-[#e2ddd3] rounded-2xl p-4 flex flex-col justify-between min-h-[calc(100vh-6rem)] sticky top-20 shadow-xs">
+          <div className="space-y-6">
+            {/* Sidebar Header Brand Identity */}
+            <div className="flex items-center gap-3 px-2 pt-1 pb-3 border-b border-[#e0dad0]">
+              <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center text-lg font-black shadow-2xs">
+                🚜
+              </div>
+              <div>
+                <h1 className="font-black text-lg text-emerald-950 font-serif leading-tight">PRISMS</h1>
+                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  Digital Command Center
+                </p>
+              </div>
+            </div>
+
+            {/* Primary Feature Nav Links */}
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">
+                {lang === "mr" ? "मुख्य वैशिष्ट्ये" : "PRIMARY FEATURES"}
+              </p>
+              <nav className="space-y-1">
+                {[
+                  { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
+                  { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
+                  { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: crops.length },
+                  { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`w-full px-3.5 py-3 rounded-xl font-bold text-xs flex items-center justify-between transition-all duration-200 cursor-pointer text-left ${
+                        isActive
+                          ? "bg-[#e5e0d3] text-emerald-950 shadow-2xs border border-[#d6cfc1]"
+                          : "text-slate-700 hover:bg-[#eae5da] hover:text-slate-900"
                       }`}
                     >
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-800 font-bold" : "text-slate-500"}`} />
+                        <span className={isActive ? "font-extrabold" : "font-semibold"}>{tab.label}</span>
+                      </div>
+                      {tab.badge !== undefined && tab.badge > 0 && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                            isActive ? "bg-emerald-800 text-white" : "bg-[#ded8cb] text-slate-700"
+                          }`}
+                        >
+                          {tab.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
 
-        {/* Main Content Canvas */}
-        <main className="flex-1 relative flex flex-col space-y-6">
+            {/* Operations & Advanced Nav Links */}
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">
+                {lang === "mr" ? "प्रक्रियां आणि प्रगत" : "OPERATIONS & ADVANCED"}
+              </p>
+              <nav className="space-y-1">
+                {[
+                  { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
+                  { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
+                  { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
+                  { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
+                  { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
+                  { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Agri Advisor", icon: Sparkles },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`w-full px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between transition-all duration-200 cursor-pointer text-left ${
+                        isActive
+                          ? "bg-[#e5e0d3] text-emerald-950 shadow-2xs border border-[#d6cfc1]"
+                          : "text-slate-700 hover:bg-[#eae5da] hover:text-slate-900"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-800" : "text-slate-500"}`} />
+                        <span className={isActive ? "font-extrabold" : "font-semibold"}>{tab.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+
+          {/* Sidebar Footer User Card */}
+          <div className="pt-4 border-t border-[#e0dad0]">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#eae5da] border border-[#dad4c7] cursor-pointer hover:bg-[#e2dccf] transition-all" onClick={() => setProfileOpen(true)}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-black text-xs flex items-center justify-center">
+                  {farmerName.charAt(0)}
+                </div>
+                <div className="truncate max-w-[130px]">
+                  <p className="text-xs font-bold text-slate-900 truncate">{farmerName}</p>
+                  <p className="text-[10px] text-emerald-800 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
+                    <span>Verified Farmer</span>
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Main Content Canvas (9 cols) */}
+        <main className="lg:col-span-9 flex flex-col space-y-6 min-w-0">
         
         {/* ========================================================================= */}
         {/* TAB 1: DEFAULT DASHBOARD OVERVIEW (NET-EARNING CALCULATOR & FEED) */}
@@ -3270,39 +3338,40 @@ export function Index() {
           />
         </div>
 
-        {/* Shared Command Center Footer (Only on scrolling tabs) */}
-        {activeTab !== "search" && (
-          <footer className="flex flex-col sm:flex-row justify-between items-center py-5 px-10 w-full bg-surface-container-low border-t border-outline-variant mt-auto">
-            <p className="text-[13px] font-medium text-on-surface-variant">
-              © 2026 PRISMS {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
-            </p>
-            <div className="flex flex-wrap gap-6 mt-3 sm:mt-0 text-[13px] font-bold">
-              <button
-                type="button"
-                className="text-primary underline hover:text-primary-container transition-colors cursor-pointer"
-                onClick={handleExportCsv}
-              >
-                {lang === "mr" ? "डेटा निर्यात करा" : "Export Data"}
-              </button>
-              <button
-                type="button"
-                className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                onClick={() => setAgentModalOpen(true)}
-              >
-                {lang === "mr" ? "मंडी प्रतिनिधीशी संपर्क साधा" : "Contact Mandi Agent"}
-              </button>
-              <button
-                type="button"
-                className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                onClick={() => setPrivacyModalOpen(true)}
-              >
-                {lang === "mr" ? "गोपनीयता धोरण" : "Privacy Policy"}
-              </button>
-            </div>
-          </footer>
-        )}
-      </main>
+        </main>
       </div>
+
+      {/* Shared Command Center Footer */}
+      {activeTab !== "search" && (
+        <footer className="flex flex-col sm:flex-row justify-between items-center py-5 px-10 w-full bg-[#f4f1ea] border-t border-[#e2ddd3] mt-auto">
+          <p className="text-[13px] font-bold text-slate-600">
+            © 2026 PRISMS {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
+          </p>
+          <div className="flex flex-wrap gap-6 mt-3 sm:mt-0 text-[13px] font-bold">
+            <button
+              type="button"
+              className="text-emerald-800 underline hover:text-emerald-900 transition-colors cursor-pointer"
+              onClick={handleExportCsv}
+            >
+              {lang === "mr" ? "डेटा निर्यात करा" : "Export Data"}
+            </button>
+            <button
+              type="button"
+              className="text-slate-600 hover:text-emerald-800 transition-colors cursor-pointer"
+              onClick={() => setAgentModalOpen(true)}
+            >
+              {lang === "mr" ? "मंडी प्रतिनिधीशी संपर्क साधा" : "Contact Mandi Agent"}
+            </button>
+            <button
+              type="button"
+              className="text-slate-600 hover:text-emerald-800 transition-colors cursor-pointer"
+              onClick={() => setPrivacyModalOpen(true)}
+            >
+              {lang === "mr" ? "गोपनीयता धोरण" : "Privacy Policy"}
+            </button>
+          </div>
+        </footer>
+      )}
 
       {/* ========================================================================= */}
       {/* COMMAND CENTER SETTINGS MODAL */}
