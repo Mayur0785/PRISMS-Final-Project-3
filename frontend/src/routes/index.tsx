@@ -643,8 +643,9 @@ export function Index() {
   const rateNum = Number(transportRate) || 0;
   const commodity = commodities.find((c) => c.id === cropId);
 
-  // Auto update unit when crop changes
+  // Auto update unit and clear calculation results when crop changes
   useEffect(() => {
+    setSubmitted(false);
     if (commodity) {
       const name = commodity.name.toLowerCase();
       if (name.includes("onion") || name.includes("wheat") || name.includes("soy")) {
@@ -1053,12 +1054,13 @@ export function Index() {
   }
 
   function handleReset() {
-    if (commodities[0]) setCropId(commodities[0].id);
-    setQty("5000");
+    setCropId("");
+    setQty("30");
+    setQtyUnit("Qtl");
     setGrade("Grade 1");
-    setLocationText("Karjat, Raigad");
-    setCoords({ lat: 18.9102, lng: 73.3300 });
-    setDistrict("Raigad");
+    setLocationText("Pimple Gurav, Pune");
+    setCoords({ lat: 18.5912, lng: 73.8188 });
+    setDistrict("Pune");
     setFormError("");
     setSubmitted(false);
   }
@@ -1619,78 +1621,113 @@ export function Index() {
 
                     <div className="lg:col-span-2 bg-surface-container p-4 sm:p-5 flex flex-col justify-between gap-3 relative">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                      <div>
-                        <h4 className="text-[11px] font-extrabold text-on-surface-variant mb-2 uppercase tracking-wider relative z-10 flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[15px] text-primary">monitoring</span>
-                          {lang === "mr" ? "निव्वळ नफा तपशील" : "True Net Breakdown"}
-                        </h4>
-                        <div className="space-y-1.5 relative z-10">
-                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
-                            <span className="text-[12px] text-on-surface-variant font-medium">
-                              {lang === "mr" ? "एकूण विक्री मूल्य" : "Gross Market Value"}
-                            </span>
-                            <span className="text-[14px] font-bold text-on-surface">
-                              ₹{grossValue.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
-                            <span className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1.5">
-                              <span>{lang === "mr" ? "वाहतूक खर्च" : "Transport Freight"}</span>
-                              {selectedVehicle === "own_vehicle" && (
-                                <span className="text-[10px] font-extrabold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
-                                  {lang === "mr" ? "बाहेरील भाडे नाही" : "No External Freight"}
+                      
+                      {submitted && bestResult ? (
+                        <>
+                          <div>
+                            <h4 className="text-[11px] font-extrabold text-on-surface-variant mb-2 uppercase tracking-wider relative z-10 flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[15px] text-primary">monitoring</span>
+                              {lang === "mr" ? "निव्वळ नफा तपशील" : "True Net Breakdown"}
+                            </h4>
+                            <div className="space-y-1.5 relative z-10">
+                              <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                                <span className="text-[12px] text-on-surface-variant font-medium">
+                                  {lang === "mr" ? "एकूण विक्री मूल्य" : "Gross Market Value"}
                                 </span>
-                              )}
-                            </span>
-                            <span className={`text-[12px] font-bold ${selectedVehicle === "own_vehicle" || logisticsCost === 0 ? "text-primary font-extrabold" : "text-alert-terracotta"}`}>
-                              {selectedVehicle === "own_vehicle" || logisticsCost === 0 ? "₹0" : `-₹${logisticsCost.toLocaleString("en-IN")}`}
-                            </span>
+                                <span className="text-[14px] font-bold text-on-surface">
+                                  ₹{grossValue.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                                <span className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1.5">
+                                  <span>{lang === "mr" ? "वाहतूक खर्च" : "Transport Freight"}</span>
+                                  {selectedVehicle === "own_vehicle" && (
+                                    <span className="text-[10px] font-extrabold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                                      {lang === "mr" ? "बाहेरील भाडे नाही" : "No External Freight"}
+                                    </span>
+                                  )}
+                                </span>
+                                <span className={`text-[12px] font-bold ${selectedVehicle === "own_vehicle" || logisticsCost === 0 ? "text-primary font-extrabold" : "text-alert-terracotta"}`}>
+                                  {selectedVehicle === "own_vehicle" || logisticsCost === 0 ? "₹0" : `-₹${logisticsCost.toLocaleString("en-IN")}`}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                                <span className="text-[12px] text-on-surface-variant font-medium">
+                                  {lang === "mr" 
+                                    ? `अंदाजित साठवणूक नासाडी नुकसान (${commodity?.spoilage_rate_percent || 8}%)` 
+                                    : `Estimated Spoilage Loss (${commodity?.spoilage_rate_percent || 8}%)`}
+                                </span>
+                                <span className="text-[12px] font-bold text-alert-terracotta">
+                                  -₹{spoilageLoss.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                                <span className="text-[12px] text-on-surface-variant font-medium">
+                                  {lang === "mr" ? "बाजार हाताळणी खर्च (अंदाजित १%)" : "Est. Market Handling Charges (1.0%)"}
+                                </span>
+                                <span className="text-[12px] font-bold text-alert-terracotta">
+                                  -₹{marketHandlingCharges.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
-                            <span className="text-[12px] text-on-surface-variant font-medium">
-                              {lang === "mr" 
-                                ? `अंदाजित साठवणूक नासाडी नुकसान (${commodity?.spoilage_rate_percent || 8}%)` 
-                                : `Estimated Spoilage Loss (${commodity?.spoilage_rate_percent || 8}%)`}
-                            </span>
-                            <span className="text-[12px] font-bold text-alert-terracotta">
-                              -₹{spoilageLoss.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
-                            <span className="text-[12px] text-on-surface-variant font-medium">
-                              {lang === "mr" ? "बाजार हाताळणी खर्च (अंदाजित १%)" : "Est. Market Handling Charges (1.0%)"}
-                            </span>
-                            <span className="text-[12px] font-bold text-alert-terracotta">
-                              -₹{marketHandlingCharges.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="relative z-10 flex flex-col gap-2">
-                        <div>
-                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-on-surface-variant mb-0.5">
-                            {lang === "mr" ? "हातात येणारा निव्वळ नफा" : "Estimated Net Profit"}
-                          </p>
-                          <p className="text-[28px] sm:text-[32px] text-primary font-black leading-none tracking-tight">
-                            ₹{estimatedNetProfit.toLocaleString("en-IN")}
-                          </p>
+                          <div className="relative z-10 flex flex-col gap-2">
+                            <div>
+                              <p className="text-[11px] font-extrabold uppercase tracking-wider text-on-surface-variant mb-0.5">
+                                {lang === "mr" ? "हातात येणारा निव्वळ नफा" : "Estimated Net Profit"}
+                              </p>
+                              <p className="text-[28px] sm:text-[32px] text-primary font-black leading-none tracking-tight">
+                                ₹{estimatedNetProfit.toLocaleString("en-IN")}
+                              </p>
+                            </div>
+                            <button
+                              type="submit"
+                              disabled={calculating}
+                              className="w-full h-11 bg-primary text-on-primary font-extrabold text-[14px] rounded-xl hover:bg-primary-container transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2 active:scale-[0.98] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                              <span className={`material-symbols-outlined text-[18px] ${calculating ? "animate-spin" : ""}`}>
+                                {calculating ? "sync" : "analytics"}
+                              </span>
+                              <span>
+                                {calculating
+                                  ? (lang === "mr" ? "गणन सुरू आहे..." : "Calculating...")
+                                  : (lang === "mr" ? "पुन्हा नफा गणन करा" : "Recalculate & Refresh Mandis")}
+                              </span>
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center py-6 px-4 space-y-4 my-auto relative z-10">
+                          <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-xs">
+                            <span className="material-symbols-outlined text-[28px]">calculate</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            <h4 className="text-[15px] font-extrabold text-on-surface">
+                              {lang === "mr" ? "निव्वळ प्राप्ती अंदाज" : "Estimated Net Realisation"}
+                            </h4>
+                            <p className="text-[12px] text-on-surface-variant font-medium leading-relaxed max-w-xs">
+                              {lang === "mr"
+                                ? "पिकाचे तपशील भरा आणि आपल्या निव्वळ नफ्याचा अंदाज पाहण्यासाठी 'निव्वळ कमाई व सर्वोत्तम बाजार शोधा' वर क्लिक करा."
+                                : "Enter your crop details and click Calculate & Find Best Mandi to see your estimated net realisation."}
+                            </p>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={calculating}
+                            className="w-full h-11 bg-primary text-on-primary font-extrabold text-[14px] rounded-xl hover:bg-primary-container transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2 active:scale-[0.98] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                          >
+                            <span className={`material-symbols-outlined text-[18px] ${calculating ? "animate-spin" : ""}`}>
+                              {calculating ? "sync" : "analytics"}
+                            </span>
+                            <span>
+                              {calculating
+                                ? (lang === "mr" ? "गणन सुरू आहे..." : "Calculating...")
+                                : (lang === "mr" ? "निव्वळ कमाई व सर्वोत्तम बाजार शोधा" : "Calculate & Find Best Mandi")}
+                            </span>
+                          </button>
                         </div>
-                        <button
-                          type="submit"
-                          disabled={calculating}
-                          className="w-full h-11 bg-primary text-on-primary font-extrabold text-[14px] rounded-xl hover:bg-primary-container transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2 active:scale-[0.98] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          <span className={`material-symbols-outlined text-[18px] ${calculating ? "animate-spin" : ""}`}>
-                            {calculating ? "sync" : "analytics"}
-                          </span>
-                          <span>
-                            {calculating
-                              ? (lang === "mr" ? "गणन सुरू आहे..." : "Calculating...")
-                              : (lang === "mr" ? "निव्वळ कमाई व सर्वोत्तम बाजार शोधा" : "Calculate & Find Best Mandi")}
-                          </span>
-                        </button>
-                      </div>
+                      )}
                     </div>
                   </form>
                 </div>
