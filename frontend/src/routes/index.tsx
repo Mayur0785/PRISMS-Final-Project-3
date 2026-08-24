@@ -1348,12 +1348,11 @@ export function Index() {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
           {[
             { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
-            { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
             { id: "crops", label: lang === "mr" ? "व्यापार लॉट्स" : "Trade Lots", icon: Package, badge: activeLots.length },
-            { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
+            { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
             { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
-            { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
-            { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
+            { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery", icon: Truck },
+            { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment", icon: CreditCard },
             { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
           ].map((tab) => {
             const Icon = tab.icon;
