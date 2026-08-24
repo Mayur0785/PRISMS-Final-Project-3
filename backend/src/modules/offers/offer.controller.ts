@@ -439,8 +439,8 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
     const deliveryId = `DLV-2026-${dlvHex}`;
 
     const pickupDate = new Date();
-    const actualDeliveryDate = new Date();
-    actualDeliveryDate.setDate(actualDeliveryDate.getDate() + 1);
+    const expectedDeliveryDate = new Date();
+    expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + 1);
 
     const delivery = await DeliveryOrder.create({
       deliveryId,
@@ -459,7 +459,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       origin: offer.pickupLocation || lot.origin || 'Farm Gate',
       destination: offer.deliveryLocation || 'Mandi Yard Hub',
       plannedPickupDate: pickupDate,
-      actualDeliveryDate,
+      expectedDeliveryDate,
       deliveryStatus: 'OFFER_ACCEPTED_PLANNED',
       timeline: [
         {

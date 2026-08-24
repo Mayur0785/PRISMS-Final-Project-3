@@ -215,15 +215,23 @@ export const updateDeliveryStatus = async (req: Request, res: Response, next: Ne
     const { id } = req.params;
     const { status, notes } = req.body;
 
+    const userEmail = (req as any).user?.email;
+    const userName = (req as any).user?.name;
+
+    const userMatch: any[] = [
+      { farmerId: rawUserId },
+      { farmerId: userIdObj },
+      { farmerId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: userIdObj },
+      { buyerId: String(rawUserId) },
+    ];
+    if (userEmail) userMatch.push({ buyerId: userEmail }, { farmerId: userEmail });
+    if (userName) userMatch.push({ buyerId: userName }, { farmerId: userName });
+
     const delivery = await DeliveryOrder.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { deliveryId: id }],
-      $and: [{
-        $or: [
-          { farmerId: rawUserId },
-          { farmerId: userIdObj },
-          { farmerId: String(rawUserId) }
-        ]
-      }],
+      $and: [{ $or: userMatch }],
     });
 
     if (!delivery) {
@@ -315,15 +323,23 @@ export const advanceDemoDelivery = async (req: Request, res: Response, next: Nex
       : rawUserId;
     const { id } = req.params;
 
+    const userEmail = (req as any).user?.email;
+    const userName = (req as any).user?.name;
+
+    const userMatch: any[] = [
+      { farmerId: rawUserId },
+      { farmerId: userIdObj },
+      { farmerId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: userIdObj },
+      { buyerId: String(rawUserId) },
+    ];
+    if (userEmail) userMatch.push({ buyerId: userEmail }, { farmerId: userEmail });
+    if (userName) userMatch.push({ buyerId: userName }, { farmerId: userName });
+
     const delivery = await DeliveryOrder.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { deliveryId: id }],
-      $and: [{
-        $or: [
-          { farmerId: rawUserId },
-          { farmerId: userIdObj },
-          { farmerId: String(rawUserId) }
-        ]
-      }],
+      $and: [{ $or: userMatch }],
     });
 
     if (!delivery) {
