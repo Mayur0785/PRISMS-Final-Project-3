@@ -458,273 +458,127 @@ export function TradeLotsManager({ cropBatches, lang }: TradeLotsManagerProps) {
             const estTotalValue = (lot.quantityQtl || 0) * (lot.expectedPricePerQtl || 0);
             const acceptedOfferId = getAcceptedOfferForLot(lot._id) || getAcceptedOfferForLot(lot.lotId);
             const isAccepted = lot.lotStatus === "ACCEPTED" || Boolean(acceptedOfferId);
-            const isOfferedOrMatched = lot.lotStatus === "OFFERED" || lot.lotStatus === "MATCHED";
 
             return (
               <div
-                key={lot._id}
-                className="bg-white rounded-2xl border border-slate-200/90 hover:border-emerald-500/50 p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-all group"
+                key={lot._id || lot.lotId}
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-emerald-400/60 p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all space-y-4"
               >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-bold text-xs px-2.5 py-0.5 rounded">
-                        {lot.lotId}
-                      </span>
+                <div className="space-y-2.5">
+                  {/* Lot Header & ID */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      {lot.lotId}
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <span
-                        className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded border ${
+                        className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${
                           isAccepted
                             ? "bg-emerald-100 text-emerald-800 border-emerald-300"
                             : lot.lotStatus === "OFFERED"
-                            ? "bg-amber-50 text-amber-800 border-amber-200"
-                            : lot.lotStatus === "MATCHED" || lot.lotStatus === "PUBLISHED"
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                            : "bg-slate-100 text-slate-700 border-slate-300"
+                            ? "bg-amber-100 text-amber-900 border-amber-300"
+                            : "bg-emerald-50 text-emerald-800 border-emerald-200"
                         }`}
                       >
                         {isAccepted ? "ACCEPTED" : lot.lotStatus}
                       </span>
                     </div>
-
-                    <button
-                      onClick={() => handleDelete(lot.lotId)}
-                      className="p-1.5 rounded bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 transition-colors"
-                      title="Delete Lot"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
 
-                  <h4 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-emerald-600 shrink-0" />
-                    {lot.cropName}
-                  </h4>
-
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
-                    <span>{lot.variety}</span>
-                    <span>•</span>
-                    <span className="text-emerald-700 font-semibold">
-                      {lot.provisionalGrade || lot.grade}
-                      {!(lot.qualityScore || lot.qualityPassport) && (
-                        <span className="text-[10px] text-slate-500 font-normal ml-1">
-                          ({lang === "mr" ? "शेतकरी घोषित" : "Farmer Declared"})
-                        </span>
-                      )}
-                    </span>
-                    <span>•</span>
-                    <span className="font-bold text-slate-800">{lot.quantityQtl} Qtl</span>
+                  {/* Crop Title & Meta */}
+                  <div>
+                    <h4 className="text-base font-extrabold text-slate-900">{lot.cropName}</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
+                      <span className="font-bold text-slate-800">{lot.quantityQtl} Qtl</span>
+                      <span>•</span>
+                      <span>{lot.origin || "Farm Gate"}, {lot.district || "Nashik"}</span>
+                    </p>
                   </div>
 
-                  {/* Quality Passport Summary Pill */}
-                  {lot.qualityScore || lot.qualityPassport ? (
-                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-emerald-50/60 border border-emerald-200/80 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="p-1 rounded-md bg-emerald-100 text-emerald-800">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                        </span>
-                        <span className="font-extrabold text-emerald-950">
-                          {lot.provisionalGrade || lot.grade || "Grade A"}
-                        </span>
-                        <span className="text-[10px] text-slate-400">•</span>
-                        <span className="text-emerald-800 font-semibold text-[11px]">
-                          Score: {lot.qualityScore}/100
-                        </span>
-                        <span className="text-[10px] text-slate-400">•</span>
-                        <span className="text-emerald-800 font-semibold text-[11px]">
-                          Conf: {lot.evidenceConfidence || 75}%
-                        </span>
-                      </div>
-
+                  {/* Grade & Quality Status */}
+                  <div className="text-xs text-slate-600 font-medium">
+                    <span>{lot.provisionalGrade || lot.grade || "Grade A"}</span>
+                    <span className="mx-1.5">•</span>
+                    {lot.qualityScore || lot.qualityPassport ? (
                       <button
                         type="button"
                         onClick={() => setSelectedLotForPassport(lot)}
-                        className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 underline flex items-center gap-0.5 cursor-pointer ml-auto"
+                        className="text-emerald-800 font-bold hover:underline inline-flex items-center gap-1"
                       >
-                        <span>Quality Passport</span>
-                        <ArrowRight className="w-3 h-3" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Score {lot.qualityScore}/100</span>
+                        <span className="text-[10px] text-slate-400 font-normal">({lot.evidenceConfidence || 80}% Confidence)</span>
                       </button>
-                    </div>
-                  ) : (
-                    <div className="mt-2.5 flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-500">
-                      <span className="p-1 rounded-md bg-slate-100 text-slate-400">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[11px] font-medium text-slate-500">
-                        {lang === "mr" ? "गुणवत्ता मूल्यांकन दिलेले नाही" : "Quality Assessment Not Provided"}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* 3-Column Financial Grid */}
-                  <div className="mt-3.5 grid grid-cols-3 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                    <div>
-                      <span className="text-slate-500 block text-[10px] font-medium">{lang === "mr" ? "अपेक्षित भाव:" : "Expected Price:"}</span>
-                      <span className="font-bold text-slate-900">₹{lot.expectedPricePerQtl.toLocaleString("en-IN")}/Qtl</span>
-                    </div>
-
-                    <div>
-                      <span className="text-slate-500 block text-[10px] font-medium">{lang === "mr" ? "किरकोळ मर्यादा:" : "Min Acceptable:"}</span>
-                      <span className="font-bold text-slate-700">₹{lot.minimumAcceptablePrice.toLocaleString("en-IN")}/Qtl</span>
-                    </div>
-
-                    <div>
-                      <span className="text-slate-500 block text-[10px] font-medium">{lang === "mr" ? "अंदाजे मूल्य:" : "Est. Total Value:"}</span>
-                      <span className="font-bold text-emerald-700">₹{estTotalValue.toLocaleString("en-IN")}</span>
-                    </div>
+                    ) : (
+                      <span className="text-slate-500">Quality Assessment Not Provided</span>
+                    )}
                   </div>
 
-                  {/* Status Flow Stepper */}
-                  <div className="mt-3.5 pt-2 pb-1 px-3 bg-slate-50/70 rounded-xl border border-slate-200/60">
-                    <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1.5">
-                      <span>{lang === "mr" ? "प्रगती प्रवाह (Status Flow)" : "Status Flow"}</span>
-                      <span className="text-emerald-700 font-bold">{isAccepted ? "ACCEPTED" : lot.lotStatus}</span>
+                  {/* Pricing */}
+                  <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Expected Price</span>
+                      <span className="text-lg font-black text-slate-900">
+                        ₹{lot.expectedPricePerQtl.toLocaleString("en-IN")}
+                        <span className="text-xs font-normal text-slate-500"> /Qtl</span>
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between relative px-2">
-                      <div className="absolute top-2 left-4 right-4 h-0.5 bg-slate-200 z-0"></div>
-                      <div
-                        className="absolute top-2 left-4 h-0.5 bg-emerald-500 z-0 transition-all duration-300"
-                        style={{
-                          width:
-                            isAccepted || lot.lotStatus === "OFFERED"
-                              ? "calc(100% - 2rem)"
-                              : lot.lotStatus === "MATCHED"
-                              ? "66%"
-                              : "33%",
-                        }}
-                      ></div>
-
-                      {[
-                        { label: lang === "mr" ? "काढणी" : "Harvest", active: true },
-                        { label: lang === "mr" ? "व्यापार लॉट" : "Trade Lot", active: true },
-                        {
-                          label: lang === "mr" ? "मॅचिंग" : "Buyer Match",
-                          active: ["MATCHED", "OFFERED", "ACCEPTED"].includes(lot.lotStatus) || isAccepted,
-                        },
-                        {
-                          label: lang === "mr" ? "ऑफर" : "Offer",
-                          active: ["OFFERED", "ACCEPTED"].includes(lot.lotStatus) || isAccepted,
-                        },
-                      ].map((step, idx) => (
-                        <div key={idx} className="relative z-10 flex flex-col items-center gap-1 bg-slate-50/90 px-1">
-                          <div
-                            className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                              step.active
-                                ? "bg-emerald-600 text-white ring-2 ring-emerald-100"
-                                : "bg-slate-200 text-slate-500"
-                            }`}
-                          >
-                            {step.active ? "✓" : idx + 1}
-                          </div>
-                          <span
-                            className={`text-[9px] font-medium leading-none ${
-                              step.active ? "text-emerald-800 font-bold" : "text-slate-400"
-                            }`}
-                          >
-                            {step.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    {lot.minimumAcceptablePrice && (
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        Min: ₹{lot.minimumAcceptablePrice.toLocaleString("en-IN")}/Qtl
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {isAccepted ? (
-                  <div className="pt-3 mt-3 border-t border-slate-100 space-y-2.5">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                      <span>{lot.origin || "Farm Gate"} • {new Date(lot.createdAt).toLocaleDateString()}</span>
-                      <span className="text-emerald-700 font-bold bg-emerald-50 border border-emerald-200/90 px-2 py-0.5 rounded text-[10px] flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                        {lang === "mr" ? "सौदा निश्चित (Deal Confirmed)" : "Deal Confirmed"}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
-                      {/* 1. Track Delivery (Primary) */}
+                {/* Actions */}
+                <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                  {isAccepted ? (
+                    <div className="flex items-center gap-2 w-full">
                       <button
                         onClick={() => {
                           window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "delivery" }));
                         }}
-                        className="inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-2.5 rounded-xl shadow-sm transition-all text-center whitespace-nowrap"
+                        className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Truck className="w-3.5 h-3.5 shrink-0" />
+                        <Truck className="w-3.5 h-3.5" />
                         <span>{lang === "mr" ? "वितरण ट्रॅक करा" : "Track Delivery"}</span>
                       </button>
-
-                      {/* 2. View Payment (Secondary) */}
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "payments" }));
-                        }}
-                        className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold h-9 px-2.5 rounded-xl border border-slate-300 shadow-xs transition-all text-center whitespace-nowrap"
-                      >
-                        <DollarSign className="w-3.5 h-3.5 shrink-0 text-slate-600" />
-                        <span>{lang === "mr" ? "पेमेंट पहा" : "View Payment"}</span>
-                      </button>
-
-                      {/* 3. View Transaction (Secondary) */}
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("prisms:navigate_tab", { detail: "transactions" }));
-                        }}
-                        className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold h-9 px-2.5 rounded-xl border border-slate-300 shadow-sm transition-all text-center whitespace-nowrap"
-                      >
-                        <ArrowRight className="w-3.5 h-3.5 shrink-0 text-slate-600" />
-                        <span>{lang === "mr" ? "व्यवहार इतिहास" : "View Transaction"}</span>
-                      </button>
-
-                      {/* 4. View Offers (Secondary Review) */}
                       <button
                         onClick={() => setSelectedLotForOffers(lot)}
-                        className="inline-flex items-center justify-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold h-9 px-2.5 rounded-xl border border-amber-300/80 shadow-sm transition-all text-center whitespace-nowrap"
+                        className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 shadow-xs transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <Tag className="w-3.5 h-3.5 shrink-0 text-amber-700" />
-                        <span>{lang === "mr" ? "ऑफर पहा" : "View Offers"}</span>
+                        <Tag className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Offers</span>
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="pt-3 mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-                    <span className="text-[11px] text-slate-500">
-                      {lot.origin || "Farm Gate"} • {new Date(lot.createdAt).toLocaleDateString()}
-                    </span>
-
-                    {isOfferedOrMatched ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => setSelectedLotForMatch(lot)}
-                          className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 transition-all"
-                        >
-                          <Building2 className="w-3.5 h-3.5" />
-                          {lang === "mr" ? "व्यापारी मॅच शोधा" : "Find Matching Buyers"}
-                        </button>
-
-                        <button
-                          onClick={() => setSelectedLotForOffers(lot)}
-                          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all"
-                        >
-                          {lang === "mr" ? "डिजिटल ऑफर्स पहा" : "View Offers"}
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => setSelectedLotForOffers(lot)}
-                          className="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold px-3 py-2 rounded-xl border border-amber-300/80 shadow-sm transition-all"
-                        >
-                          {lang === "mr" ? "डिजिटल ऑफर्स पहा" : "View Offers"}
-                        </button>
-
-                        <button
-                          onClick={() => setSelectedLotForMatch(lot)}
-                          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all"
-                        >
-                          <Building2 className="w-3.5 h-3.5" />
-                          {lang === "mr" ? "व्यापारी मॅच शोधा" : "Find Matching Buyers"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setSelectedLotForOffers(lot)}
+                        className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Tag className="w-3.5 h-3.5" />
+                        <span>{lang === "mr" ? "ऑफर पहा" : "View Offers"}</span>
+                      </button>
+                      <button
+                        onClick={() => setSelectedLotForMatch(lot)}
+                        className="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                        title="Buyer Match"
+                      >
+                        <Store className="w-3.5 h-3.5 text-emerald-700" />
+                        <span className="hidden sm:inline">Buyer Match</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(lot.lotId)}
+                        className="p-2.5 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl border border-slate-200 transition-colors"
+                        title="Delete Lot"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             );
           })}

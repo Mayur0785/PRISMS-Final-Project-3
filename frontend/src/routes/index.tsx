@@ -1108,7 +1108,7 @@ export function Index() {
     const matched = matchDistrict(markets, locationText);
     if (matched) setDistrict(matched);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setSubmitted(true);
       setCalculating(false);
 
@@ -1120,6 +1120,36 @@ export function Index() {
           latitude: coords?.lat ?? null,
           longitude: coords?.lng ?? null,
         }).catch(() => {});
+
+        // Automatically create a backend Trade Lot from Dashboard input
+        try {
+          const selectedCropObj = commodities.find(c => c.id === cropId);
+          const cropName = selectedCropObj ? selectedCropObj.name : "Red Onion";
+          const qtyQtl = qtyUnit === "Qtl" ? qtyNum : Math.round((qtyNum / 100) * 10) / 10;
+          const expPrice = commodityBasePrice || 3000;
+          const minPrice = Math.round(expPrice * 0.9);
+
+          const newLot = await createTradeLot({
+            cropName,
+            variety: "Standard",
+            grade: grade || "Grade A",
+            quantityQtl: Math.max(1, qtyQtl),
+            expectedPricePerQtl: expPrice,
+            minimumAcceptablePrice: minPrice,
+            origin: locationText || "Farm Gate, Niphad",
+            district: district || "Nashik",
+            buyerVisibility: "PUBLIC",
+          });
+
+          if (newLot) {
+            void userCropsQ.refetch();
+            setSavedToastMsg(lang === "mr" ? `✅ टेड लॉट तयार झाला: ${newLot.lotId || "नवीन लॉट"}` : `✅ Trade Lot created successfully: ${newLot.lotId || "New Lot"}`);
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 3000);
+          }
+        } catch (err) {
+          console.error("Auto trade lot creation error:", err);
+        }
       }
 
       // Smoothly scroll down to the ranked mandis
@@ -1310,14 +1340,12 @@ export function Index() {
           {[
             { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
             { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
-            { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: activeBatches.length },
+            { id: "crops", label: lang === "mr" ? "व्यापार लॉट्स" : "Trade Lots", icon: Package, badge: activeBatches.length },
             { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
             { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
             { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
             { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
             { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
-            { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
-            { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Advisor", icon: Sparkles },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

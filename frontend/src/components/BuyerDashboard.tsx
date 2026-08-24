@@ -429,12 +429,11 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
           {[
             { id: "overview", label: "Overview", icon: Layers },
-            { id: "lots", label: "Farmer Produce Discovery", icon: Package, badge: availableLots.length },
-            { id: "demands", label: "My Demands", icon: Tag, badge: demands.length },
+            { id: "lots", label: "Farmer Produce", icon: Package, badge: availableLots.length },
             { id: "offers", label: "Bids & Counter Offers", icon: DollarSign, badge: backendOffers.length },
-            { id: "purchases", label: "Purchases & Logistics", icon: Truck, badge: deliveries.length },
-            { id: "payments", label: "Escrow & Settlements", icon: CreditCard, badge: payments.length },
-            { id: "notifications", label: "Alerts & Feed", icon: Bell, badge: unreadNotifsCount },
+            { id: "purchases", label: "Purchases", icon: Truck, badge: deliveries.length },
+            { id: "payments", label: "Escrow", icon: CreditCard, badge: payments.length },
+            { id: "notifications", label: "Notifications", icon: Bell, badge: unreadNotifsCount },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
