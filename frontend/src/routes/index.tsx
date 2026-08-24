@@ -44,6 +44,28 @@ import { DigitalOffersManager } from "@/components/DigitalOffersManager";
 import { LandingPage } from "@/components/LandingPage";
 import { BuyerDashboard } from "@/components/BuyerDashboard";
 import { getCurrentUser, logoutUser, resetDemoDataApi, type AuthUser } from "@/lib/prisms";
+import {
+  Layers,
+  Search,
+  Package,
+  Store,
+  Tag,
+  DollarSign,
+  Truck,
+  CreditCard,
+  Clock,
+  Users,
+  Sparkles,
+  LogOut,
+  Bell,
+  Settings,
+  User as UserIcon,
+  ShieldCheck,
+  CheckCircle2,
+  ChevronRight,
+  TrendingUp,
+  MapPin,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -1193,636 +1215,149 @@ export function Index() {
 
   // 3. FARMER COMMAND CENTER DASHBOARD (Producers & FPOs)
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-container-lowest text-on-background font-sans">
-      {/* SideNavBar */}
-      <nav className="fixed left-0 top-0 h-screen w-[280px] bg-surface-container border-r border-outline-variant flex flex-col z-20">
-        {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-outline-variant/50 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary shadow-sm">
-              <span className="material-symbols-outlined icon-fill text-[20px]">agriculture</span>
+    <div className="min-h-screen bg-[#fbfbfa] text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
+      {/* Top Header Navbar */}
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-emerald-900/40 text-white shadow-lg flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab("dashboard")}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center font-black text-xl shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform flex-shrink-0 border border-emerald-400/30">
+              🌾
             </div>
             <div>
-              <h1 className="text-[20px] font-bold text-primary tracking-tight leading-none">PRISMS</h1>
-              <p className="text-on-surface-variant text-[10px] uppercase tracking-wider font-medium mt-0.5">
-                Digital Command Center
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Links (Scrollable Container) */}
-        <div className="flex-1 py-3 flex flex-col gap-1 px-3 overflow-y-auto custom-scrollbar">
-          {/* PRIMARY NAVIGATION SECTION */}
-          <div className="text-[10px] uppercase font-bold tracking-wider text-outline px-3 pt-1 pb-1">
-            {lang === "mr" ? "मुख्य विभाग" : "Primary Features"}
-          </div>
-
-          {/* 1. Dashboard */}
-          <button
-            type="button"
-            onClick={() => setActiveTab("dashboard")}
-            className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group ${
-              activeTab === "dashboard"
-                ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                : "text-on-surface-variant hover:bg-surface-container-highest"
-            }`}
-          >
-            <span className={`material-symbols-outlined ${activeTab === "dashboard" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-              dashboard
-            </span>
-            <span className="text-[14px] font-bold tracking-wide">{t(lang, "dashboard")}</span>
-          </button>
-
-          {/* 2. Market Search */}
-          <button
-            type="button"
-            onClick={() => setActiveTab("search")}
-            className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group ${
-              activeTab === "search"
-                ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                : "text-on-surface-variant hover:bg-surface-container-highest"
-            }`}
-          >
-            <span className={`material-symbols-outlined ${activeTab === "search" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-              search
-            </span>
-            <span className="text-[14px] font-bold tracking-wide">{t(lang, "marketSearch")}</span>
-          </button>
-
-          {/* 3. My Crops / Trade Lots */}
-          <button
-            type="button"
-            onClick={() => setActiveTab("crops")}
-            className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group ${
-              activeTab === "crops"
-                ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                : "text-on-surface-variant hover:bg-surface-container-highest"
-            }`}
-          >
-            <span className={`material-symbols-outlined ${activeTab === "crops" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-              grass
-            </span>
-            <span className="text-[14px] font-bold tracking-wide">{t(lang, "myCrops")}</span>
-          </button>
-
-          {/* 4. Buyer Discovery */}
-          <button
-            type="button"
-            onClick={() => setActiveTab("buyers")}
-            className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group ${
-              activeTab === "buyers"
-                ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                : "text-on-surface-variant hover:bg-surface-container-highest"
-            }`}
-          >
-            <span className={`material-symbols-outlined ${activeTab === "buyers" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-              storefront
-            </span>
-            <span className="text-[14px] font-bold tracking-wide">{t(lang, "buyerDiscovery")}</span>
-          </button>
-
-          {/* 5. Smart Intelligence (Temporarily hidden from sidebar, set SHOW_INTELLIGENCE_IN_SIDEBAR=true to re-enable) */}
-          {SHOW_INTELLIGENCE_IN_SIDEBAR && (
-            <button
-              type="button"
-              onClick={() => setActiveTab("intelligence")}
-              className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group ${
-                activeTab === "intelligence"
-                  ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                  : "text-on-surface-variant hover:bg-surface-container-highest"
-              }`}
-            >
-              <span className={`material-symbols-outlined ${activeTab === "intelligence" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-                psychology
-              </span>
-              <span className="text-[14px] font-bold tracking-wide">{t(lang, "smartIntelligence")}</span>
-            </button>
-          )}
-
-          {/* 6. Alerts (Temporarily hidden from sidebar, set SHOW_ALERTS_IN_SIDEBAR=true to re-enable) */}
-          {SHOW_ALERTS_IN_SIDEBAR && (
-            <button
-              type="button"
-              onClick={() => setActiveTab("alerts")}
-              className={`w-full text-left flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg transition-colors duration-200 group relative ${
-                activeTab === "alerts"
-                  ? "text-primary font-bold bg-primary-container/10 border-l-4 border-primary"
-                  : "text-on-surface-variant hover:bg-surface-container-highest"
-              }`}
-            >
-              <span className={`material-symbols-outlined ${activeTab === "alerts" ? "icon-fill text-primary" : "group-hover:text-primary"} transition-colors`}>
-                notifications_active
-              </span>
-              <span className="text-[14px] font-bold tracking-wide flex-1">{t(lang, "alerts")}</span>
-              <span className="w-2 h-2 rounded-full bg-alert-terracotta animate-pulse" />
-            </button>
-          )}
-
-          {/* SECONDARY NAVIGATION SECTION: Operations & Advanced */}
-          <div className="mt-3 pt-3 border-t border-outline-variant/50">
-            <button
-              type="button"
-              onClick={() => setOpsOpen(!opsOpen)}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-outline hover:text-primary transition-colors"
-            >
-              <span>{t(lang, "opsAndAdvanced")}</span>
-              <span className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${opsOpen ? "rotate-180" : ""}`}>
-                expand_more
-              </span>
-            </button>
-
-            {opsOpen && (
-              <div className="flex flex-col gap-2 mt-1.5 pl-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                {/* Trade Execution */}
-                <div>
-                  <div className="text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-widest px-3 py-1">
-                    {t(lang, "tradeExecution")}
-                  </div>
-
-                  {/* Digital Offers */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("offers")}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                      activeTab === "offers"
-                        ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[18px] ${activeTab === "offers" ? "text-primary" : "group-hover:text-primary"}`}>
-                      local_offer
-                    </span>
-                    <span>{t(lang, "digitalOffers")}</span>
-                  </button>
-
-                  {/* Delivery Tracking */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("delivery")}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                      activeTab === "delivery"
-                        ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[18px] ${activeTab === "delivery" ? "text-primary" : "group-hover:text-primary"}`}>
-                      local_shipping
-                    </span>
-                    <span>{t(lang, "deliveryTracking")}</span>
-                  </button>
-
-                  {/* Payment Tracking */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("payments")}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                      activeTab === "payments"
-                        ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[18px] ${activeTab === "payments" ? "text-primary" : "group-hover:text-primary"}`}>
-                      payments
-                    </span>
-                    <span>{t(lang, "paymentLedger")}</span>
-                  </button>
-
-                  {/* Transaction History */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("transactions")}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                      activeTab === "transactions"
-                        ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[18px] ${activeTab === "transactions" ? "text-primary" : "group-hover:text-primary"}`}>
-                      history
-                    </span>
-                    <span>{t(lang, "tradeHistory")}</span>
-                  </button>
-                </div>
-
-                {/* Group & Logistics */}
-                <div>
-                  <div className="text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-widest px-3 py-1">
-                    {t(lang, "groupLogistics")}
-                  </div>
-
-                  {/* FPO & Group Selling */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("fpo")}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                      activeTab === "fpo"
-                        ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[18px] ${activeTab === "fpo" ? "text-primary" : "group-hover:text-primary"}`}>
-                      groups
-                    </span>
-                    <span>{t(lang, "fpoGroupSelling")}</span>
-                  </button>
-
-                  {/* Collective Transport (Temporarily hidden from sidebar, functionality integrated in FPO & Group Selling) */}
-                  {SHOW_COLLECTIVE_TRANSPORT_IN_SIDEBAR && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("transport")}
-                      className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                        activeTab === "transport"
-                          ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                      }`}
-                    >
-                      <span className={`material-symbols-outlined text-[18px] ${activeTab === "transport" ? "text-primary" : "group-hover:text-primary"}`}>
-                        departure_board
-                      </span>
-                      <span>{t(lang, "collectiveTransport")}</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Support & Tools (Temporarily hidden from sidebar, set SHOW_SUPPORT_TOOLS_IN_SIDEBAR=true to re-enable) */}
-                {SHOW_SUPPORT_TOOLS_IN_SIDEBAR && (
-                  <div>
-                    <div className="text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-widest px-3 py-1">
-                      {t(lang, "supportTools")}
-                    </div>
-
-                    {/* Grievances */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("grievances")}
-                      className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                        activeTab === "grievances"
-                          ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                      }`}
-                    >
-                      <span className={`material-symbols-outlined text-[18px] ${activeTab === "grievances" ? "text-primary" : "group-hover:text-primary"}`}>
-                        report_problem
-                      </span>
-                      <span>{t(lang, "disputesGrievances")}</span>
-                    </button>
-
-                    {/* Price Analytics */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("analytics")}
-                      className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                        activeTab === "analytics"
-                          ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                      }`}
-                    >
-                      <span className={`material-symbols-outlined text-[18px] ${activeTab === "analytics" ? "text-primary" : "group-hover:text-primary"}`}>
-                        analytics
-                      </span>
-                      <span>{t(lang, "priceAnalytics")}</span>
-                    </button>
-
-                    {/* Resources & Tools */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("resources")}
-                      className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md transition-all group text-[13px] ${
-                        activeTab === "resources"
-                          ? "text-primary font-bold bg-primary-container/10 border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
-                      }`}
-                    >
-                      <span className={`material-symbols-outlined text-[18px] ${activeTab === "resources" ? "text-primary" : "group-hover:text-primary"}`}>
-                        library_books
-                      </span>
-                      <span>{t(lang, "resources")}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* AI Agri Advisor Button in Sidebar */}
-          <button
-            type="button"
-            onClick={() => setChatModalOpen(true)}
-            className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 bg-gradient-to-r from-primary/10 to-success-sage/10 hover:from-primary/20 hover:to-success-sage/20 border border-primary/20 text-primary font-bold group shadow-sm mt-3 shrink-0"
-          >
-            <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm shrink-0">
-              <span className="material-symbols-outlined text-[16px]">smart_toy</span>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <span className="text-[12px] block leading-tight truncate">
-                {lang === "mr" ? "AI कृषी सल्लागार" : "AI Agri Advisor"}
-              </span>
-              <span className="text-[10px] text-success-sage font-medium block truncate">
-                {lang === "mr" ? "बाजारभाव व अंतर सल्ला" : "Benchmark & Spatial Advisor"}
-              </span>
-            </div>
-            <span className="w-2 h-2 rounded-full bg-success-sage animate-ping shrink-0" />
-          </button>
-        </div>
-
-        {/* User Profile Area at bottom of sidebar */}
-        <div className="p-4 border-t border-outline-variant/50">
-          <div
-            onClick={() => setProfileOpen(true)}
-            className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container cursor-pointer transition-colors group"
-            title="Open Farmer Profile / शेतकरी प्रोफाईल"
-          >
-            <div className="w-10 h-10 rounded-full bg-surface-dim overflow-hidden flex-shrink-0 border-2 border-primary/30 group-hover:border-primary transition-all">
-              <img
-                alt="User profile"
-                className="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-              />
-            </div>
-            <div className="overflow-hidden flex-1">
-              <div className="flex items-center justify-between">
-                <p className="text-[13px] font-bold text-on-surface truncate group-hover:text-primary transition-colors">
-                  {currentUser?.name || (lang === "mr" ? "शेतकरी प्रोफाईल" : "Guest Farmer")}
-                </p>
-                <span className="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-transform group-hover:translate-x-0.5">
-                  chevron_right
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl tracking-tight text-white font-serif bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent">
+                  PRISMS
+                </span>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider shadow-inner">
+                  Farmer Command Center
                 </span>
               </div>
-              <p className={`text-[11px] font-medium truncate flex items-center gap-1 ${currentUser ? "text-success-sage" : "text-on-surface-variant"}`}>
-                <span className={`w-1.5 h-1.5 rounded-full inline-block ${currentUser ? "bg-success-sage" : "bg-outline-variant"}`} />
-                {currentUser
-                  ? (lang === "mr" ? "प्रमाणित शेतकरी" : "Verified Farmer")
-                  : (lang === "mr" ? "लॉग इन करा" : "Sign In to Save")}
+              <p className="text-[11px] text-emerald-200/70 font-medium tracking-wide flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>{farmerName}</span>
+                <span className="text-emerald-500/50">•</span>
+                <span className="truncate max-w-[180px] sm:max-w-[240px] text-slate-300">{currentUser?.email || "farmer.lasalgaon@prisms.gov.in"}</span>
               </p>
             </div>
           </div>
-        </div>
-      </nav>
 
-      {/* Right Canvas: Header on Top, Main Content Below */}
-      <div className="ml-[280px] flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-lowest">
-        {/* TopNavBar */}
-        <header className="h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-6 md:px-8 z-20 shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-        <div className="flex-1 flex items-center pl-6 gap-6">
-          {activeTab === "resources" ? (
-            <div className="text-[20px] font-extrabold tracking-tight text-primary">
-              {t(lang, "resources")}
-            </div>
-          ) : (
-            <form onSubmit={handleTopSearchSubmit} className="relative w-80 sm:w-96">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">
-                search
-              </span>
-              <input
-                value={searchQuery}
-                onFocus={() => setSearchDropdownOpen(true)}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchDropdownOpen(true);
-                }}
-                className="w-full bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-12 text-[14px] text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                placeholder={
-                  activeTab === "analytics"
-                    ? lang === "mr"
-                      ? "पिके, बाजारपेठा किंवा दर विश्लेषण शोधा..."
-                      : "Search crops, mandis, or analytics..."
-                    : lang === "mr"
-                    ? "बाजारपेठा, पिके किंवा जिल्हे शोधा..."
-                    : "Search markets, crops, or regions..."
-                }
-                type="text"
-              />
-              {searchQuery ? (
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <button
+              type="button"
+              onClick={() => setLang(lang === "en" ? "mr" : "en")}
+              className="px-3 py-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 text-emerald-200 hover:bg-slate-700 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer backdrop-blur-sm"
+              title="Toggle Language / भाषा बदला"
+            >
+              <span className="text-emerald-400">🌐</span>
+              <span>{lang === "en" ? "मराठी" : "English"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewLanding(true)}
+              className="px-3 py-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              title="Public Landing Page"
+            >
+              <Store className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 bg-slate-800/50 transition-all cursor-pointer"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4 text-slate-300" />
+            </button>
+
+            {currentUser ? (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchDropdownOpen(false);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-[16px] flex items-center justify-center"
+                  onClick={() => setProfileOpen(true)}
+                  className="px-3.5 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-emerald-200 hover:bg-emerald-900/60 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  title="Profile"
                 >
-                  <span className="material-symbols-outlined text-[18px]">cancel</span>
+                  <UserIcon className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="hidden sm:inline">{farmerName.split(" ")[0]}</span>
                 </button>
-              ) : (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-outline text-[10px] bg-surface-container border border-outline-variant px-1.5 py-0.5 rounded font-mono">
-                  /
-                </div>
-              )}
-
-              {/* Live Omnisearch Dropdown */}
-              {searchDropdownOpen && searchQuery.trim().length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl border border-outline-variant shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="p-3 bg-surface-container-high border-b border-outline-variant flex justify-between items-center text-[12px] font-bold text-on-surface-variant">
-                    <span>{lang === "mr" ? `शोध परिणाम ("${searchQuery}")` : `Search Matches ("${searchQuery}")`}</span>
-                    <button
-                      type="button"
-                      onClick={() => setSearchDropdownOpen(false)}
-                      className="text-outline hover:text-on-surface text-[11px] underline"
-                    >
-                      {lang === "mr" ? "बंद करा" : "Close (Esc)"}
-                    </button>
-                  </div>
-
-                  <div className="max-h-80 overflow-y-auto custom-scrollbar p-2 space-y-1 text-[13px]">
-                    {/* Filtered Crops */}
-                    {[
-                      { id: "onion_1", name: "Red Onion (Nashik)", name_mr: "लाल कांदा (नाशिक)", emoji: "🧅", sub: "Est. Net: ₹2,138/Qtl • High Demand", tab: "dashboard" },
-                      { id: "wheat_1", name: "Sharbati Wheat", name_mr: "शरबती गहू", emoji: "🌾", sub: "Est. Net: ₹2,240/Qtl • MSP +₹75", tab: "dashboard" },
-                      { id: "soybeans_1", name: "Yellow Soybeans", name_mr: "पिवळा सोयाबीन", emoji: "🌱", sub: "Price Target ₹4,850/Qtl hit", tab: "analytics" },
-                      { id: "tomato_1", name: "Tomato (Hybrid)", name_mr: "टोमॅटो (हायब्रिड)", emoji: "🍅", sub: "Perishable • Fast Mandi Route needed", tab: "search" },
-                      { id: "banana_1", name: "Banana (Solapur / Jalgaon)", name_mr: "केळी (सोलापूर / जळगाव)", emoji: "🍌", sub: "High Mandi Realization", tab: "dashboard" },
-                    ]
-                      .filter((c) =>
-                        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.name_mr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.sub.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((cropItem) => (
-                        <div
-                          key={cropItem.id}
-                          onClick={() => {
-                            setCropId(cropItem.id);
-                            setActiveTab(cropItem.tab as any);
-                            setSearchDropdownOpen(false);
-                          }}
-                          className="p-2.5 rounded-xl hover:bg-surface-container flex items-center justify-between cursor-pointer group transition-colors"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-[20px]">{cropItem.emoji}</span>
-                            <div>
-                              <p className="font-bold text-on-surface group-hover:text-primary transition-colors">
-                                {lang === "mr" ? cropItem.name_mr : cropItem.name}
-                              </p>
-                              <p className="text-[11px] text-on-surface-variant">{cropItem.sub}</p>
-                            </div>
-                          </div>
-                          <span className="text-[11px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-md">
-                            {lang === "mr" ? "निवडा" : "Select"} →
-                          </span>
-                        </div>
-                      ))}
-
-                    {/* Filtered Mandis & Cities */}
-                    {[
-                      { id: "pune", name: "Pune APMC (Gultekdi)", name_mr: "पुणे APMC (गुलटेकडी)", pin: "pune", dist: "5 km", net: "₹2,180 Net" },
-                      { id: "vashi", name: "Vashi APMC, Navi Mumbai", name_mr: "वाशी APMC (नवी मुंबई)", pin: "vashi", dist: "15 km", net: "₹2,390 Net" },
-                      { id: "lasalgaon", name: "Lasalgaon APMC (Nashik)", name_mr: "लासलगाव बाजार समिती (नाशिक)", pin: "lasalgaon", dist: "155 km", net: "₹2,138 Net" },
-                      { id: "panvel", name: "Panvel APMC", name_mr: "पनवेल APMC", pin: "panvel", dist: "8 km", net: "₹2,260 Net" },
-                      { id: "kalyan", name: "Kalyan APMC", name_mr: "कल्याण APMC", pin: "kalyan", dist: "28 km", net: "₹2,210 Net" },
-                      { id: "baramati", name: "Baramati APMC", name_mr: "बारामती APMC", pin: "baramati", dist: "125 km", net: "₹2,150 Net" },
-                      { id: "pimpalgaon", name: "Pimpalgaon APMC", name_mr: "पिंपळगाव APMC", pin: "pimpalgaon", dist: "148 km", net: "₹2,110 Net" },
-                      { id: "nashik", name: "Nashik Main APMC", name_mr: "नाशिक मुख्य बाजार समिती", pin: "nashik", dist: "138 km", net: "₹2,085 Net" },
-                    ]
-                      .filter((m) =>
-                        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        m.name_mr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        m.id.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((mandiItem) => (
-                        <div
-                          key={mandiItem.id}
-                          onClick={() => {
-                            setMandiSearchQuery(mandiItem.name);
-                            setSelectedMandiPin(mandiItem.id);
-                            setActiveTab("search");
-                            setSearchDropdownOpen(false);
-                          }}
-                          className="p-2.5 rounded-xl hover:bg-surface-container flex items-center justify-between cursor-pointer group transition-colors border-t border-outline-variant/30"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="material-symbols-outlined text-primary text-[20px]">storefront</span>
-                            <div>
-                              <p className="font-bold text-on-surface group-hover:text-primary transition-colors">
-                                {lang === "mr" ? mandiItem.name_mr : mandiItem.name}
-                              </p>
-                              <p className="text-[11px] text-on-surface-variant">{mandiItem.dist} • <span className="text-success-sage font-bold">{mandiItem.net}</span></p>
-                            </div>
-                          </div>
-                          <span className="text-[11px] font-bold text-success-sage px-2 py-0.5 bg-success-sage/10 rounded-md">
-                            {lang === "mr" ? "GIS नकाशा" : "View Map"} →
-                          </span>
-                        </div>
-                      ))}
-
-                    {/* Filtered Tools */}
-                    {[
-                      { id: "loan", name: "Loan Eligibility Calculator (70% LTV)", name_mr: "पीक कर्ज पात्रता अंदाज गणक", icon: "request_quote", tab: "resources" },
-                      { id: "spoilage", name: "Spoilage Risk Monitor", name_mr: "साठवणूक नासाडी जोखीम", icon: "thermostat", tab: "resources" },
-                      { id: "forecast", name: "30-Day Price Forecast Chart", name_mr: "३० दिवसांचा संभाव्य दर अंदाज", icon: "trending_up", tab: "analytics" },
-                    ]
-                      .filter((t) =>
-                        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        t.name_mr.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((toolItem) => (
-                        <div
-                          key={toolItem.id}
-                          onClick={() => {
-                            setActiveTab(toolItem.tab as any);
-                            setSearchDropdownOpen(false);
-                          }}
-                          className="p-2.5 rounded-xl hover:bg-surface-container flex items-center justify-between cursor-pointer group transition-colors border-t border-outline-variant/30"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="material-symbols-outlined text-warning-burnt-orange text-[20px]">{toolItem.icon}</span>
-                            <p className="font-bold text-on-surface group-hover:text-primary transition-colors">
-                              {lang === "mr" ? toolItem.name_mr : toolItem.name}
-                            </p>
-                          </div>
-                          <span className="text-[11px] font-bold text-outline group-hover:text-primary">
-                            {lang === "mr" ? "उघडा" : "Open"} →
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-            </form>
-          )}
-        </div>
-
-        {/* Trailing Icon Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          <button
-            type="button"
-            onClick={() => setViewLanding(true)}
-            title="Public Landing Page / मुख्य पोर्टल"
-            className="h-10 px-3 rounded-full flex items-center gap-1.5 text-on-surface hover:bg-surface-container transition-all active:scale-95 text-xs font-bold border border-outline-variant shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px] text-primary">storefront</span>
-            <span className="hidden md:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setLang(lang === "en" ? "mr" : "en")}
-            title="Toggle Language / भाषा बदला (EN / मराठी)"
-            className="h-10 px-3.5 rounded-full flex items-center gap-1.5 text-on-surface hover:bg-surface-container transition-all active:scale-95 text-xs font-bold border border-outline-variant shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px] text-primary">language</span>
-            <span>{lang === "en" ? "EN" : "मराठी"}</span>
-          </button>
-
-          {/* Notification Alerts Bell Button (Temporarily hidden when SHOW_ALERTS_IN_SIDEBAR is false) */}
-          {SHOW_ALERTS_IN_SIDEBAR && (
-            <button
-              type="button"
-              onClick={() => setActiveTab("alerts")}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 border relative ${
-                activeTab === "alerts"
-                  ? "bg-primary-container/20 text-primary border-primary"
-                  : "text-on-surface-variant hover:text-primary hover:bg-surface-container border-transparent hover:border-outline-variant"
-              }`}
-              title="In-app Price Alerts & Notifications / सूचक इशारे"
-            >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-alert-terracotta animate-pulse" />
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all active:scale-95 border border-transparent hover:border-outline-variant"
-            title="Command Center Settings / सेटिंग्ज"
-          >
-            <span className="material-symbols-outlined text-[20px]">settings</span>
-          </button>
-          {currentUser ? (
-            <button
-              type="button"
-              onClick={() => setProfileOpen(true)}
-              className="h-10 pl-1.5 pr-3 rounded-full flex items-center gap-2 border border-outline-variant hover:border-primary transition-all active:scale-95 bg-surface shadow-sm"
-              title="Farmer Profile & Account / शेतकरी प्रोफाईल"
-            >
-              <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/30">
-                <img
-                  alt="Farmer profile avatar"
-                  className="w-full h-full object-cover"
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await logoutUser();
+                    setCurrentUser(null);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-rose-950/40 cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{lang === "mr" ? "बाहेर पडा" : "Logout"}</span>
+                </button>
               </div>
-              <span className="text-[12px] font-bold text-on-surface hidden sm:inline max-w-[90px] truncate">
-                {farmerName.split(" ")[0]}
-              </span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setAuthModalOpen(true)}
-              className="h-10 px-4 rounded-full bg-primary text-on-primary font-bold text-[13px] hover:bg-primary-container transition-all active:scale-95 shadow-sm flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[18px]">login</span>
-              <span>{lang === "mr" ? "लॉग इन" : "Sign In"}</span>
-            </button>
-          )}
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
+              >
+                {lang === "mr" ? "लॉग इन" : "Sign In"}
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Main Content Canvas */}
-      <main className="flex-1 overflow-y-auto custom-scrollbar bg-surface-container-lowest relative flex flex-col">
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+        {/* Horizontal Navigation Tabs Bar (Enhanced Ribbon) */}
+        <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/90 shadow-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+            {[
+              { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
+              { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
+              { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: crops.length },
+              { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
+              { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
+              { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
+              { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
+              { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
+              { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
+              { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Advisor", icon: Sparkles },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? "bg-emerald-700 text-white shadow-md shadow-emerald-900/20 scale-[1.02]"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500"}`} />
+                  <span>{tab.label}</span>
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                        isActive ? "bg-emerald-800 text-emerald-100 border border-emerald-600/50" : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Content Canvas */}
+        <main className="flex-1 relative flex flex-col space-y-6">
         
         {/* ========================================================================= */}
         {/* TAB 1: DEFAULT DASHBOARD OVERVIEW (NET-EARNING CALCULATOR & FEED) */}
@@ -3578,32 +3113,46 @@ export function Index() {
 
               {/* Interactive Tools Sidebar (4 cols) */}
               <div className="lg:col-span-4 flex flex-col gap-6">
-                <h2 className="text-[20px] font-bold text-on-surface border-b border-outline-variant pb-2">
-                  {lang === "mr" ? "थेट कृषी गणक साधने" : "Interactive Tools"}
-                </h2>
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                  <h2 className="text-[19px] font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    {lang === "mr" ? "थेट कृषी गणक साधने" : "Interactive Tools"}
+                  </h2>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300/50">
+                    Live
+                  </span>
+                </div>
 
                 {/* Tool Widget 1: Loan Planning Estimate */}
-                <div className="bg-surface-container-low rounded-xl border border-outline-variant p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="material-symbols-outlined text-secondary icon-fill text-[24px]">
-                      request_quote
-                    </span>
-                    <h3 className="text-[18px] font-bold text-on-surface">
-                      {lang === "mr" ? "पीक कर्ज नियोजन अंदाज" : "Loan Planning Estimate"}
-                    </h3>
+                <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/10 transition-all" />
+                  <div className="flex items-center gap-3 mb-3.5 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-300/50 flex items-center justify-center text-emerald-800 shadow-xs">
+                      <span className="material-symbols-outlined icon-fill text-[22px]">
+                        request_quote
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-[17px] font-extrabold text-slate-900 leading-snug">
+                        {lang === "mr" ? "पीक कर्ज नियोजन अंदाज" : "Loan Planning Estimate"}
+                      </h3>
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                        {lang === "mr" ? "इक्विटी व कर्ज नियोजन" : "70% LTV Facility"}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[13px] text-on-surface-variant mb-4 leading-relaxed">
+                  <p className="text-[12px] text-slate-600 mb-4 leading-relaxed relative z-10">
                     {lang === "mr"
                       ? "आपल्या पिकाच्या अंदाजित उत्पन्नानुसार प्राथमिक कर्ज नियोजन मर्यादा तपासा. (केवळ प्राथमिक अंदाज — ही बँक मंजुरी नाही)"
                       : "Illustrative borrowing estimate based on crop yield forecasts. (Illustrative estimate only — not a bank approval)"}
                   </p>
-                  <div className="space-y-3">
+                  <div className="space-y-3.5 relative z-10">
                     <div>
-                      <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
+                      <label className="block text-[11px] font-extrabold uppercase text-slate-500 tracking-wider mb-1">
                         {lang === "mr" ? "अंदाजित पीक मूल्य (₹)" : "Estimated Yield Value (₹)"}
                       </label>
                       <input
-                        className="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-[14px] font-bold text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none transition-all shadow-xs"
                         placeholder="उदा. 5,00,000"
                         type="number"
                         value={loanYieldValue}
@@ -3615,14 +3164,14 @@ export function Index() {
                     </div>
 
                     {loanEligibilityResult !== null && (
-                      <div className="p-3 bg-primary-container/10 border border-primary-container/30 rounded-lg text-center">
-                        <span className="text-[11px] font-bold uppercase text-on-surface-variant">
+                      <div className="p-4 bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-xl text-center shadow-md border border-emerald-700/50 animate-in fade-in duration-300">
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-300 block mb-0.5">
                           {lang === "mr" ? "अंदाजित नियोजन मर्यादा (७०% LTV)" : "Estimated Planning Limit (70% LTV)"}
                         </span>
-                        <p className="text-[22px] font-extrabold text-primary">
+                        <p className="text-[26px] font-black text-white tracking-tight">
                           ₹{loanEligibilityResult.toLocaleString("en-IN")}
                         </p>
-                        <span className="text-[10px] text-on-surface-variant block mt-0.5">
+                        <span className="text-[10px] text-emerald-200/70 block mt-0.5">
                           {lang === "mr" ? "केवळ मार्गदर्शनासाठी • प्रत्यक्ष मंजुरी बँकेवर अवलंबून आहे" : "For guidance only • Subject to lender verification"}
                         </span>
                       </div>
@@ -3634,7 +3183,7 @@ export function Index() {
                         const num = Number(loanYieldValue) || 0;
                         setLoanEligibilityResult(Math.round(num * 0.7));
                       }}
-                      className="w-full bg-primary text-on-primary font-bold text-[13px] py-3 rounded-lg hover:bg-primary-container transition-colors shadow-sm active:scale-95"
+                      className="w-full bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md shadow-emerald-950/20 active:scale-95 cursor-pointer"
                     >
                       {lang === "mr" ? "नियोजन अंदाज तपासा" : "Calculate Planning Estimate"}
                     </button>
@@ -3642,41 +3191,49 @@ export function Index() {
                 </div>
 
                 {/* Tool Widget 2: Spoilage Risk */}
-                <div className="bg-surface-container-low rounded-xl border border-outline-variant p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="material-symbols-outlined text-alert-terracotta icon-fill text-[24px]">
-                      thermostat
-                    </span>
-                    <h3 className="text-[18px] font-bold text-on-surface">
-                      {lang === "mr" ? "साठवणूक नासाडी जोखीम" : "Spoilage Risk"}
-                    </h3>
+                <div className="bg-gradient-to-br from-white via-slate-50 to-rose-50/20 rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                  <div className="flex items-center gap-3 mb-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 border border-rose-300/50 flex items-center justify-center text-rose-700 shadow-xs">
+                      <span className="material-symbols-outlined icon-fill text-[22px]">
+                        thermostat
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-[17px] font-extrabold text-slate-900 leading-snug">
+                        {lang === "mr" ? "साठवणूक नासाडी जोखीम" : "Spoilage Risk"}
+                      </h3>
+                      <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
+                        {lang === "mr" ? "हवामान आधारित ट्रॅकिंग" : "Climate Sensors"}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[13px] text-on-surface-variant mb-4 leading-relaxed">
+                  <p className="text-[12px] text-slate-600 mb-4 leading-relaxed">
                     {lang === "mr"
                       ? "स्थानिक हवेतील आर्द्रता आणि तापमानानुसार पीक साठवणुकीतील जोखीम तपासा."
                       : "Assess real-time storage risk based on local humidity and temperature."}
                   </p>
-                  <div className="bg-surface-container p-4 rounded-lg flex justify-between items-center mb-4">
+                  <div className="bg-slate-900 text-white p-4 rounded-xl flex justify-between items-center mb-4 border border-slate-800 shadow-inner">
                     <div>
-                      <div className="text-[12px] font-medium text-on-surface-variant">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         {lang === "mr" ? "हवेतील आर्द्रता" : "Current Humidity"}
                       </div>
-                      <div className="text-[24px] font-extrabold text-on-surface">78%</div>
+                      <div className="text-[24px] font-black text-white">78%</div>
                     </div>
-                    <div className="h-10 w-0.5 bg-outline-variant mx-4" />
+                    <div className="h-10 w-px bg-slate-800 mx-4" />
                     <div>
-                      <div className="text-[12px] font-medium text-on-surface-variant">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         {lang === "mr" ? "जोखीम पातळी" : "Risk Level"}
                       </div>
-                      <div className="text-[20px] font-extrabold text-alert-terracotta">
-                        {lang === "mr" ? "उच्च جوखीम" : "HIGH"}
+                      <div className="text-[20px] font-black text-rose-400 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" />
+                        <span>{lang === "mr" ? "उच्च जोखीम" : "HIGH"}</span>
                       </div>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => alert(lang === "mr" ? "उपाययोजना: गोदामामध्ये पुरेशी हवा खेळती ठेवा, पॅलेट्स कोरडे ठेवा आणि ४८ तासांच्या आत मालाची वाहतूक करा." : "Mitigation Guide: Ensure adequate ventilation, maintain dry warehouse pallets, and expedite transport within 48 hours.")}
-                    className="w-full border-2 border-outline-variant text-on-surface font-bold text-[13px] py-2.5 rounded-lg hover:bg-surface-container-highest transition-colors active:scale-95"
+                    className="w-full border-2 border-slate-200 text-slate-800 hover:bg-slate-100 hover:border-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs"
                   >
                     {lang === "mr" ? "उपाययोजना मार्गदर्शक पहा" : "View Mitigation Guide"}
                   </button>
@@ -3751,19 +3308,19 @@ export function Index() {
       {/* COMMAND CENTER SETTINGS MODAL */}
       {/* ========================================================================= */}
       {settingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface rounded-2xl border border-outline-variant max-w-xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-200 max-w-xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] text-slate-900">
             {/* Modal Header */}
-            <div className="bg-surface-container-high px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
                   <span className="material-symbols-outlined text-[20px]">settings</span>
                 </div>
                 <div>
-                  <h3 className="text-[17px] font-bold text-on-surface">
+                  <h3 className="text-base font-extrabold text-slate-900">
                     {lang === "mr" ? "कमांड सेंटर सेटिंग्ज" : "Command Center Settings"}
                   </h3>
-                  <p className="text-[12px] text-on-surface-variant">
+                  <p className="text-[11px] text-slate-500 font-medium">
                     {lang === "mr" ? "भाषा, वाहतूक दर आणि सूचना प्राधान्ये बदला" : "Configure language, transport benchmarks & notifications"}
                   </p>
                 </div>
@@ -3771,50 +3328,50 @@ export function Index() {
               <button
                 type="button"
                 onClick={() => setSettingsOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-variant text-on-surface-variant transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6 text-[14px]">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-5 text-xs">
               {/* 1. Language Preference */}
               <div>
-                <label className="block text-[13px] font-bold text-on-surface mb-2">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
                   🌐 {lang === "mr" ? "इंटरफेस भाषा (Language)" : "Interface Language"}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setLang("en")}
-                    className={`py-3 px-4 rounded-xl border text-center font-bold text-[13px] transition-all flex items-center justify-center gap-2 ${
+                    className={`py-3 px-4 rounded-xl border text-center font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       lang === "en"
-                        ? "bg-primary text-on-primary border-primary shadow-sm"
-                        : "bg-surface-container-low border-outline-variant text-on-surface hover:bg-surface-container"
+                        ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     <span>🇬🇧 English</span>
-                    {lang === "en" && <span className="material-symbols-outlined text-[16px]">check</span>}
+                    {lang === "en" && <span className="material-symbols-outlined text-[16px]">check_circle</span>}
                   </button>
                   <button
                     type="button"
                     onClick={() => setLang("mr")}
-                    className={`py-3 px-4 rounded-xl border text-center font-bold text-[13px] transition-all flex items-center justify-center gap-2 ${
+                    className={`py-3 px-4 rounded-xl border text-center font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       lang === "mr"
-                        ? "bg-primary text-on-primary border-primary shadow-sm"
-                        : "bg-surface-container-low border-outline-variant text-on-surface hover:bg-surface-container"
+                        ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     <span>🚩 मराठी (Marathi)</span>
-                    {lang === "mr" && <span className="material-symbols-outlined text-[16px]">check</span>}
+                    {lang === "mr" && <span className="material-symbols-outlined text-[16px]">check_circle</span>}
                   </button>
                 </div>
               </div>
 
               {/* 2. Default Unit Preference */}
               <div>
-                <label className="block text-[13px] font-bold text-on-surface mb-2">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
                   ⚖️ {lang === "mr" ? "पिकाचे डीफॉल्ट वजन एकक" : "Default Crop Quantity Unit"}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -3827,10 +3384,10 @@ export function Index() {
                       key={unitItem.id}
                       type="button"
                       onClick={() => setPrefUnit(unitItem.id as "kg" | "qtl" | "ton")}
-                      className={`py-2.5 px-3 rounded-lg border text-center font-bold text-[12px] transition-all ${
+                      className={`py-2.5 px-3 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
                         prefUnit === unitItem.id
-                          ? "bg-primary-container/20 border-primary text-primary"
-                          : "bg-surface-container-low border-outline-variant text-on-surface-variant hover:bg-surface-container"
+                          ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
                       {unitItem.label}
@@ -3840,17 +3397,17 @@ export function Index() {
               </div>
 
               {/* 3. Advanced Transport Rate Configuration */}
-              <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant space-y-3">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div>
                   <div className="flex justify-between items-center">
-                    <label className="text-[13px] font-bold text-on-surface flex items-center gap-1.5">
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                       <span>🚛</span> {lang === "mr" ? "प्रगत वाहतूक दर कॉन्फिगरेशन" : "Advanced Transport Configuration"}
                     </label>
-                    <span className="text-[12px] font-extrabold text-primary bg-primary/10 px-2.5 py-0.5 rounded border border-primary/20">
+                    <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded border border-emerald-200">
                       ₹{Number(transportRate).toFixed(2)} / km / Qtl
                     </span>
                   </div>
-                  <p className="text-[11px] text-on-surface-variant font-medium mt-1">
+                  <p className="text-[11px] text-slate-500 font-medium mt-1">
                     {lang === "mr"
                       ? "PRISMS वाहतूक आणि निव्वळ-मिळकत गणना इंजिनद्वारे वापरले जाते. हे मूल्य बदलल्याने फ्रेट आणि अंदाजित निव्वळ मिळकतीवर परिणाम होतो."
                       : "Used by the PRISMS transport and net-realization calculation engine. Changing this value affects freight and estimated net realization."}
@@ -3865,11 +3422,11 @@ export function Index() {
                     step="0.1"
                     value={transportRate}
                     onChange={(e) => setTransportRate(e.target.value)}
-                    className="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700"
                   />
-                  <div className="flex justify-between text-[10px] text-on-surface-variant font-bold mt-1.5">
+                  <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1.5">
                     <span>₹0.50 (Local Tractor)</span>
-                    <span className="text-primary font-black">₹1.50 (PRISMS Benchmark)</span>
+                    <span className="text-emerald-800 font-black">₹1.50 (PRISMS Benchmark)</span>
                     <span>₹5.00 (Express Reefer)</span>
                   </div>
                 </div>
@@ -3877,7 +3434,7 @@ export function Index() {
 
               {/* 5. Primary District Selection */}
               <div>
-                <label className="block text-[13px] font-bold text-on-surface mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   📍 {lang === "mr" ? "प्राथमिक कृषी जिल्हा" : "Primary Mandi District"}
                 </label>
                 <select
@@ -3886,7 +3443,7 @@ export function Index() {
                     setPrefDistrict(e.target.value);
                     setLocationText(`${e.target.value}, Maharashtra`);
                   }}
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 text-[14px] font-bold text-on-surface focus:outline-none focus:border-primary"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
                 >
                   <option value="Nashik">Nashik (नासिक - कांदा व द्राक्ष हब)</option>
                   <option value="Lasalgaon">Lasalgaon (लासलगाव - आशियातील सर्वात मोठी कांदा बाजारपेठ)</option>
@@ -3899,7 +3456,7 @@ export function Index() {
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="bg-surface-container-high px-6 py-4 border-t border-outline-variant flex justify-between items-center flex-wrap gap-3">
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -3912,11 +3469,11 @@ export function Index() {
                     setSavedToast(true);
                     setTimeout(() => setSavedToast(false), 3500);
                   }}
-                  className="text-[13px] font-bold text-on-surface-variant hover:text-primary transition-colors underline cursor-pointer"
+                  className="text-xs font-bold text-slate-500 hover:text-emerald-800 transition-colors underline cursor-pointer"
                 >
                   {lang === "mr" ? "डीफॉल्ट पुनर्संचयित करा" : "Reset to Defaults"}
                 </button>
-                <span className="text-outline-variant">•</span>
+                <span className="text-slate-300">•</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -3959,44 +3516,36 @@ export function Index() {
       {/* FARMER PROFILE MODAL */}
       {/* ========================================================================= */}
       {profileOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface rounded-2xl border border-outline-variant max-w-2xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] text-slate-900">
             {/* Profile Header Banner */}
-            <div className="relative bg-gradient-to-r from-primary to-primary-container p-6 text-on-primary">
+            <div className="relative bg-emerald-800 p-6 text-white">
               <button
                 type="button"
                 onClick={() => setProfileOpen(false)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-on-primary flex items-center justify-center transition-colors"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
 
               <div className="flex flex-col sm:flex-row items-center gap-5 pt-2">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full border-4 border-surface overflow-hidden shadow-lg bg-surface-container flex items-center justify-center text-primary font-black text-3xl">
+                  <div className="w-20 h-20 rounded-full border-4 border-white/20 overflow-hidden shadow-lg bg-emerald-900 flex items-center justify-center text-white font-black text-3xl">
                     {farmerName ? farmerName.trim().charAt(0).toUpperCase() : "👨‍🌾"}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => alert(lang === "mr" ? "स्थानिक सत्रासाठी प्रोफाईल अपडेट केले" : "Profile photo badge updated")}
-                    className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-surface text-primary flex items-center justify-center shadow hover:bg-surface-container-high transition-colors"
-                    title="Change Photo"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">photo_camera</span>
-                  </button>
                 </div>
 
                 <div className="text-center sm:text-left flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                    <h2 className="text-[22px] font-extrabold tracking-tight leading-none">{farmerName || (lang === "mr" ? "शेतकरी मित्र" : "Guest Farmer")}</h2>
-                    <span className="px-2.5 py-0.5 bg-inverse-primary text-on-primary-fixed text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-sm">
-                      <span className="material-symbols-outlined text-[13px] icon-fill">account_circle</span>
+                    <h2 className="text-xl font-black tracking-tight">{farmerName || (lang === "mr" ? "शेतकरी मित्र" : "Guest Farmer")}</h2>
+                    <span className="px-2.5 py-0.5 bg-emerald-900/60 text-emerald-200 text-[10px] font-bold rounded-full flex items-center gap-1 border border-emerald-700">
+                      <CheckCircle2 className="w-3 h-3" />
                       {lang === "mr" ? "शेतकरी प्रोफाईल" : "Farmer Profile"}
                     </span>
                   </div>
-                  <p className="text-[13px] opacity-90 font-medium">
+                  <p className="text-xs text-emerald-100/80 font-medium">
                     {farmerVillage ? `${farmerVillage} • ` : ""}
-                    <span className="font-mono text-[12px] opacity-80">
+                    <span className="font-mono text-[11px]">
                       ID: MH-PRISMS-2026-{currentUser?._id ? currentUser._id.slice(-4) : "8841"}
                     </span>
                   </p>
@@ -4005,191 +3554,94 @@ export function Index() {
             </div>
 
             {/* Profile Quick Stats Bento */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-5 bg-surface-container-high border-b border-outline-variant text-center">
-              <div className="bg-surface p-2.5 rounded-lg border border-outline-variant/60">
-                <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-5 bg-slate-50 border-b border-slate-200 text-center">
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                   {lang === "mr" ? "एकूण जमीन" : "Landholding"}
                 </span>
-                <p className="text-[15px] font-extrabold text-on-surface mt-0.5">
+                <p className="text-sm font-black text-slate-900 mt-0.5">
                   {farmerAcres ? `${farmerAcres} Acres` : (lang === "mr" ? "नोंदवलेले नाही" : "Not Set")}
                 </p>
               </div>
-              <div className="bg-surface p-2.5 rounded-lg border border-outline-variant/60">
-                <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                   {lang === "mr" ? "सक्रिय पिके" : "Active Crops"}
                 </span>
-                <p className="text-[15px] font-extrabold text-primary mt-0.5">{activeBatches.length} Batches</p>
+                <p className="text-sm font-black text-emerald-700 mt-0.5">{activeBatches.length} Batches</p>
               </div>
-              <div className="bg-surface p-2.5 rounded-lg border border-outline-variant/60">
-                <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                   {lang === "mr" ? "एकूण साठा" : "Batch Volume"}
                 </span>
-                <p className="text-[15px] font-extrabold text-on-surface mt-0.5">
+                <p className="text-sm font-black text-slate-900 mt-0.5">
                   {activeBatches.reduce((acc, b) => acc + Math.round(b.qtyKg / 100), 0)} Qtl
                 </p>
               </div>
-              <div className="bg-surface p-2.5 rounded-lg border border-outline-variant/60">
-                <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                   {lang === "mr" ? "खाते प्रकार" : "Account Role"}
                 </span>
-                <p className="text-[15px] font-extrabold text-success-sage mt-0.5">
+                <p className="text-sm font-black text-emerald-800 mt-0.5">
                   {currentUser?.role ? currentUser.role.toUpperCase() : "FARMER"}
                 </p>
               </div>
             </div>
 
             {/* Profile Editable Form Body */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-5 text-[14px]">
-              {/* Disclaimer Notice */}
-              <div className="p-3 bg-primary-container/10 border border-primary/20 rounded-xl flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary text-[20px]">info</span>
-                <p className="text-[12px] text-on-surface-variant font-medium">
-                  {lang === "mr"
-                    ? "स्थानिक शेतकरी प्राधान्ये व पीक माहिती — कोणत्याही अनावश्यक बँकेशी जोडलेले नाही."
-                    : "Local farmer preferences and crop tracking profile."}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-[14px] font-bold text-on-surface border-b border-outline-variant pb-1.5 mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-primary">person</span>
-                  {lang === "mr" ? "शेतकरी वैयक्तिक तपशील" : "Farmer & Farm Details"}
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
-                      {lang === "mr" ? "पूर्ण नाव" : "Full Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={farmerName}
-                      onChange={(e) => setFarmerName(e.target.value)}
-                      placeholder={lang === "mr" ? "तुमचे नाव प्रविष्ट करा" : "Enter your full name"}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3.5 py-2 text-[14px] font-medium text-on-surface focus:outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
-                      {lang === "mr" ? "मोबाईल नंबर / ईमेल" : "Registered Mobile / Email"}
-                    </label>
-                    <input
-                      type="text"
-                      value={farmerPhone}
-                      onChange={(e) => setFarmerPhone(e.target.value)}
-                      placeholder={lang === "mr" ? "मोबाईल नंबर किंवा ईमेल" : "Enter mobile number or email"}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3.5 py-2 text-[14px] font-medium text-on-surface focus:outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
-                      {lang === "mr" ? "गाव व जिल्हा" : "Village & District"}
-                    </label>
-                    <input
-                      type="text"
-                      value={farmerVillage}
-                      onChange={(e) => setFarmerVillage(e.target.value)}
-                      placeholder={lang === "mr" ? "उदा. नाशिक / पुणे" : "e.g. Nashik / Pune"}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3.5 py-2 text-[14px] font-medium text-on-surface focus:outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
-                      {lang === "mr" ? "शेतीचे क्षेत्र (एकर)" : "Total Cultivated Area (Acres)"}
-                    </label>
-                    <input
-                      type="text"
-                      value={farmerAcres}
-                      onChange={(e) => setFarmerAcres(e.target.value)}
-                      placeholder={lang === "mr" ? "उदा. 5.0" : "e.g. 5.0"}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3.5 py-2 text-[14px] font-medium text-on-surface focus:outline-none focus:border-primary"
-                    />
-                  </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {lang === "mr" ? "शेतकऱ्याचे नाव" : "Full Name"}
+                  </label>
+                  <input
+                    type="text"
+                    value={farmerName}
+                    onChange={(e) => setFarmerName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
                 </div>
-              </div>
-
-              {/* Demo Account Indicator */}
-              <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant flex items-center justify-between flex-wrap gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[22px]">badge</span>
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-bold text-on-surface">
-                      PRISMS Local Profile
-                    </p>
-                    <p className="text-[11px] text-on-surface-variant">
-                      {lang === "mr" ? "स्थानिक शेतकरी प्रोफाईल आणि पीक नियोजन नोंद" : "Local farmer preferences & batch realization records"}
-                    </p>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {lang === "mr" ? "संपर्क / मोबाईल" : "Contact Number"}
+                  </label>
+                  <input
+                    type="text"
+                    value={farmerPhone}
+                    onChange={(e) => setFarmerPhone(e.target.value)}
+                    placeholder={lang === "mr" ? "मोबाईल नंबर किंवा ईमेल" : "Enter mobile number or email"}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      setResetConfirmModalOpen(true);
-                    }}
-                    className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">restart_alt</span>
-                    {lang === "mr" ? "डेमो डेटा रीसेट करा" : "Reset Demo Data"}
-                  </button>
-                  <span className="px-2 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded">
-                    {lang === "mr" ? "डेमो मोड" : "Demo Mode"}
-                  </span>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {lang === "mr" ? "गाव व जिल्हा" : "Village & District"}
+                  </label>
+                  <input
+                    type="text"
+                    value={farmerVillage}
+                    onChange={(e) => setFarmerVillage(e.target.value)}
+                    placeholder={lang === "mr" ? "उदा. नाशिक / पुणे" : "e.g. Nashik / Pune"}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
                 </div>
-              </div>
-
-              {/* Quick Profile Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                {/* Download Mandi Pass (Temporarily hidden from demo profile modal, set SHOW_MANDI_PASS_CARD=true to re-enable) */}
-                {SHOW_MANDI_PASS_CARD && (
-                  <button
-                    type="button"
-                    onClick={() => alert(lang === "mr" ? "अधिकृत PRISMS मंडी पास (PDF) डाऊनलोड होत आहे..." : "Downloading Official PRISMS Mandi Producer Pass (PDF)...")}
-                    className="p-3 bg-surface-container border border-outline-variant rounded-xl flex items-center gap-3 hover:bg-surface-container-high transition-colors text-left"
-                  >
-                    <span className="material-symbols-outlined text-primary text-[22px]">badge</span>
-                    <div>
-                      <p className="text-[13px] font-bold text-on-surface">
-                        {lang === "mr" ? "मंडी पास डाऊनलोड करा" : "Download Mandi Pass"}
-                      </p>
-                      <p className="text-[11px] text-on-surface-variant">
-                        {lang === "mr" ? "अधिकृत QR-प्रमाणित ओळखपत्र" : "Official QR-verified ID"}
-                      </p>
-                    </div>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileOpen(false);
-                    setActiveTab("crops");
-                  }}
-                  className={`p-3 bg-surface-container border border-outline-variant rounded-xl flex items-center gap-3 hover:bg-surface-container-high transition-colors text-left ${
-                    !SHOW_MANDI_PASS_CARD ? "col-span-full" : ""
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-primary text-[22px]">grass</span>
-                  <div>
-                    <p className="text-[13px] font-bold text-on-surface">
-                      {lang === "mr" ? "माझी पिके व्यवस्थापित करा" : "Manage My Crops"}
-                    </p>
-                    <p className="text-[11px] text-on-surface-variant font-medium">
-                      {activeBatches.length === 0
-                        ? (lang === "mr" ? "कोणतेही सक्रिय पीक साठे नोंदणीकृत नाहीत" : "No active batches registered")
-                        : lang === "mr"
-                          ? `${activeBatches.length} सक्रिय पीक साठे नोंदणीकृत`
-                          : `${activeBatches.length} active batch${activeBatches.length === 1 ? "" : "es"} registered`}
-                    </p>
-                  </div>
-                </button>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {lang === "mr" ? "शेतीचे क्षेत्र (एकर)" : "Total Cultivated Area (Acres)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={farmerAcres}
+                    onChange={(e) => setFarmerAcres(e.target.value)}
+                    placeholder={lang === "mr" ? "उदा. 5.0" : "e.g. 5.0"}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Profile Modal Footer */}
-            <div className="bg-surface-container-high px-6 py-4 border-t border-outline-variant flex justify-between items-center">
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
               <button
                 type="button"
                 onClick={() => {
@@ -4200,9 +3652,9 @@ export function Index() {
                   setTimeout(() => setSavedToast(false), 3000);
                   setProfileOpen(false);
                 }}
-                className="text-[13px] font-bold text-alert-terracotta hover:underline flex items-center gap-1"
+                className="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">logout</span>
+                <LogOut className="w-3.5 h-3.5" />
                 {lang === "mr" ? "लॉग आऊट" : "Log Out"}
               </button>
 
@@ -4210,7 +3662,7 @@ export function Index() {
                 <button
                   type="button"
                   onClick={() => setProfileOpen(false)}
-                  className="px-4 py-2 bg-surface-container border border-outline-variant rounded-lg text-[13px] font-bold text-on-surface hover:bg-surface-variant transition-colors"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   {lang === "mr" ? "बंद करा" : "Close"}
                 </button>
@@ -4235,7 +3687,7 @@ export function Index() {
                       alert(err?.response?.data?.error?.message || "Failed to save profile");
                     }
                   }}
-                  className="px-5 py-2 bg-primary text-on-primary rounded-lg text-[13px] font-bold hover:bg-primary-container transition-colors shadow-sm active:scale-95"
+                  className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                 >
                   {lang === "mr" ? "बदल सेव्ह करा" : "Save Changes"}
                 </button>
