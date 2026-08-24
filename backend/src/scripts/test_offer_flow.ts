@@ -43,6 +43,45 @@ async function runIntegrationTest() {
       });
     }
 
+    // Diagnostic check for LOT-2026-99F5
+    const targetDiagnosticLotId = 'LOT-2026-99F5';
+    let diagLot = await Lot.findOne({ lotId: targetDiagnosticLotId });
+    if (!diagLot) {
+      diagLot = await Lot.create({
+        lotId: targetDiagnosticLotId,
+        userId: farmer._id,
+        cropName: 'Red Onion',
+        variety: 'Garwa',
+        grade: 'Grade A',
+        quantityQtl: 40,
+        expectedPricePerQtl: 3000,
+        minimumAcceptablePrice: 2800,
+        origin: 'Lasalgaon Farm Gate',
+        district: 'Nashik',
+        buyerVisibility: 'PUBLIC',
+        lotStatus: 'PUBLISHED',
+      });
+    }
+
+    const diagOffers = await Offer.find({
+      $or: [
+        { lotId: diagLot._id },
+        { lotId: String(diagLot._id) },
+        { lotId: diagLot.lotId },
+      ]
+    });
+
+    console.log('\n==================================================');
+    console.log('DIAGNOSTIC TEST FOR LOT-2026-99F5');
+    console.log('==================================================');
+    console.log(`LOT lotId: ${diagLot.lotId}`);
+    console.log(`LOT _id: ${diagLot._id}`);
+    console.log(`LOT owner (userId): ${diagLot.userId}`);
+    console.log(`OFFERS count: ${diagOffers.length}`);
+    diagOffers.forEach((o, i) => {
+      console.log(`OFFER #${i + 1}: _id=${o._id}, offerId=${o.offerId}, lotId=${o.lotId}, buyerId=${o.buyerId}, sellerUserId=${o.sellerUserId}, offerStatus=${o.offerStatus}`);
+    });
+
     // Clean previous test lot/offers if any
     const testLotId = 'LOT-TEST-001';
     await Lot.deleteMany({ lotId: testLotId });
@@ -148,8 +187,9 @@ async function runIntegrationTest() {
     lot.lotStatus = 'ACCEPTED';
     await lot.save();
 
+    const uniqueSuffix = Date.now().toString().slice(-4);
     const transaction: any = await Transaction.create({
-      transactionId: `TXN-TEST-001`,
+      transactionId: `TXN-TEST-${uniqueSuffix}`,
       lotId: lot._id as any,
       offerId: offer._id as any,
       farmerId: farmer._id as any,
@@ -167,7 +207,7 @@ async function runIntegrationTest() {
     });
 
     const delivery: any = await DeliveryOrder.create({
-      deliveryId: `DLV-TEST-001`,
+      deliveryId: `DLV-TEST-${uniqueSuffix}`,
       lotId: lot._id as any,
       offerId: offer._id as any,
       farmerId: farmer._id as any,
@@ -191,7 +231,7 @@ async function runIntegrationTest() {
     });
 
     const payment: any = await PaymentLedger.create({
-      paymentId: `PMT-TEST-001`,
+      paymentId: `PMT-TEST-${uniqueSuffix}`,
       transactionId: transaction._id as any,
       lotId: lot._id as any,
       offerId: offer._id as any,
@@ -203,7 +243,7 @@ async function runIntegrationTest() {
       paymentMode: 'DEMO_BANK_TRANSFER',
       dueDate: new Date(Date.now() + 172800000),
       paymentStatus: 'PENDING',
-      referenceId: 'REF-TEST-001',
+      referenceId: `REF-TEST-${uniqueSuffix}`,
       isDemo: false,
     });
 

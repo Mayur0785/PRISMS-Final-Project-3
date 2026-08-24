@@ -206,13 +206,14 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
       });
     }
 
-    // Verify authenticated seller/farmer ownership
-    const isOwner =
+    // Verify lot access: farmer who owns the lot or authenticated buyer
+    const isSeller =
       String(lot.userId) === String(rawUserId) ||
       String(lot.userId) === String(userIdObj) ||
       (userEmail && String(lot.userId) === String(userEmail));
 
-    if (!isOwner) {
+    const userRole = (req as any).user?.role;
+    if (!isSeller && userRole !== 'buyer') {
       return res.status(403).json({
         success: false,
         error: { code: 'UNAUTHORIZED_LOT_ACCESS', message: 'You do not own this trade lot.' },
