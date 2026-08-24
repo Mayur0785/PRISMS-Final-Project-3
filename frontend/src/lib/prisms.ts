@@ -20,7 +20,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("prisms_token");
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("prisms_token") : null;
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }

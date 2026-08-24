@@ -242,7 +242,7 @@ export function Index() {
 
   // Market Search / Discovery State
   const [searchScope, setSearchScope] = useState<"nearby" | "maharashtra">("nearby");
-  const [searchRadius, setSearchRadius] = useState<number>(50);
+  const [searchRadius, setSearchRadius] = useState<number>(500);
   const [discoveryCrop, setDiscoveryCrop] = useState("Wheat (HD-2967)");
   const [mandiType, setMandiType] = useState("APMC Regulated");
   const [minNetEarning, setMinNetEarning] = useState("2150");
