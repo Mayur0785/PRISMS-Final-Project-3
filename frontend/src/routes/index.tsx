@@ -360,12 +360,6 @@ export function Index() {
     enabled: Boolean(currentUser),
   });
 
-  const userOffersQ = useQuery({
-    queryKey: ["userOffers", currentUser?.id || currentUser?.email],
-    queryFn: fetchUserOffers,
-    enabled: Boolean(currentUser),
-  });
-
   const activeLots: TradeLot[] = useMemo(() => {
     return userLotsQ.data ?? [];
   }, [userLotsQ.data]);
@@ -1401,8 +1395,8 @@ export function Index() {
             />
 
             {/* Hero Section */}
-            <section className="grid grid-cols-12 gap-4 mb-0.5">
-              <div className="col-span-12 lg:col-span-6 flex flex-col justify-center">
+            <section className="mb-1">
+              <div className="flex flex-col justify-center">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[14px]">{greeting.icon}</span>
@@ -1423,54 +1417,6 @@ export function Index() {
                 <p className="text-[13px] md:text-[14px] font-medium text-on-surface-variant mt-0.5">
                   {lang === "mr" ? greeting.subtitle_mr : greeting.subtitle_en}
                 </p>
-              </div>
-
-              {/* Summary Cards: Real Trade Lots & Active Offers KPIs */}
-              <div className="col-span-12 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between shadow-sm cursor-pointer" onClick={() => setActiveTab("crops")}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[12px] font-bold text-on-surface-variant tracking-wide">
-                      {lang === "mr" ? "सक्रिय व्यापार लॉट्स" : "Active Trade Lots"}
-                    </span>
-                    <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800">
-                      <Package className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[26px] font-extrabold text-on-surface tracking-tight leading-none">
-                      <CountUp to={activeLots.length} />
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-2 text-on-surface-variant text-[11px] font-bold">
-                      <span className="text-emerald-700 font-extrabold">✓</span>
-                      <span>
-                        {activeLots.length > 0
-                          ? (lang === "mr" ? "बाजारपेठेत विक्रीसाठी उपलब्ध" : "Published in PRISMS Marketplace")
-                          : (lang === "mr" ? "अद्याप कोणताही लॉट नाही" : "Calculate market to publish lot")}
-                      </span>
-                    </div>
-                  </div>
-                </SpotlightCard>
-
-                <SpotlightCard className="p-3.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm cursor-pointer" spotlightColor="rgba(16, 185, 129, 0.15)" onClick={() => setActiveTab("offers")}>
-                  <div className="flex items-center justify-between mb-2 relative z-10">
-                    <span className="text-[12px] font-bold text-on-surface-variant tracking-wide">
-                      {lang === "mr" ? "प्राप्त डिजिटल ऑफर्स" : "Active Buyer Bids"}
-                    </span>
-                    <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800">
-                      <DollarSign className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-[26px] font-extrabold text-emerald-800 tracking-tight leading-none">
-                      <CountUp to={(userOffersQ.data ?? []).length} />
-                    </p>
-                    <p className="text-[11px] font-semibold text-on-surface-variant mt-2 leading-snug">
-                      {(userOffersQ.data ?? []).length > 0
-                        ? (lang === "mr" ? "खरेदीदारांकडून प्रस्ताव प्राप्त" : "Binding offers received for negotiation")
-                        : (lang === "mr" ? "प्रस्ताव वाट पाहत आहे" : "Awaiting buyer bids")}
-                    </p>
-                  </div>
-                </SpotlightCard>
               </div>
             </section>
 
