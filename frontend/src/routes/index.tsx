@@ -1657,9 +1657,13 @@ export function Index() {
                           </div>
                           <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
                             <span className="text-[12px] text-on-surface-variant font-medium">
-                              {lang === "mr" 
-                                ? `अंदाजित साठवणूक नासाडी नुकसान (${commodity?.spoilage_rate_percent || 8}%)` 
-                                : `Estimated Spoilage Loss (${commodity?.spoilage_rate_percent || 8}%)`}
+                              {(() => {
+                                const baseRate = commodity?.spoilage_rate_percent || 8;
+                                const effectiveRate = isColdChain ? baseRate * 0.5 : baseRate;
+                                return lang === "mr" 
+                                  ? `अंदाजित साठवणूक नासाडी नुकसान (${effectiveRate}%)` 
+                                  : `Estimated Spoilage Loss (${effectiveRate}%)`;
+                              })()}
                             </span>
                             <span className="text-[12px] font-bold text-alert-terracotta">
                               -₹{spoilageLoss.toLocaleString("en-IN")}
