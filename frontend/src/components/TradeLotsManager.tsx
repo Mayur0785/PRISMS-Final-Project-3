@@ -27,6 +27,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
+  Store,
 } from "lucide-react";
 
 interface TradeLotsManagerProps {
