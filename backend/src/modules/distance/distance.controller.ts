@@ -14,33 +14,79 @@ export const getDistanceMatrix = async (req: Request, res: Response, next: NextF
     }
 
     let distancesKm: (number | null)[] = [];
+    let isGoogleRoutesSuccess = false;
 
     try {
       if (env.GOOGLE_MAPS_API_KEY && env.GOOGLE_MAPS_API_KEY !== 'your_google_maps_api_key_here') {
-        const originsStr = origins.map((o: any) => `${o.lat},${o.lng}`).join('|');
-        const destStr = destinations.map((d: any) => `${d.lat},${d.lng}`).join('|');
+        const originObj = origins[0];
 
-        const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-          params: {
-            origins: originsStr,
-            destinations: destStr,
-            key: env.GOOGLE_MAPS_API_KEY
-          },
-          timeout: 5000
-        });
+        const requestBody = {
+          origins: [
+            {
+              waypoint: {
+                location: {
+                  latLng: {
+                    latitude: originObj.lat,
+                    longitude: originObj.lng,
+                  },
+                },
+              },
+            },
+          ],
+          destinations: destinations.map((d: any) => ({
+            waypoint: {
+              location: {
+                latLng: {
+                  latitude: d.lat,
+                  longitude: d.lng,
+                },
+              },
+            },
+          })),
+          travelMode: 'DRIVE',
+          routingPreference: 'TRAFFIC_UNAWARE',
+        };
 
-        if (response.data.status === 'OK' && response.data.rows?.[0]?.elements) {
-          distancesKm = response.data.rows[0].elements.map((element: any) => {
-            return element.status === 'OK' ? element.distance.value / 1000 : null;
-          });
+        const response = await axios.post(
+          'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix',
+          requestBody,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': env.GOOGLE_MAPS_API_KEY,
+              'X-Goog-FieldMask': 'originIndex,destinationIndex,status,condition,distanceMeters,duration',
+            },
+            timeout: 5000,
+          }
+        );
+
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          const tempMap = new Map<number, number>();
+          for (const item of response.data) {
+            const destIdx = item.destinationIndex;
+            const distMeters = item.distanceMeters;
+            if (destIdx !== undefined && distMeters !== undefined && (item.condition === 'ROUTE_EXISTS' || !item.condition)) {
+              tempMap.set(destIdx, parseFloat((distMeters / 1000).toFixed(2)));
+            }
+          }
+
+          if (tempMap.size === destinations.length) {
+            distancesKm = destinations.map((_: any, idx: number) => tempMap.get(idx) ?? null);
+            if (distancesKm.every((d) => d !== null)) {
+              isGoogleRoutesSuccess = true;
+              console.log(`✨ Google Routes API SUCCESS: Computed ${distancesKm.length} road routes via ComputeRouteMatrix.`);
+            }
+          }
         }
       }
-    } catch (apiErr) {
-      // Fallback silently to Haversine
+    } catch (apiErr: any) {
+      const errMsg = apiErr?.response?.data?.error?.message || apiErr?.message || 'Google Routes API request failed';
+      console.warn(`⚠️ Google Routes API FALLBACK Triggered: ${errMsg}`);
     }
 
-    // Geodesic / Haversine fallback with 1.35x Indian rural road-factor
-    if (distancesKm.length === 0 || distancesKm.every(d => d === null)) {
+    // Geodesic / Haversine fallback with 1.35x Indian rural road-factor (engaged ONLY when Google Routes API fails)
+    if (distancesKm.length === 0 || distancesKm.every((d) => d === null)) {
+      console.log('📌 Using Haversine x1.35 Calibrated Fallback Distance Calculator');
       const origin = origins[0];
       const R = 6371; // Earth radius in km
       distancesKm = destinations.map((dest: any) => {
@@ -61,7 +107,7 @@ export const getDistanceMatrix = async (req: Request, res: Response, next: NextF
     res.status(200).json({
       success: true,
       data: distancesKm,
-      source: 'haversine_road_approximation'
+      source: isGoogleRoutesSuccess ? 'google_routes_api_v2' : 'haversine_road_approximation',
     });
   } catch (err) {
     next(err);
