@@ -5,6 +5,7 @@ import { BuyerDemand } from '../buyers/buyerDemand.model';
 import { Offer } from '../offers/offer.model';
 import { User } from '../users/user.model';
 import { sendSystemNotification } from '../notifications/notification.controller';
+import { seedDemoOffersForLot } from '../offers/demoOfferGenerator';
 import { computeBuyerMatchesForLot } from './matching.service';
 import mongoose from 'mongoose';
 
@@ -237,63 +238,22 @@ export const createLot = async (req: Request, res: Response, next: NextFunction)
       console.warn('Error sending lot matching notifications:', notifErr);
     }
 
-    // Automatically create a persistent demo Buyer Offer from Nashik Agro Processors Ltd. for instant negotiation demo
+    // Automatically create persistent multi-buyer demo Offers for new Trade Lots
     try {
-      const demoBuyerUser = await User.findOne({ email: 'buyer.nashik@prisms.gov.in' });
-      const buyerId = demoBuyerUser ? String(demoBuyerUser._id) : 'buyer_nashik_agro';
+      const generatedCount = await seedDemoOffersForLot(createdLot);
+      console.log(`✨ Generated ${generatedCount} multi-buyer demo offers for new lot ${createdLot.lotId}`);
 
-      const expPrice = createdLot.expectedPricePerQtl || 3000;
-      const offerPrice = Math.round(expPrice * 1.03); // Sensibly derived slightly higher buyer offer
-      const grossVal = offerPrice * createdLot.quantityQtl;
-      const transCost = Math.round(createdLot.quantityQtl * 45);
-      const labourCost = Math.round(createdLot.quantityQtl * 25);
-      const spoilageCost = Math.round(grossVal * 0.02);
-      const handlingCost = Math.round(grossVal * 0.01);
-      const netRealization = grossVal - transCost - labourCost - spoilageCost - handlingCost;
-
-      const randomOfferHex = Math.floor(Math.random() * 0xffff).toString(16).toUpperCase().padStart(4, '0');
-      const offerId = `OFFER-DEMO-${randomOfferHex}`;
-
-      const createdOffer = await Offer.create({
-        offerId,
-        lotId: createdLot._id,
-        sellerUserId: createdLot.userId,
-        buyerId,
-        commodity: createdLot.cropName,
-        variety: createdLot.variety || 'Standard',
-        grade: createdLot.grade || 'Grade A',
-        quantityQtl: createdLot.quantityQtl,
-        pricePerQtl: offerPrice,
-        grossValue: grossVal,
-        estimatedTransportCost: transCost,
-        estimatedLabourCost: labourCost,
-        estimatedSpoilage: spoilageCost,
-        estimatedMarketHandlingCharges: handlingCost,
-        estimatedNetRealization: netRealization,
-        paymentTerms: '100% Escrow on Quality Verification',
-        deliveryTerms: 'Buyer Arranged Pick-up',
-        pickupLocation: createdLot.origin || 'Farm Gate',
-        deliveryLocation: 'Nashik Processing Hub',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        offerStatus: 'PENDING',
-        isDemo: true,
-      });
-
-      // Update Lot status to OFFERED
-      createdLot.lotStatus = 'OFFERED';
-      await createdLot.save();
-
-      // Notify Farmer of the initial Buyer Offer
+      // Notify Farmer of the initial Buyer Offers
       await sendSystemNotification({
         userId: createdLot.userId,
         type: 'OFFER_RECEIVED',
-        title: `Binding Offer Received for ${createdLot.cropName}`,
-        message: `Nashik Agro Processors Ltd. submitted a binding offer of ₹${offerPrice}/Qtl for Lot ${createdLot.lotId}.`,
+        title: `Binding Buyer Offers Received for ${createdLot.cropName}`,
+        message: `4 verified buyers submitted competitive binding offers for Lot ${createdLot.lotId}.`,
         relatedCrop: createdLot.cropName,
         relatedLotId: createdLot._id,
       });
     } catch (offerErr) {
-      console.warn('Error auto-creating demo buyer offer:', offerErr);
+      console.warn('Error auto-creating multi-buyer demo offers:', offerErr);
     }
 
     res.status(201).json({

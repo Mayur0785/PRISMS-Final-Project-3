@@ -10,6 +10,7 @@ import { DeliveryOrder } from '../delivery/delivery.model';
 import { PaymentLedger } from '../payments/payment.model';
 import { User } from '../users/user.model';
 import { sendSystemNotification } from '../notifications/notification.controller';
+import { seedDemoOffersForLot } from './demoOfferGenerator';
 
 export async function generateOfferId(): Promise<string> {
   const count = await Offer.countDocuments();
@@ -220,7 +221,7 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
       });
     }
 
-    const offers = await Offer.find({
+    let offers = await Offer.find({
       $or: [
         { lotId: lot._id },
         { lotId: String(lot._id) },
@@ -230,6 +231,25 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
         $in: ['PENDING', 'COUNTERED', 'ACCEPTED'],
       },
     }).sort({ estimatedNetRealization: -1 });
+
+    // If lot has fewer than 3 offers in demo mode, auto-generate multi-buyer offers
+    if (offers.length < 3) {
+      try {
+        await seedDemoOffersForLot(lot);
+        offers = await Offer.find({
+          $or: [
+            { lotId: lot._id },
+            { lotId: String(lot._id) },
+            { lotId: lot.lotId },
+          ],
+          offerStatus: {
+            $in: ['PENDING', 'COUNTERED', 'ACCEPTED'],
+          },
+        }).sort({ estimatedNetRealization: -1 });
+      } catch (genErr) {
+        console.warn('Error auto-seeding demo offers on getOffersByLot:', genErr);
+      }
+    }
 
     const buyerIds = [...new Set(offers.map(o => o.buyerId))];
     const buyers = await Buyer.find({ buyerId: { $in: buyerIds } });
