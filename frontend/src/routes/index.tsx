@@ -643,14 +643,19 @@ export function Index() {
   const rateNum = Number(transportRate) || 0;
   const commodity = commodities.find((c) => c.id === cropId);
 
-  // Auto update unit when crop changes
+  // Auto update unit and default quantity when crop changes
   useEffect(() => {
     if (commodity) {
       const name = commodity.name.toLowerCase();
       if (name.includes("onion") || name.includes("wheat") || name.includes("soy")) {
         setQtyUnit("Qtl");
-      } else if (name.includes("tomato") || name.includes("banana")) {
+        if (qty === "100" || qty === "30") setQty("30");
+      } else if (name.includes("banana")) {
         setQtyUnit("Kg");
+        if (qty === "30") setQty("100");
+      } else if (name.includes("tomato")) {
+        setQtyUnit("Kg");
+        if (qty === "30") setQty("100");
       }
     }
   }, [cropId, commodity]);
