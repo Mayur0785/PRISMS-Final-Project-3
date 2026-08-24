@@ -50,8 +50,6 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
         return 'Delivered to Buyer';
       case 'CANCELLED':
         return 'Cancelled';
-      default:
-        return status;
     }
   };
 
@@ -59,125 +57,45 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
     const dId = delivery.deliveryId || delivery._id;
     if (advancingId === dId) return; // Idempotency guard against rapid multi-clicks
 
-    // Always fetch latest record from React state to avoid stale closure / stale object reference
+    // Fetch latest record from React state
     const targetDelivery = deliveries.find(d => (d.deliveryId === dId || d._id === dId)) || delivery;
-    const currentStatus = targetDelivery.deliveryStatus === 'PLANNED' ? 'OFFER_ACCEPTED_PLANNED' : targetDelivery.deliveryStatus;
-
-    const nextStatusMap: Record<string, string> = {
-      OFFER_ACCEPTED_PLANNED: 'PICKUP_READY',
-      PLANNED: 'PICKUP_READY',
-      PICKUP_READY: 'DISPATCHED',
-      DISPATCHED: 'IN_TRANSIT',
-      IN_TRANSIT: 'DELIVERED',
-    };
-
-    const next = nextStatusMap[currentStatus];
-    if (!next) return;
+    if (targetDelivery.deliveryStatus === 'DELIVERED') return;
 
     setAdvancingId(dId);
     try {
-      setStatusMessage(`Updating delivery ${targetDelivery.deliveryId} to ${getStatusLabel(next)}...`);
+      setStatusMessage(`Advancing delivery ${targetDelivery.deliveryId} to DELIVERED (Demo Shortcut)...`);
       const nowIso = new Date().toISOString();
       const isBackendMode = localStorage.getItem("prisms_token") && !localStorage.getItem("prisms_token")?.startsWith("demo_token_");
 
+      // Advance delivery status directly to DELIVERED
       if (isBackendMode) {
-        // Strict Backend Flow: API MUST succeed first
-        await updateDeliveryStatusApi(targetDelivery.deliveryId, next);
-        
-        setDeliveries(prevDeliveries =>
-          prevDeliveries.map(d => {
-            if (d.deliveryId === dId || d._id === dId) {
-              const updatedTimeline = d.timeline ? [...d.timeline] : [];
-              if (!updatedTimeline.some(t => t.status === next)) {
-                updatedTimeline.push({
-                  status: next,
-                  label: getStatusLabel(next),
-                  timestamp: nowIso,
-                });
-              }
-              return {
-                ...d,
-                deliveryStatus: next as any,
-                updatedAt: nowIso,
-                actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
-                timeline: updatedTimeline,
-              };
-            }
-            return d;
-          })
-        );
-      } else {
-        // DEMO Flow: Update React state and localStorage
-        setDeliveries(prevDeliveries =>
-          prevDeliveries.map(d => {
-            if (d.deliveryId === dId || d._id === dId) {
-              const updatedTimeline = d.timeline ? [...d.timeline] : [];
-              if (!updatedTimeline.some(t => t.status === next)) {
-                updatedTimeline.push({
-                  status: next,
-                  label: getStatusLabel(next),
-                  timestamp: nowIso,
-                });
-              }
-              return {
-                ...d,
-                deliveryStatus: next as any,
-                updatedAt: nowIso,
-                actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
-                timeline: updatedTimeline,
-              };
-            }
-            return d;
-          })
-        );
+        await updateDeliveryStatusApi(targetDelivery.deliveryId, 'DELIVERED');
+      }
 
-        const rawLocal = localStorage.getItem("prisms_demo_deliveries");
-        let localDeliveries: DeliveryOrder[] = rawLocal ? JSON.parse(rawLocal) : [];
-        let foundInLocal = false;
+      const completeTimeline: DeliveryTimelineEvent[] = [
+        { status: 'OFFER_ACCEPTED_PLANNED', label: 'Offer Accepted & Planned', timestamp: targetDelivery.createdAt || nowIso },
+        { status: 'PICKUP_READY', label: 'Pickup Ready', timestamp: nowIso },
+        { status: 'DISPATCHED', label: 'Dispatched', timestamp: nowIso },
+        { status: 'IN_TRANSIT', label: 'In Transit', timestamp: nowIso },
+        { status: 'DELIVERED', label: 'Delivered to Buyer', timestamp: nowIso },
+      ];
 
-        localDeliveries = localDeliveries.map(d => {
+      setDeliveries(prevDeliveries =>
+        prevDeliveries.map(d => {
           if (d.deliveryId === dId || d._id === dId) {
-            foundInLocal = true;
-            const updatedTimeline = d.timeline ? [...d.timeline] : [];
-            if (!updatedTimeline.some(t => t.status === next)) {
-              updatedTimeline.push({
-                status: next,
-                label: getStatusLabel(next),
-                timestamp: nowIso,
-              });
-            }
             return {
               ...d,
-              deliveryStatus: next as any,
+              deliveryStatus: 'DELIVERED',
               updatedAt: nowIso,
-              actualDeliveryDate: next === 'DELIVERED' ? nowIso : d.actualDeliveryDate,
-              timeline: updatedTimeline,
+              actualDeliveryDate: nowIso,
+              timeline: completeTimeline,
             };
           }
           return d;
-        });
+        })
+      );
 
-        if (!foundInLocal) {
-          const updatedTimeline = targetDelivery.timeline ? [...targetDelivery.timeline] : [];
-          if (!updatedTimeline.some(t => t.status === next)) {
-            updatedTimeline.push({
-              status: next,
-              label: getStatusLabel(next),
-              timestamp: nowIso,
-            });
-          }
-          localDeliveries.unshift({
-            ...targetDelivery,
-            deliveryStatus: next as any,
-            updatedAt: nowIso,
-            actualDeliveryDate: next === 'DELIVERED' ? nowIso : targetDelivery.actualDeliveryDate,
-            timeline: updatedTimeline,
-          });
-        }
-        localStorage.setItem("prisms_demo_deliveries", JSON.stringify(localDeliveries));
-      }
-
-      setStatusMessage(`Delivery status updated to ${getStatusLabel(next)}!`);
+      setStatusMessage(`Delivery status updated to Delivered to Buyer!`);
     } catch (err: any) {
       console.error("Delivery advance failed", err);
       setStatusMessage(`Error: ${err.response?.data?.error?.message || err.message || "Failed to update delivery status"}`);
