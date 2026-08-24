@@ -1216,63 +1216,51 @@ export function Index() {
   // 3. FARMER COMMAND CENTER DASHBOARD (Producers & FPOs)
   return (
     <div className="min-h-screen bg-[#fbfbfa] text-slate-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Top Header Navbar - Light Theme */}
-      <header className="sticky top-0 z-40 bg-[#f4f1ea]/90 backdrop-blur-xl border-b border-[#e2ddd3] text-slate-900 shadow-xs flex-shrink-0">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 text-slate-900 shadow-xs flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Left Brand Identity */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab("dashboard")}>
-            <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
-              🚜
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
+            <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black text-xl shadow-xs flex-shrink-0">
+              🌾
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
+                  Farmer Command Center
+                </span>
               </div>
-              <p className="text-[10px] text-slate-500 font-extrabold tracking-wider uppercase">
-                Digital Command Center
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide">
+                {farmerName} • {currentUser?.email || "farmer.lasalgaon@prisms.gov.in"}
               </p>
             </div>
           </div>
 
-          {/* Center Search Input */}
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder={lang === "mr" ? "बाजार, पिके किंवा प्रदेश शोधा..." : "Search markets, crops, or regions..."}
-                className="w-full bg-[#eae6dc] border border-[#dad4c7] rounded-xl pl-10 pr-9 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-white/70 px-1.5 py-0.5 rounded border border-slate-300">
-                /
-              </span>
-            </div>
-          </div>
-
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-2">
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <button
               type="button"
-              onClick={() => setViewLanding(true)}
-              className="px-3.5 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+              onClick={() => setLang(lang === "en" ? "mr" : "en")}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              title="Toggle Language / भाषा बदला"
             >
-              <Store className="w-3.5 h-3.5 text-emerald-800" />
-              <span className="hidden sm:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
+              <span>{lang === "en" ? "मराठी" : "English"}</span>
             </button>
 
             <button
               type="button"
-              onClick={() => setLang(lang === "en" ? "mr" : "en")}
-              className="px-3 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+              onClick={() => setViewLanding(true)}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              title="Public Landing Page"
             >
-              <span className="text-emerald-800 font-extrabold">🌐</span>
-              <span>{lang === "en" ? "EN" : "MR"}</span>
+              <Store className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden md:inline">{lang === "mr" ? "मुख्य पोर्टल" : "Public Portal"}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-[#e4e0d7] border border-[#dad4c7] bg-[#efece6] transition-all cursor-pointer"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 bg-white transition-all cursor-pointer"
               title="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -1283,19 +1271,30 @@ export function Index() {
                 <button
                   type="button"
                   onClick={() => setProfileOpen(true)}
-                  className="px-3 py-1.5 rounded-xl border border-[#dad4c7] bg-[#efece6] text-slate-800 hover:bg-[#e4e0d7] font-bold text-xs flex items-center gap-2 transition-all shadow-2xs cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  title="Profile"
                 >
-                  <div className="w-5 h-5 rounded-full bg-emerald-800 text-white flex items-center justify-center text-[10px] font-black">
-                    {farmerName.charAt(0)}
-                  </div>
-                  <span className="hidden sm:inline font-bold">{farmerName.split(" ")[0]}</span>
+                  <UserIcon className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="hidden sm:inline">{farmerName.split(" ")[0]}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await logoutUser();
+                    setCurrentUser(null);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{lang === "mr" ? "बाहेर पडा" : "Logout"}</span>
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setAuthModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
               >
                 {lang === "mr" ? "लॉग इन" : "Sign In"}
               </button>
@@ -1304,128 +1303,53 @@ export function Index() {
         </div>
       </header>
 
-      {/* Main Container with Left Sidebar & Right Content Canvas */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Vertical Sidebar (3 cols) - Light Warm Theme */}
-        <aside className="lg:col-span-3 bg-[#f2eee5] border border-[#e2ddd3] rounded-2xl p-4 flex flex-col justify-between min-h-[calc(100vh-6rem)] sticky top-20 shadow-xs">
-          <div className="space-y-6">
-            {/* Sidebar Header Brand Identity */}
-            <div className="flex items-center gap-3 px-2 pt-1 pb-3 border-b border-[#e0dad0]">
-              <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center text-lg font-black shadow-2xs">
-                🚜
-              </div>
-              <div>
-                <h1 className="font-black text-lg text-emerald-950 font-serif leading-tight">PRISMS</h1>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  Digital Command Center
-                </p>
-              </div>
-            </div>
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+        {/* Horizontal Navigation Tabs Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
+          {[
+            { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
+            { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
+            { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: activeBatches.length },
+            { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
+            { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
+            { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
+            { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
+            { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
+            { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
+            { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Advisor", icon: Sparkles },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-emerald-700 text-white shadow-xs"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                      isActive ? "bg-emerald-800 text-emerald-100" : "bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-            {/* Primary Feature Nav Links */}
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">
-                {lang === "mr" ? "मुख्य वैशिष्ट्ये" : "PRIMARY FEATURES"}
-              </p>
-              <nav className="space-y-1">
-                {[
-                  { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
-                  { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
-                  { id: "crops", label: lang === "mr" ? "माझी पिके" : "My Crops", icon: Package, badge: crops.length },
-                  { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`w-full px-3.5 py-3 rounded-xl font-bold text-xs flex items-center justify-between transition-all duration-200 cursor-pointer text-left ${
-                        isActive
-                          ? "bg-[#e5e0d3] text-emerald-950 shadow-2xs border border-[#d6cfc1]"
-                          : "text-slate-700 hover:bg-[#eae5da] hover:text-slate-900"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-800 font-bold" : "text-slate-500"}`} />
-                        <span className={isActive ? "font-extrabold" : "font-semibold"}>{tab.label}</span>
-                      </div>
-                      {tab.badge !== undefined && tab.badge > 0 && (
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                            isActive ? "bg-emerald-800 text-white" : "bg-[#ded8cb] text-slate-700"
-                          }`}
-                        >
-                          {tab.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Operations & Advanced Nav Links */}
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">
-                {lang === "mr" ? "प्रक्रियां आणि प्रगत" : "OPERATIONS & ADVANCED"}
-              </p>
-              <nav className="space-y-1">
-                {[
-                  { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
-                  { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
-                  { id: "payments", label: lang === "mr" ? "पेमेंट लेजर" : "Payment Ledger", icon: CreditCard },
-                  { id: "transactions", label: lang === "mr" ? "व्यवहार इतिहास" : "Trade History", icon: Clock },
-                  { id: "fpo", label: lang === "mr" ? "FPO व गट विक्री" : "FPO & Group Selling", icon: Users },
-                  { id: "advisor", label: lang === "mr" ? "एआय कृषी सल्लागार" : "AI Agri Advisor", icon: Sparkles },
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`w-full px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between transition-all duration-200 cursor-pointer text-left ${
-                        isActive
-                          ? "bg-[#e5e0d3] text-emerald-950 shadow-2xs border border-[#d6cfc1]"
-                          : "text-slate-700 hover:bg-[#eae5da] hover:text-slate-900"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-800" : "text-slate-500"}`} />
-                        <span className={isActive ? "font-extrabold" : "font-semibold"}>{tab.label}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-
-          {/* Sidebar Footer User Card */}
-          <div className="pt-4 border-t border-[#e0dad0]">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#eae5da] border border-[#dad4c7] cursor-pointer hover:bg-[#e2dccf] transition-all" onClick={() => setProfileOpen(true)}>
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-black text-xs flex items-center justify-center">
-                  {farmerName.charAt(0)}
-                </div>
-                <div className="truncate max-w-[130px]">
-                  <p className="text-xs font-bold text-slate-900 truncate">{farmerName}</p>
-                  <p className="text-[10px] text-emerald-800 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
-                    <span>Verified Farmer</span>
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-500" />
-            </div>
-          </div>
-        </aside>
-
-        {/* Right Main Content Canvas (9 cols) */}
-        <main className="lg:col-span-9 flex flex-col space-y-6 min-w-0">
+        {/* Main Content Canvas */}
+        <main className="flex-1 relative flex flex-col space-y-6">
         
         {/* ========================================================================= */}
         {/* TAB 1: DEFAULT DASHBOARD OVERVIEW (NET-EARNING CALCULATOR & FEED) */}
@@ -3181,46 +3105,32 @@ export function Index() {
 
               {/* Interactive Tools Sidebar (4 cols) */}
               <div className="lg:col-span-4 flex flex-col gap-6">
-                <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-                  <h2 className="text-[19px] font-black text-slate-900 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    {lang === "mr" ? "थेट कृषी गणक साधने" : "Interactive Tools"}
-                  </h2>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300/50">
-                    Live
-                  </span>
-                </div>
+                <h2 className="text-[20px] font-bold text-on-surface border-b border-outline-variant pb-2">
+                  {lang === "mr" ? "थेट कृषी गणक साधने" : "Interactive Tools"}
+                </h2>
 
                 {/* Tool Widget 1: Loan Planning Estimate */}
-                <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/10 transition-all" />
-                  <div className="flex items-center gap-3 mb-3.5 relative z-10">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-300/50 flex items-center justify-center text-emerald-800 shadow-xs">
-                      <span className="material-symbols-outlined icon-fill text-[22px]">
-                        request_quote
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-[17px] font-extrabold text-slate-900 leading-snug">
-                        {lang === "mr" ? "पीक कर्ज नियोजन अंदाज" : "Loan Planning Estimate"}
-                      </h3>
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
-                        {lang === "mr" ? "इक्विटी व कर्ज नियोजन" : "70% LTV Facility"}
-                      </span>
-                    </div>
+                <div className="bg-surface-container-low rounded-xl border border-outline-variant p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="material-symbols-outlined text-secondary icon-fill text-[24px]">
+                      request_quote
+                    </span>
+                    <h3 className="text-[18px] font-bold text-on-surface">
+                      {lang === "mr" ? "पीक कर्ज नियोजन अंदाज" : "Loan Planning Estimate"}
+                    </h3>
                   </div>
-                  <p className="text-[12px] text-slate-600 mb-4 leading-relaxed relative z-10">
+                  <p className="text-[13px] text-on-surface-variant mb-4 leading-relaxed">
                     {lang === "mr"
                       ? "आपल्या पिकाच्या अंदाजित उत्पन्नानुसार प्राथमिक कर्ज नियोजन मर्यादा तपासा. (केवळ प्राथमिक अंदाज — ही बँक मंजुरी नाही)"
                       : "Illustrative borrowing estimate based on crop yield forecasts. (Illustrative estimate only — not a bank approval)"}
                   </p>
-                  <div className="space-y-3.5 relative z-10">
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-[11px] font-extrabold uppercase text-slate-500 tracking-wider mb-1">
+                      <label className="block text-[12px] font-bold text-on-surface-variant mb-1">
                         {lang === "mr" ? "अंदाजित पीक मूल्य (₹)" : "Estimated Yield Value (₹)"}
                       </label>
                       <input
-                        className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none transition-all shadow-xs"
+                        className="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-[14px] font-bold text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                         placeholder="उदा. 5,00,000"
                         type="number"
                         value={loanYieldValue}
@@ -3232,14 +3142,14 @@ export function Index() {
                     </div>
 
                     {loanEligibilityResult !== null && (
-                      <div className="p-4 bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-xl text-center shadow-md border border-emerald-700/50 animate-in fade-in duration-300">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-300 block mb-0.5">
+                      <div className="p-3 bg-primary-container/10 border border-primary-container/30 rounded-lg text-center">
+                        <span className="text-[11px] font-bold uppercase text-on-surface-variant">
                           {lang === "mr" ? "अंदाजित नियोजन मर्यादा (७०% LTV)" : "Estimated Planning Limit (70% LTV)"}
                         </span>
-                        <p className="text-[26px] font-black text-white tracking-tight">
+                        <p className="text-[22px] font-extrabold text-primary">
                           ₹{loanEligibilityResult.toLocaleString("en-IN")}
                         </p>
-                        <span className="text-[10px] text-emerald-200/70 block mt-0.5">
+                        <span className="text-[10px] text-on-surface-variant block mt-0.5">
                           {lang === "mr" ? "केवळ मार्गदर्शनासाठी • प्रत्यक्ष मंजुरी बँकेवर अवलंबून आहे" : "For guidance only • Subject to lender verification"}
                         </span>
                       </div>
@@ -3251,7 +3161,7 @@ export function Index() {
                         const num = Number(loanYieldValue) || 0;
                         setLoanEligibilityResult(Math.round(num * 0.7));
                       }}
-                      className="w-full bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md shadow-emerald-950/20 active:scale-95 cursor-pointer"
+                      className="w-full bg-primary text-on-primary font-bold text-[13px] py-3 rounded-lg hover:bg-primary-container transition-colors shadow-sm active:scale-95"
                     >
                       {lang === "mr" ? "नियोजन अंदाज तपासा" : "Calculate Planning Estimate"}
                     </button>
@@ -3259,49 +3169,41 @@ export function Index() {
                 </div>
 
                 {/* Tool Widget 2: Spoilage Risk */}
-                <div className="bg-gradient-to-br from-white via-slate-50 to-rose-50/20 rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                  <div className="flex items-center gap-3 mb-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-rose-100 border border-rose-300/50 flex items-center justify-center text-rose-700 shadow-xs">
-                      <span className="material-symbols-outlined icon-fill text-[22px]">
-                        thermostat
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-[17px] font-extrabold text-slate-900 leading-snug">
-                        {lang === "mr" ? "साठवणूक नासाडी जोखीम" : "Spoilage Risk"}
-                      </h3>
-                      <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
-                        {lang === "mr" ? "हवामान आधारित ट्रॅकिंग" : "Climate Sensors"}
-                      </span>
-                    </div>
+                <div className="bg-surface-container-low rounded-xl border border-outline-variant p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="material-symbols-outlined text-alert-terracotta icon-fill text-[24px]">
+                      thermostat
+                    </span>
+                    <h3 className="text-[18px] font-bold text-on-surface">
+                      {lang === "mr" ? "साठवणूक नासाडी जोखीम" : "Spoilage Risk"}
+                    </h3>
                   </div>
-                  <p className="text-[12px] text-slate-600 mb-4 leading-relaxed">
+                  <p className="text-[13px] text-on-surface-variant mb-4 leading-relaxed">
                     {lang === "mr"
                       ? "स्थानिक हवेतील आर्द्रता आणि तापमानानुसार पीक साठवणुकीतील जोखीम तपासा."
                       : "Assess real-time storage risk based on local humidity and temperature."}
                   </p>
-                  <div className="bg-slate-900 text-white p-4 rounded-xl flex justify-between items-center mb-4 border border-slate-800 shadow-inner">
+                  <div className="bg-surface-container p-4 rounded-lg flex justify-between items-center mb-4">
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <div className="text-[12px] font-medium text-on-surface-variant">
                         {lang === "mr" ? "हवेतील आर्द्रता" : "Current Humidity"}
                       </div>
-                      <div className="text-[24px] font-black text-white">78%</div>
+                      <div className="text-[24px] font-extrabold text-on-surface">78%</div>
                     </div>
-                    <div className="h-10 w-px bg-slate-800 mx-4" />
+                    <div className="h-10 w-0.5 bg-outline-variant mx-4" />
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <div className="text-[12px] font-medium text-on-surface-variant">
                         {lang === "mr" ? "जोखीम पातळी" : "Risk Level"}
                       </div>
-                      <div className="text-[20px] font-black text-rose-400 flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" />
-                        <span>{lang === "mr" ? "उच्च जोखीम" : "HIGH"}</span>
+                      <div className="text-[20px] font-extrabold text-alert-terracotta">
+                        {lang === "mr" ? "उच्च जोखीम" : "HIGH"}
                       </div>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => alert(lang === "mr" ? "उपाययोजना: गोदामामध्ये पुरेशी हवा खेळती ठेवा, पॅलेट्स कोरडे ठेवा आणि ४८ तासांच्या आत मालाची वाहतूक करा." : "Mitigation Guide: Ensure adequate ventilation, maintain dry warehouse pallets, and expedite transport within 48 hours.")}
-                    className="w-full border-2 border-slate-200 text-slate-800 hover:bg-slate-100 hover:border-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs"
+                    className="w-full border-2 border-outline-variant text-on-surface font-bold text-[13px] py-2.5 rounded-lg hover:bg-surface-container-highest transition-colors active:scale-95"
                   >
                     {lang === "mr" ? "उपाययोजना मार्गदर्शक पहा" : "View Mitigation Guide"}
                   </button>
@@ -3338,40 +3240,39 @@ export function Index() {
           />
         </div>
 
-        </main>
+        {/* Shared Command Center Footer (Only on scrolling tabs) */}
+        {activeTab !== "search" && (
+          <footer className="flex flex-col sm:flex-row justify-between items-center py-5 px-10 w-full bg-surface-container-low border-t border-outline-variant mt-auto">
+            <p className="text-[13px] font-medium text-on-surface-variant">
+              © 2026 PRISMS {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
+            </p>
+            <div className="flex flex-wrap gap-6 mt-3 sm:mt-0 text-[13px] font-bold">
+              <button
+                type="button"
+                className="text-primary underline hover:text-primary-container transition-colors cursor-pointer"
+                onClick={handleExportCsv}
+              >
+                {lang === "mr" ? "डेटा निर्यात करा" : "Export Data"}
+              </button>
+              <button
+                type="button"
+                className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                onClick={() => setAgentModalOpen(true)}
+              >
+                {lang === "mr" ? "मंडी प्रतिनिधीशी संपर्क साधा" : "Contact Mandi Agent"}
+              </button>
+              <button
+                type="button"
+                className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                onClick={() => setPrivacyModalOpen(true)}
+              >
+                {lang === "mr" ? "गोपनीयता धोरण" : "Privacy Policy"}
+              </button>
+            </div>
+          </footer>
+        )}
+      </main>
       </div>
-
-      {/* Shared Command Center Footer */}
-      {activeTab !== "search" && (
-        <footer className="flex flex-col sm:flex-row justify-between items-center py-5 px-10 w-full bg-[#f4f1ea] border-t border-[#e2ddd3] mt-auto">
-          <p className="text-[13px] font-bold text-slate-600">
-            © 2026 PRISMS {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
-          </p>
-          <div className="flex flex-wrap gap-6 mt-3 sm:mt-0 text-[13px] font-bold">
-            <button
-              type="button"
-              className="text-emerald-800 underline hover:text-emerald-900 transition-colors cursor-pointer"
-              onClick={handleExportCsv}
-            >
-              {lang === "mr" ? "डेटा निर्यात करा" : "Export Data"}
-            </button>
-            <button
-              type="button"
-              className="text-slate-600 hover:text-emerald-800 transition-colors cursor-pointer"
-              onClick={() => setAgentModalOpen(true)}
-            >
-              {lang === "mr" ? "मंडी प्रतिनिधीशी संपर्क साधा" : "Contact Mandi Agent"}
-            </button>
-            <button
-              type="button"
-              className="text-slate-600 hover:text-emerald-800 transition-colors cursor-pointer"
-              onClick={() => setPrivacyModalOpen(true)}
-            >
-              {lang === "mr" ? "गोपनीयता धोरण" : "Privacy Policy"}
-            </button>
-          </div>
-        </footer>
-      )}
 
       {/* ========================================================================= */}
       {/* COMMAND CENTER SETTINGS MODAL */}
