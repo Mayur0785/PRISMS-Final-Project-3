@@ -695,7 +695,7 @@ export function Index() {
       dist: Math.round(r.market.distance_km * 10) / 10,
       tag: idx === 0 ? "Highest Take-Home Profit" : "APMC Regulated Market",
       tag_mr: idx === 0 ? "सर्वोच्च निव्वळ नफा" : "कृषी उत्पन्न बाजार समिती",
-      gross: r.pricePerQtl,
+      gross: r.gross,
       logistics: r.transport,
       labour: r.labour,
       handling: r.commission,
