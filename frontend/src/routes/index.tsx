@@ -221,9 +221,9 @@ export function Index() {
   const [labourPerTrip, setLabourPerTrip] = useState<string>("500");
   const [isColdChain, setIsColdChain] = useState<boolean>(false);
   const [grade, setGrade] = useState("Grade 1");
-  const [locationText, setLocationText] = useState("Karjat, Raigad");
-  const [district, setDistrict] = useState<string>("Raigad");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>({ lat: 18.9102, lng: 73.3283 });
+  const [locationText, setLocationText] = useState("Pimple Gurav, Pune");
+  const [district, setDistrict] = useState<string>("Pune");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>({ lat: 18.5912, lng: 73.8188 });
   const [locating, setLocating] = useState(false);
   const [locationSource, setLocationSource] = useState<"GPS" | "PROFILE" | "MANUAL">("GPS");
   const [locationStatus, setLocationStatus] = useState<"idle" | "locating" | "success" | "denied" | "unavailable">("idle");
@@ -448,11 +448,11 @@ export function Index() {
 
           if (!detected) {
             const near = nearestDistrict(marketsQ.data ?? [], latitude, longitude);
-            detected = near || "Karjat, Raigad";
+            detected = near || "Pimple Gurav, Pune";
           }
 
           setLocationText(detected);
-          setDistrict(detected.split(",")[0] || "Raigad");
+          setDistrict(detected.split(",")[0] || "Pune");
           setLocationSource("GPS");
           setLocationStatus("success");
           setLocationNoticeMsg("");
@@ -468,9 +468,9 @@ export function Index() {
             if (matched) setCoords(matched);
             setLocationSource("PROFILE");
           } else {
-            // Priority 3: Manual / Default location fallback (Karjat, Raigad)
-            setLocationText("Karjat, Raigad");
-            setCoords({ lat: 18.9102, lng: 73.3283 });
+            // Priority 3: Manual / Default location fallback (Pimple Gurav, Pune)
+            setLocationText("Pimple Gurav, Pune");
+            setCoords({ lat: 18.5912, lng: 73.8188 });
             setLocationSource("MANUAL");
           }
 
