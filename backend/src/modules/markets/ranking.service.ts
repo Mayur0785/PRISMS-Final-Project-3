@@ -47,7 +47,7 @@ export async function getRankedMarkets(params: RankMarketsParams): Promise<Ranke
   const {
     cropName,
     origin,
-    district = 'Nashik',
+    district,
     quantityQtl = 10,
     vehicle = 'medium_pickup',
     transportRatePerKm = 1.5,
@@ -58,7 +58,7 @@ export async function getRankedMarkets(params: RankMarketsParams): Promise<Ranke
   // 1. Resolve Origin Coordinates
   let [farmerLat, farmerLng] = [params.farmerLat, params.farmerLng];
   if (!farmerLat || !farmerLng || isNaN(farmerLat) || isNaN(farmerLng)) {
-    const coords = resolveCoordinatesForLocation(origin || district, district);
+    const coords = resolveCoordinatesForLocation(origin, district || 'Pune');
     farmerLat = coords[0];
     farmerLng = coords[1];
   }
@@ -126,7 +126,7 @@ export async function getRankedMarkets(params: RankMarketsParams): Promise<Ranke
     rankedResults.push({
       marketId: market._id.toString(),
       marketName: market.name,
-      district: market.district || district,
+      district: market.district || district || 'Pune',
       distanceKm,
       modalPrice: pricePerQtl,
       arrivalVolume: latestPrice.arrivalVolume || 250,

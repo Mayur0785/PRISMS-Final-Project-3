@@ -43,6 +43,12 @@ export const KNOWN_MAHARASHTRA_COORDINATES: Record<string, [number, number]> = {
   ahmednagar: [19.0952, 74.7480],
   solapur: [17.6599, 75.9064],
   satara: [17.6805, 74.0183],
+  sangli: [16.8524, 74.5815],
+  kolhapur: [16.7050, 74.2433],
+  latur: [18.4088, 76.5604],
+  sambhajinagar: [19.8762, 75.3433],
+  aurangabad: [19.8762, 75.3433],
+  nagpur: [21.1458, 79.0882],
   jalgaon: [21.0077, 75.5626],
 };
 

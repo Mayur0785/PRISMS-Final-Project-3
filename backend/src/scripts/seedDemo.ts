@@ -17,6 +17,7 @@ import { getRankedMarkets } from '../modules/markets/ranking.service';
  * Primary Source: AGMARKNET / Data.gov.in
  */
 export const PUNE_DEMO_MARKETS = [
+  // Pune Region Showcase APMCs
   {
     name: 'Pune APMC (Gultekdi)',
     state: 'Maharashtra',
@@ -44,6 +45,51 @@ export const PUNE_DEMO_MARKETS = [
     district: 'Pune',
     commodities: ['Wheat', 'Red Onion', 'Onion', 'Tomato'],
     location: { type: 'Point', coordinates: [74.3789, 18.8286] }
+  },
+  // Nashik Region Supporting APMCs
+  {
+    name: 'Lasalgaon Mandi',
+    state: 'Maharashtra',
+    district: 'Nashik',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat', 'Soybeans'],
+    location: { type: 'Point', coordinates: [74.2255, 20.1418] }
+  },
+  {
+    name: 'Pimpalgaon Baswant APMC',
+    state: 'Maharashtra',
+    district: 'Nashik',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat'],
+    location: { type: 'Point', coordinates: [73.9800, 20.1700] }
+  },
+  {
+    name: 'Nashik Main APMC',
+    state: 'Maharashtra',
+    district: 'Nashik',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat', 'Potato'],
+    location: { type: 'Point', coordinates: [73.7898, 19.9975] }
+  },
+  // Latur Region Supporting APMCs
+  {
+    name: 'Latur APMC',
+    state: 'Maharashtra',
+    district: 'Latur',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat', 'Soybeans'],
+    location: { type: 'Point', coordinates: [76.5604, 18.4088] }
+  },
+  {
+    name: 'Udgir APMC',
+    state: 'Maharashtra',
+    district: 'Latur',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat', 'Soybeans'],
+    location: { type: 'Point', coordinates: [76.7725, 18.3931] }
+  },
+  // Ahilyanagar / Ahmednagar Supporting APMCs
+  {
+    name: 'Rahuri APMC',
+    state: 'Maharashtra',
+    district: 'Ahmednagar',
+    commodities: ['Tomato', 'Red Onion', 'Onion', 'Wheat'],
+    location: { type: 'Point', coordinates: [74.6500, 19.3900] }
   }
 ];
 
@@ -78,6 +124,35 @@ export const RESEARCHED_PUNE_PRICES = [
   { marketName: 'Shirur APMC', commodity: 'Red Onion', min: 1100, modal: 2200, max: 3100, date: '2026-08-21', source: 'SEEDED_HISTORICAL_BENCHMARK' },
   { marketName: 'Shirur APMC', commodity: 'Onion', min: 1100, modal: 2200, max: 3100, date: '2026-08-21', source: 'SEEDED_HISTORICAL_BENCHMARK' },
   { marketName: 'Shirur APMC', commodity: 'Tomato', min: 500, modal: 850, max: 1100, date: '2026-08-21', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Lasalgaon Mandi, Nashik - 24 Aug 2026
+  { marketName: 'Lasalgaon Mandi', commodity: 'Tomato', min: 900, modal: 1350, max: 1700, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Lasalgaon Mandi', commodity: 'Red Onion', min: 1200, modal: 2414, max: 3600, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Lasalgaon Mandi', commodity: 'Onion', min: 1200, modal: 2414, max: 3600, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Lasalgaon Mandi', commodity: 'Wheat', min: 2400, modal: 2550, max: 2700, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Pimpalgaon Baswant APMC, Nashik - 24 Aug 2026
+  { marketName: 'Pimpalgaon Baswant APMC', commodity: 'Tomato', min: 1000, modal: 1400, max: 1800, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Pimpalgaon Baswant APMC', commodity: 'Red Onion', min: 1300, modal: 2450, max: 3500, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Pimpalgaon Baswant APMC', commodity: 'Onion', min: 1300, modal: 2450, max: 3500, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Nashik Main APMC, Nashik - 24 Aug 2026
+  { marketName: 'Nashik Main APMC', commodity: 'Tomato', min: 800, modal: 1200, max: 1600, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Nashik Main APMC', commodity: 'Red Onion', min: 1100, modal: 2350, max: 3400, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Nashik Main APMC', commodity: 'Onion', min: 1100, modal: 2350, max: 3400, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Latur APMC, Latur - 24 Aug 2026
+  { marketName: 'Latur APMC', commodity: 'Tomato', min: 1100, modal: 1650, max: 2000, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Latur APMC', commodity: 'Red Onion', min: 1400, modal: 2600, max: 3400, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Latur APMC', commodity: 'Onion', min: 1400, modal: 2600, max: 3400, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Udgir APMC, Latur - 24 Aug 2026
+  { marketName: 'Udgir APMC', commodity: 'Tomato', min: 900, modal: 1300, max: 1700, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Udgir APMC', commodity: 'Red Onion', min: 1200, modal: 2200, max: 3100, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+
+  // Rahuri APMC, Ahmednagar - 24 Aug 2026
+  { marketName: 'Rahuri APMC', commodity: 'Tomato', min: 800, modal: 1250, max: 1600, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
+  { marketName: 'Rahuri APMC', commodity: 'Red Onion', min: 1100, modal: 2300, max: 3200, date: '2026-08-24', source: 'SEEDED_HISTORICAL_BENCHMARK' },
 ];
 
 export const seedDemo = async () => {
