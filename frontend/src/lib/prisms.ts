@@ -1747,13 +1747,8 @@ export interface GrievanceItem {
 export async function fetchOffersForLot(lotId: string): Promise<Offer[]> {
   const token = localStorage.getItem("prisms_token");
   if (!token) return [];
-  try {
-    const res = await apiClient.get(`${API_URL}/offers/lot/${lotId}`);
-    return res.data.data;
-  } catch (error) {
-    console.error("Error fetching offers for lot", error);
-    return [];
-  }
+  const res = await apiClient.get(`${API_URL}/offers/lot/${lotId}`);
+  return res.data.data;
 }
 
 export async function fetchUserOffers(): Promise<Offer[]> {

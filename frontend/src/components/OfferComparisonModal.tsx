@@ -67,7 +67,7 @@ export const OfferComparisonModal: React.FC<OfferComparisonModalProps> = ({
     }
 
     if (fetchError) {
-      setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम. कृपया पुन्हा प्रयत्न करा." : "Unable to load buyer offers from the server. Please try again.");
+      setErrorState(lang === "mr" ? "सर्व्हरवरून खरेदीदार ऑफर्स लोड करण्यात अक्षम. कृपया पुन्हा प्रयत्न करा." : "Unable to load buyer offers. Please retry.");
       setOffers([]);
       setLoading(false);
       return;

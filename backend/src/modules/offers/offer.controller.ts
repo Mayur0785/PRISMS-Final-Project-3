@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { Offer, IOffer } from './offer.model';
 import { Lot } from '../lots/lot.model';
+import { resolveLot } from '../lots/lot.helpers';
 import { Buyer } from '../buyers/buyer.model';
 import { BuyerDemand } from '../buyers/buyerDemand.model';
 import { Transaction } from '../transactions/transaction.model';
@@ -8,131 +10,11 @@ import { DeliveryOrder } from '../delivery/delivery.model';
 import { PaymentLedger } from '../payments/payment.model';
 import { User } from '../users/user.model';
 import { sendSystemNotification } from '../notifications/notification.controller';
-import mongoose from 'mongoose';
 
 export async function generateOfferId(): Promise<string> {
   const count = await Offer.countDocuments();
   const hex = (count + 201).toString(16).toUpperCase().padStart(4, '0');
   return `OFR-2026-${hex}`;
-}
-
-/** Deterministic demo offer generator for a published trade lot */
-export async function ensureDemoOffersForLot(lot: any) {
-  const existingCount = await Offer.countDocuments({ lotId: lot._id });
-  if (existingCount > 0) return;
-
-  const cropName = (lot.cropName || '').trim();
-  const demands = await BuyerDemand.find({
-    $or: [
-      { commodity: new RegExp(`^${cropName}$`, 'i') },
-      { commodity: new RegExp(cropName, 'i') },
-    ],
-    demandStatus: 'ACTIVE',
-  }).limit(6);
-
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + 7);
-
-  const seededOffers: any[] = [];
-  const buyerIds = [...new Set(demands.map((d: any) => d.buyerId))];
-  const buyers = await Buyer.find({ buyerId: { $in: buyerIds } });
-  const buyersMap = new Map(buyers.map((b: any) => [b.buyerId, b]));
-
-  for (let i = 0; i < demands.length && i < 3; i++) {
-    const demand = demands[i] as any;
-    const buyer = buyersMap.get(demand.buyerId) as any;
-    if (!buyer) continue;
-
-    const offerId = await generateOfferId();
-    const priceVariance = i === 0 ? 100 : i === 1 ? 250 : -100;
-    const pricePerQtl = Math.min(
-      demand.targetPriceMax,
-      Math.max(demand.targetPriceMin, (lot.expectedPricePerQtl || 3000) + priceVariance)
-    );
-    const qty = lot.quantityQtl || 25;
-    const grossValue = Math.round(pricePerQtl * qty);
-    const distKm = buyer.district && lot.district &&
-      buyer.district.toLowerCase() === (lot.district || 'nashik').toLowerCase() ? 20 : 185;
-    const estimatedTransportCost = Math.round(distKm * 1.35 * qty);
-    const estimatedMarketHandlingCharges = Math.round(grossValue * 0.005);
-    const estimatedSpoilage = Math.round(grossValue * 0.015);
-    const estimatedNetRealization = grossValue - estimatedTransportCost - estimatedMarketHandlingCharges - estimatedSpoilage;
-
-    seededOffers.push({
-      offerId,
-      lotId: lot._id,
-      buyerId: buyer.buyerId,
-      sellerUserId: lot.userId,
-      commodity: lot.cropName,
-      variety: lot.variety || 'Standard',
-      grade: lot.grade || 'Grade A',
-      quantityQtl: qty,
-      pricePerQtl,
-      grossValue,
-      estimatedTransportCost,
-      estimatedLabourCost: 0,
-      estimatedSpoilage,
-      estimatedMarketHandlingCharges,
-      estimatedNetRealization,
-      paymentTerms: buyer.paymentTerms || 'T+1 Direct Bank Transfer (Simulated Escrow)',
-      deliveryTerms: buyer.deliveryPreference || 'Buyer Pickup',
-      pickupLocation: lot.origin || 'Farm Gate',
-      deliveryLocation: demand.deliveryLocation || `${buyer.location}, ${buyer.district}`,
-      expiresAt: expiryDate,
-      offerStatus: 'PENDING',
-      isDemo: true,
-    });
-  }
-
-  // Fallback: If no matching demands found, generate generic offers using the first available buyers
-  if (seededOffers.length === 0) {
-    const fallbackBuyers = await Buyer.find({ isDemo: true }).limit(3);
-    const basePrice = lot.expectedPricePerQtl || 3000;
-    const qty = lot.quantityQtl || 25;
-
-    for (let i = 0; i < fallbackBuyers.length; i++) {
-      const buyer = fallbackBuyers[i] as any;
-      const offerId = await generateOfferId();
-      const priceVariance = [100, 250, -100][i] || 0;
-      const pricePerQtl = Math.round(basePrice + priceVariance);
-      const grossValue = Math.round(pricePerQtl * qty);
-      const distKm = buyer.district && lot.district &&
-        buyer.district.toLowerCase() === (lot.district || 'nashik').toLowerCase() ? 20 : 185;
-      const estimatedTransportCost = Math.round(distKm * 1.35 * qty);
-      const estimatedMarketHandlingCharges = Math.round(grossValue * 0.005);
-      const estimatedSpoilage = Math.round(grossValue * 0.015);
-      const estimatedNetRealization = grossValue - estimatedTransportCost - estimatedMarketHandlingCharges - estimatedSpoilage;
-
-      seededOffers.push({
-        offerId,
-        lotId: lot._id,
-        buyerId: buyer.buyerId,
-        sellerUserId: lot.userId,
-        commodity: lot.cropName,
-        variety: lot.variety || 'Standard',
-        grade: lot.grade || 'Grade A',
-        quantityQtl: qty,
-        pricePerQtl,
-        grossValue,
-        estimatedTransportCost,
-        estimatedLabourCost: 0,
-        estimatedSpoilage,
-        estimatedMarketHandlingCharges,
-        estimatedNetRealization,
-        paymentTerms: buyer.paymentTerms || 'T+1 Direct Bank Transfer (Simulated Escrow)',
-        deliveryTerms: buyer.deliveryPreference || 'Buyer Pickup',
-        pickupLocation: lot.origin || 'Farm Gate',
-        deliveryLocation: `${buyer.location || 'Market Yard'}, ${buyer.district || 'Nashik'}`,
-        expiresAt: expiryDate,
-        offerStatus: 'PENDING',
-        isDemo: true,
-      });
-    }
-  }
-
-  if (seededOffers.length > 0) {
-    await Offer.insertMany(seededOffers);
-  }
 }
 
 export const getUserOffers = async (req: Request, res: Response, next: NextFunction) => {
@@ -202,12 +84,7 @@ export const createOffer = async (req: Request, res: Response, next: NextFunctio
       });
     }
 
-    const lot = await Lot.findOne({
-      $or: [
-        { _id: mongoose.isValidObjectId(lotId) ? lotId : null },
-        { lotId: lotId }
-      ]
-    });
+    const lot = await resolveLot(lotId);
 
     if (!lot) {
       return res.status(404).json({
@@ -221,11 +98,19 @@ export const createOffer = async (req: Request, res: Response, next: NextFunctio
 
     // Prevent duplicate active offers for the same buyer + lot
     const existingActiveOffer = await Offer.findOne({
-      lotId: lot._id as any,
       $or: [
-        { buyerId: String(buyerId) },
-        { buyerId: rawUserId },
-        ...(buyerEmail ? [{ buyerId: buyerEmail }] : [])
+        { lotId: lot._id },
+        { lotId: String(lot._id) },
+        { lotId: lot.lotId },
+      ],
+      $and: [
+        {
+          $or: [
+            { buyerId: String(buyerId) },
+            { buyerId: rawUserId },
+            ...(buyerEmail ? [{ buyerId: buyerEmail }] : [])
+          ]
+        }
       ],
       offerStatus: { $in: ['PENDING', 'COUNTERED'] },
     });
@@ -285,7 +170,7 @@ export const createOffer = async (req: Request, res: Response, next: NextFunctio
       title: 'New Buyer Bid Received',
       message: `Buyer submitted an offer of ₹${pPerQtl}/Qtl for ${lot.cropName} (${qty} Qtl).`,
       relatedCrop: lot.cropName,
-      relatedLotId: lot._id,
+      relatedLotId: lot.lotId,
       relatedOfferId: offer._id,
     });
 
@@ -302,29 +187,35 @@ export const createOffer = async (req: Request, res: Response, next: NextFunctio
 export const getOffersForLot = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    let userEmail = (req as any).user?.email;
+    if (!userEmail && mongoose.isValidObjectId(rawUserId)) {
+      const u = await User.findById(rawUserId);
+      if (u && u.email) userEmail = u.email;
+    }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
     const { lotId } = req.params;
 
-    const lot = await Lot.findOne({
-      $or: [
-        { _id: mongoose.isValidObjectId(lotId) ? lotId : null },
-        { lotId },
-      ],
-      $and: [{
-        $or: [
-          { userId: rawUserId },
-          { userId: userIdObj },
-          { userId: String(rawUserId) },
-        ]
-      }],
-    });
+    const lot = await resolveLot(lotId);
 
     if (!lot) {
       return res.status(404).json({
         success: false,
-        error: { code: 'LOT_NOT_FOUND', message: 'Trade lot not found or unauthorized' },
+        error: { code: 'LOT_NOT_FOUND', message: 'Trade lot not found' },
+      });
+    }
+
+    // Verify authenticated seller/farmer ownership
+    const isOwner =
+      String(lot.userId) === String(rawUserId) ||
+      String(lot.userId) === String(userIdObj) ||
+      (userEmail && String(lot.userId) === String(userEmail));
+
+    if (!isOwner) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED_LOT_ACCESS', message: 'You do not own this trade lot.' },
       });
     }
 
@@ -334,6 +225,9 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
         { lotId: String(lot._id) },
         { lotId: lot.lotId },
       ],
+      offerStatus: {
+        $in: ['PENDING', 'COUNTERED', 'ACCEPTED'],
+      },
     }).sort({ estimatedNetRealization: -1 });
 
     const buyerIds = [...new Set(offers.map(o => o.buyerId))];
@@ -393,8 +287,9 @@ export const getOffersForLot = async (req: Request, res: Response, next: NextFun
 export const acceptOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    let userEmail = (req as any).user.email;
-    let userRole = (req as any).user.role;
+    let userEmail = (req as any).user?.email;
+    let userRole = (req as any).user?.role;
+
     if (mongoose.isValidObjectId(rawUserId)) {
       const u = await User.findById(rawUserId);
       if (u) {
@@ -402,23 +297,31 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
         if (!userRole && u.role) userRole = u.role;
       }
     }
+
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
+
     const { id } = req.params;
 
     const offer = await Offer.findOne({
-      $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
-      $and: [{
-        $or: [
-          { sellerUserId: rawUserId },
-          { sellerUserId: userIdObj },
-          { sellerUserId: String(rawUserId) },
-          { buyerId: rawUserId },
-          { buyerId: String(rawUserId) },
-          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
-        ]
-      }],
+      $or: [
+        { _id: mongoose.isValidObjectId(id) ? id : null },
+        { offerId: id },
+      ],
+      $and: [
+        {
+          $or: [
+            { sellerUserId: rawUserId },
+            { sellerUserId: userIdObj },
+            { sellerUserId: String(rawUserId) },
+            { buyerId: rawUserId },
+            { buyerId: userIdObj },
+            { buyerId: String(rawUserId) },
+            ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
+          ],
+        },
+      ],
     });
 
     if (!offer) {
@@ -443,10 +346,9 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
     }
 
     const isSeller = String(offer.sellerUserId) === String(rawUserId) ||
-                     (userEmail && String(offer.sellerUserId) === userEmail) ||
+                     (userEmail && String(offer.sellerUserId) === String(userEmail)) ||
                      (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
 
-    // State machine validation:
     if (offer.offerStatus === 'COUNTERED') {
       if (offer.counterBy === 'FARMER' && isSeller) {
         return res.status(400).json({
@@ -462,9 +364,13 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       }
     }
 
-    const lot = await Lot.findById(offer.lotId);
+    const lot = await resolveLot(offer.lotId);
+
     if (!lot) {
-      return res.status(404).json({ success: false, error: { code: 'LOT_NOT_FOUND', message: 'Associated trade lot not found.' } });
+      return res.status(404).json({
+        success: false,
+        error: { code: 'LOT_NOT_FOUND', message: 'Associated trade lot not found.' },
+      });
     }
 
     if (lot.lotStatus === 'ACCEPTED' || lot.lotStatus === 'CLOSED') {
@@ -474,33 +380,44 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       });
     }
 
-    // 1. Mark offer as ACCEPTED & resolve counter price if active
-    const finalPrice = offer.counterPricePerQtl || offer.pricePerQtl;
+    const finalPrice = Number(offer.counterPricePerQtl ?? offer.pricePerQtl);
+
     offer.pricePerQtl = finalPrice;
-    offer.grossValue = Math.round(finalPrice * offer.quantityQtl);
+    offer.grossValue = Math.round(finalPrice * Number(offer.quantityQtl || 0));
     offer.offerStatus = 'ACCEPTED';
     await offer.save();
 
-    // 2. Reject all other pending/countered offers for the same lot
+    // Reject other pending/countered offers for this lot
     await Offer.updateMany(
-      { lotId: offer.lotId, _id: { $ne: offer._id }, offerStatus: { $in: ['PENDING', 'COUNTERED'] } },
+      {
+        $or: [
+          { lotId: lot._id },
+          { lotId: String(lot._id) },
+          { lotId: lot.lotId },
+        ],
+        _id: { $ne: offer._id },
+        offerStatus: { $in: ['PENDING', 'COUNTERED'] },
+      },
       { $set: { offerStatus: 'REJECTED' } }
     );
 
-    // 3. Update Lot status to ACCEPTED
     lot.lotStatus = 'ACCEPTED';
     await lot.save();
 
-    // 4. Create Transaction record
+    const estimatedTransportCost = Number(offer.estimatedTransportCost || 0);
+    const estimatedLabourCost = Number(offer.estimatedLabourCost || 0);
+    const estimatedSpoilage = Number(offer.estimatedSpoilage || 0);
+    const estimatedMarketHandlingCharges = Number(offer.estimatedMarketHandlingCharges || 0);
+    const totalDeductions = estimatedTransportCost + estimatedLabourCost + estimatedSpoilage + estimatedMarketHandlingCharges;
+    const finalNetAmount = Number(offer.grossValue || 0) - totalDeductions;
+
     const countTxn = await Transaction.countDocuments();
     const txnHex = (countTxn + 301).toString(16).toUpperCase().padStart(4, '0');
     const transactionId = `TXN-2026-${txnHex}`;
 
-    const totalDeductions = offer.estimatedTransportCost + offer.estimatedLabourCost + offer.estimatedSpoilage + offer.estimatedMarketHandlingCharges;
-
     const transaction = await Transaction.create({
       transactionId,
-      lotId: offer.lotId as any,
+      lotId: lot._id as any,
       offerId: offer._id as any,
       farmerId: offer.sellerUserId as any,
       buyerId: offer.buyerId,
@@ -511,12 +428,11 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       agreedPricePerQtl: finalPrice,
       grossAmount: offer.grossValue,
       totalDeductions,
-      finalNetAmount: offer.grossValue - totalDeductions,
+      finalNetAmount,
       transactionStatus: 'OFFER_ACCEPTED',
       isDemo: false,
     });
 
-    // 5. Create Delivery Order automatically
     const countDlv = await DeliveryOrder.countDocuments();
     const dlvHex = (countDlv + 401).toString(16).toUpperCase().padStart(4, '0');
     const deliveryId = `DLV-2026-${dlvHex}`;
@@ -527,7 +443,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
 
     const delivery = await DeliveryOrder.create({
       deliveryId,
-      lotId: offer.lotId as any,
+      lotId: lot._id as any,
       offerId: offer._id as any,
       farmerId: offer.sellerUserId as any,
       buyerId: offer.buyerId,
@@ -538,8 +454,8 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       agreedPricePerQtl: finalPrice,
       vehicleType: 'Medium Pickup (Bolero MaxiTruck)',
       freightRate: '₹1.35/km/Qtl',
-      estimatedFreight: offer.estimatedTransportCost || 1417,
-      origin: offer.pickupLocation || 'Farm Gate',
+      estimatedFreight: offer.estimatedTransportCost || 0,
+      origin: offer.pickupLocation || lot.origin || 'Farm Gate',
       destination: offer.deliveryLocation || 'Mandi Yard Hub',
       plannedPickupDate: pickupDate,
       actualDeliveryDate,
@@ -549,12 +465,12 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
           status: 'OFFER_ACCEPTED_PLANNED',
           label: 'Offer Accepted & Planned',
           timestamp: new Date().toISOString(),
-        }
+        },
       ],
       notes: `Deal confirmed for ${offer.commodity} • Lot ${lot.lotId}`,
+      isDemo: false,
     });
 
-    // 6. Create Payment Ledger Record automatically
     const countPmt = await PaymentLedger.countDocuments();
     const pmtHex = (countPmt + 501).toString(16).toUpperCase().padStart(4, '0');
     const paymentId = `PMT-2026-${pmtHex}`;
@@ -564,7 +480,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
     const payment = await PaymentLedger.create({
       paymentId,
       transactionId: transaction._id as any,
-      lotId: offer.lotId as any,
+      lotId: lot._id as any,
       offerId: offer._id as any,
       farmerId: offer.sellerUserId as any,
       buyerId: offer.buyerId,
@@ -576,18 +492,17 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       paymentStatus: 'PENDING',
       referenceId: `REF-ESCROW-${pmtHex}`,
       notes: `Escrow payment initialized for ${offer.commodity} • Deal ${deliveryId}`,
+      isDemo: false,
     });
 
-    // 7. Dispatch Notifications to both Seller (Farmer) and Buyer
     if (!isSeller) {
-      // Buyer accepted Farmer's counter offer
       await sendSystemNotification({
         userId: offer.sellerUserId,
         type: 'OFFER_ACCEPTED',
         title: 'Deal Confirmed! Buyer Accepted Counter Offer',
         message: `Buyer has accepted your counter offer at ₹${finalPrice}/Qtl.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId: lot.lotId,
         relatedOfferId: offer._id,
         counterPrice: finalPrice,
       });
@@ -598,19 +513,18 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
         title: 'Purchase Confirmed! Delivery Initiated',
         message: `Purchase for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) confirmed. Escrow secured.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId: lot.lotId,
         relatedOfferId: offer._id,
         counterPrice: finalPrice,
       });
     } else {
-      // Farmer accepted Buyer's offer
       await sendSystemNotification({
         userId: offer.sellerUserId,
         type: 'OFFER_ACCEPTED',
         title: 'Deal Confirmed! Offer Accepted',
         message: `Your deal for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl) is confirmed. Delivery tracking ${deliveryId} initiated.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId: lot.lotId,
         relatedOfferId: offer._id,
         counterPrice: finalPrice,
       });
@@ -621,7 +535,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
         title: 'Purchase Confirmed! Farmer Accepted Offer',
         message: `Farmer accepted your offer for ${offer.commodity} (${offer.quantityQtl} Qtl at ₹${finalPrice}/Qtl).`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId: lot.lotId,
         relatedOfferId: offer._id,
         counterPrice: finalPrice,
       });
@@ -632,6 +546,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       message: 'Offer accepted successfully. Trade execution, delivery order, and payment ledger initiated.',
       data: {
         offer,
+        lot,
         transaction,
         delivery,
         payment,
@@ -645,8 +560,8 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
 export const rejectOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    let userEmail = (req as any).user.email;
-    let userRole = (req as any).user.role;
+    let userEmail = (req as any).user?.email;
+    let userRole = (req as any).user?.role;
     if (mongoose.isValidObjectId(rawUserId)) {
       const u = await User.findById(rawUserId);
       if (u) {
@@ -694,26 +609,27 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
                      (userEmail && String(offer.sellerUserId) === userEmail) ||
                      (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
 
+    const lot = await resolveLot(offer.lotId);
+    const relatedLotId = lot ? lot.lotId : offer.lotId;
+
     if (!isSeller) {
-      // Buyer rejected
       await sendSystemNotification({
         userId: offer.sellerUserId,
         type: 'OFFER_REJECTED',
         title: 'Offer Declined',
         message: `Buyer rejected your counter offer.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId,
         relatedOfferId: offer._id,
       });
     } else {
-      // Farmer rejected
       await sendSystemNotification({
         userId: offer.buyerId,
         type: 'OFFER_REJECTED',
         title: 'Offer Declined',
         message: `Farmer declined your offer for ${offer.commodity}.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId,
         relatedOfferId: offer._id,
       });
     }
@@ -730,8 +646,8 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
 export const counterOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    let userEmail = (req as any).user.email;
-    let userRole = (req as any).user.role;
+    let userEmail = (req as any).user?.email;
+    let userRole = (req as any).user?.role;
     if (mongoose.isValidObjectId(rawUserId)) {
       const u = await User.findById(rawUserId);
       if (u) {
@@ -785,9 +701,10 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
                      (userRole === 'farmer' && String(offer.sellerUserId) === String(rawUserId));
 
     const counterPriceNum = Number(counterPricePerQtl);
+    const lot = await resolveLot(offer.lotId);
+    const relatedLotId = lot ? lot.lotId : offer.lotId;
 
     if (isSeller) {
-      // Farmer is countering:
       if (offer.offerStatus === 'COUNTERED' && offer.counterBy === 'FARMER') {
         return res.status(400).json({
           success: false,
@@ -802,19 +719,17 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
       if (message) offer.counterMessage = message;
       await offer.save();
 
-      // Notify Buyer
       await sendSystemNotification({
         userId: offer.buyerId,
         type: 'COUNTER_OFFER',
         title: 'Farmer Counter Offer Received',
         message: `Farmer has countered your offer for ${offer.commodity} at ₹${counterPriceNum}/Qtl.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId,
         relatedOfferId: offer._id,
         counterPrice: counterPriceNum,
       });
     } else {
-      // Buyer is countering ("Counter Again"):
       if (offer.offerStatus === 'COUNTERED' && offer.counterBy === 'BUYER') {
         return res.status(400).json({
           success: false,
@@ -829,14 +744,13 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
       if (message) offer.counterMessage = message;
       await offer.save();
 
-      // Notify Farmer
       await sendSystemNotification({
         userId: offer.sellerUserId,
         type: 'COUNTER_OFFER',
         title: 'Buyer Counter Offer Received',
         message: `Buyer has countered your offer at ₹${counterPriceNum}/Qtl.`,
         relatedCrop: offer.commodity,
-        relatedLotId: offer.lotId,
+        relatedLotId,
         relatedOfferId: offer._id,
         counterPrice: counterPriceNum,
       });
@@ -855,7 +769,7 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
 export const withdrawOffer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    const userEmail = (req as any).user.email;
+    const userEmail = (req as any).user?.email;
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
