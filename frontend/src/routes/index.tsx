@@ -1711,13 +1711,13 @@ export function Index() {
                 {/* PRISMS AI Mandi Optimization & Ranked Mandis (Shown only after clicking Calculate) */}
                 {submitted && bestResult && (
                   <>
-                    {/* Markets Near You (Ranked by True Net Take-Home Earnings) */}
+                    {/* Maharashtra Markets (Ranked by True Net Take-Home Earnings) */}
                     <div id="market-ranking" data-section="markets-near-you" className="space-y-5 pt-2 scroll-mt-20 animate-fade-in">
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-[22px] font-extrabold text-on-surface">
-                              {lang === "mr" ? "आपल्या परिसरातील बाजारपेठा (निव्वळ नफ्यानुसार क्रमवारी)" : "Markets near you (Ranked by Take-Home Profit)"}
+                              {lang === "mr" ? "महाराष्ट्र बाजारपेठा (निव्वळ नफ्यानुसार क्रमवारी)" : "Maharashtra Markets"}
                             </h3>
                             <span className="px-2.5 py-0.5 bg-success-sage/20 text-success-sage font-extrabold text-[11px] rounded-full flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-success-sage" />
@@ -1726,12 +1726,12 @@ export function Index() {
                           </div>
                           <p className="text-[13px] text-on-surface-variant font-medium mt-0.5">
                             {lang === "mr"
-                              ? `${locationText || "आपल्या भागातून"} विविध APMC बाजार समित्यांमधील निव्वळ नफा तुलना (${qtyNum.toLocaleString("en-IN")} किलो ${commodity ? (lang === "mr" ? (commodity.name_mr ?? commodity.name) : commodity.name) : ""}) • स्त्रोत: भारत सरकार Data.gov.in थेट एपीआय`
-                              : `Comparing true net earnings from ${locationText.split(",")[0] || "your origin"} across regional APMC mandis (${qtyNum.toLocaleString("en-IN")} Kg harvest) • Source: Govt of India Data.gov.in Live API`}
+                              ? `उगमस्थान: ${locationText || "पिंपळे गुरव, पुणे"} • महाराष्ट्र एपीएमसी व मंड्यांमधील अंदाजित निव्वळ नफा तुलना`
+                              : `Comparing estimated net take-home across Maharashtra APMCs and mandis • Origin: ${locationText || "Pimple Gurav, Pune"}`}
                           </p>
                         </div>
                         <span className="px-3.5 py-1 bg-primary/10 text-primary font-extrabold text-[12px] rounded-full border border-primary/20 shrink-0">
-                          {results.length} {lang === "mr" ? "बाजारपेठांचे विश्लेषण" : "Markets Analyzed"}
+                          {results.length} {lang === "mr" ? "बाजारपेठा सापडल्या" : "Markets Found"}
                         </span>
                       </div>
 
