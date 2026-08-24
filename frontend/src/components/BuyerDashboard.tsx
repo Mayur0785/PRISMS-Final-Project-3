@@ -382,19 +382,6 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setActiveTab("notifications")}
-              className="relative p-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-200 bg-white"
-              title="Notifications"
-            >
-              <Bell className="w-4 h-4 text-slate-700" />
-              {unreadNotifsCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {unreadNotifsCount}
-                </span>
-              )}
-            </button>
-
-            <button
               onClick={onSwitchToLanding}
               className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
               title="Public Landing Page"
@@ -428,12 +415,11 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200">
           {[
-            { id: "overview", label: "Overview", icon: Layers },
+            { id: "overview", label: "Dashboard", icon: Layers },
+            { id: "offers", label: "Counter Offers", icon: DollarSign, badge: backendOffers.length },
             { id: "lots", label: "Farmer Produce", icon: Package, badge: availableLots.length },
-            { id: "offers", label: "Bids & Counter Offers", icon: DollarSign, badge: backendOffers.length },
             { id: "purchases", label: "Purchases", icon: Truck, badge: deliveries.length },
-            { id: "payments", label: "Escrow", icon: CreditCard, badge: payments.length },
-            { id: "notifications", label: "Notifications", icon: Bell, badge: unreadNotifsCount },
+            { id: "payments", label: "Payments", icon: CreditCard, badge: payments.length },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -463,189 +449,70 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           })}
         </div>
 
-        {/* TAB 1: OVERVIEW */}
+        {/* TAB 1: OVERVIEW / DASHBOARD */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            {/* Metric KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2 hover:border-emerald-200 transition-all">
-                <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Available Farmer Lots</span>
-                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                    <Package className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-black text-slate-900 font-serif">{availableLots.length} Lots</div>
-                <p className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> Live verified lots in Maharashtra
+            {/* Direct Flow Quick Action Banner */}
+            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-700/80 text-emerald-100 tracking-wider">
+                  PRISMS Procurement Lifecycle
+                </span>
+                <h3 className="text-xl font-extrabold text-white mt-1 font-serif">Farmer Produce → Offer → Counter Offer → Purchase → Payment</h3>
+                <p className="text-xs text-emerald-200/90 mt-1 max-w-2xl font-medium">
+                  Direct procurement from verified Maharashtra farmers with binding digital negotiation, automated escrow, and live transit tracking.
                 </p>
               </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2 hover:border-emerald-200 transition-all">
-                <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Active Demands</span>
-                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                    <Tag className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-black text-slate-900 font-serif">{demands.length} Demands</div>
-                <p className="text-[11px] text-slate-500 font-medium">Procurement requirements posted</p>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2 hover:border-emerald-200 transition-all">
-                <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Active Bids & Offers</span>
-                  <div className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/60">
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-black text-slate-900 font-serif">{backendOffers.length} Bids</div>
-                <p className="text-[11px] text-amber-700 font-bold">
-                  {backendOffers.filter((b) => b.offerStatus === "COUNTERED").length} Counter Offers Pending
-                </p>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2 hover:border-emerald-200 transition-all">
-                <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Escrow Procurement</span>
-                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-black text-slate-900 font-serif">
-                  ₹{payments.reduce((acc, p) => acc + (p.netPayable || 0), 0).toLocaleString("en-IN")}
-                </div>
-                <p className="text-[11px] text-emerald-700 font-semibold">T+1 Direct Settlement Secured</p>
-              </div>
+              <button
+                onClick={() => setActiveTab("lots")}
+                className="px-4 py-2.5 bg-white text-emerald-950 font-extrabold text-xs rounded-xl hover:bg-emerald-50 transition-all shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                Browse Farmer Produce →
+              </button>
             </div>
 
-            {/* Quick Actions & Live Stream */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Featured Available Lots */}
-              <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-extrabold text-base text-slate-900">Top Available Trade Lots</h3>
-                    <p className="text-xs text-slate-500 font-medium">Verified farm-gate and APMC yard supply</p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab("lots")}
-                    className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 cursor-pointer"
-                  >
-                    View All Lots ({availableLots.length}) <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+            {/* Featured Available Lots */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Available Farmer Trade Lots</h3>
+                  <p className="text-xs text-slate-500 font-medium">Verified farm-gate and APMC yard supply</p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {availableLots.slice(0, 4).map((lot) => (
-                    <div
-                      key={lot.lotId || lot._id}
-                      className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl hover:border-emerald-300 transition-all space-y-2.5 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-slate-900 text-sm">{lot.cropName}</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] border border-emerald-200">
-                          {lot.quantityQtl} Qtl
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>Expected: <strong className="text-slate-900">₹{lot.expectedPricePerQtl}/Qtl</strong></span>
-                        <span className="text-[11px] text-slate-500 font-medium">{lot.district || "Nashik"}</span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSelectedLotForBid(lot);
-                          setBidPrice(String(lot.expectedPricePerQtl || 3000));
-                        }}
-                        className="w-full py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 transition-all flex items-center justify-center gap-1 shadow-sm text-xs cursor-pointer"
-                      >
-                        Submit Direct Bid →
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  onClick={() => setActiveTab("lots")}
+                  className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 cursor-pointer"
+                >
+                  View All Lots ({availableLots.length}) <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {/* Live Alerts Feed */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-base text-slate-900">Recent Notifications</h3>
-                  <button
-                    onClick={() => setActiveTab("notifications")}
-                    className="text-xs font-bold text-emerald-800 hover:text-emerald-950 cursor-pointer"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {availableLots.slice(0, 6).map((lot) => (
+                  <div
+                    key={lot.lotId || lot._id}
+                    className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl hover:border-emerald-300 transition-all space-y-2.5 text-xs"
                   >
-                    View All
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {notifications.slice(0, 5).map((n) => {
-                    const isUnread = n.isRead === false || n.read === false;
-                    const isCounter = n.type === "COUNTER_OFFER";
-
-                    return (
-                      <div
-                        key={n._id || n.notificationId}
-                        onClick={async () => {
-                          if (isUnread && n._id) {
-                            await markNotificationReadApi(n._id);
-                            loadNotificationsData();
-                          }
-                          if (isCounter) {
-                            setActiveTab("offers");
-                          }
-                        }}
-                        className={`p-3.5 rounded-xl border transition-all space-y-1.5 text-xs cursor-pointer ${
-                          isCounter && isUnread
-                            ? "bg-amber-50/90 border-amber-300 shadow-sm ring-1 ring-amber-200"
-                            : isUnread
-                            ? "bg-emerald-50/80 border-emerald-200 shadow-xs"
-                            : "bg-slate-50/80 border-slate-100 text-slate-600"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="font-extrabold text-xs text-slate-900 truncate">
-                              {isCounter ? "🔔 Farmer Counter Offer Received" : n.title}
-                            </span>
-                            {isUnread && (
-                              <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase shrink-0 ${
-                                isCounter ? "bg-amber-500 text-slate-950" : "bg-emerald-700 text-white"
-                              }`}>
-                                NEW
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-slate-400 shrink-0">
-                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-slate-600 text-[11px] leading-relaxed">{n.message}</p>
-                        {isCounter && (
-                          <div className="flex items-center justify-between pt-1 text-[11px]">
-                            {n.counterPrice && (
-                              <span className="font-black text-amber-950 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300">
-                                Counter: ₹{n.counterPrice}/Qtl
-                              </span>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveTab("offers");
-                              }}
-                              className="text-xs font-black text-emerald-800 hover:text-emerald-950 flex items-center gap-1 ml-auto"
-                            >
-                              View Offer →
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {notifications.length === 0 && (
-                    <p className="text-xs text-slate-400 text-center py-4">No notifications yet.</p>
-                  )}
-                </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-slate-900 text-sm">{lot.cropName}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] border border-emerald-200">
+                        {lot.quantityQtl} Qtl
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Expected: <strong className="text-slate-900">₹{lot.expectedPricePerQtl}/Qtl</strong></span>
+                      <span className="text-[11px] text-slate-500 font-medium">{lot.district || "Nashik"}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedLotForBid(lot);
+                        setBidPrice(String(lot.expectedPricePerQtl || 3000));
+                      }}
+                      className="w-full py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 transition-all flex items-center justify-center gap-1 shadow-sm text-xs cursor-pointer"
+                    >
+                      Submit Direct Offer →
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -658,7 +525,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
-                  <h3 className="font-extrabold text-lg text-slate-900">Farmer Produce Discovery</h3>
+                  <h3 className="font-extrabold text-lg text-slate-900">Farmer Produce</h3>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
                     Browse verified farmer trade lots across Maharashtra and submit direct binding purchase offers.
                   </p>
@@ -946,7 +813,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-extrabold text-lg text-slate-900">Submitted Buyer Bids & Counter Offers</h3>
+                  <h3 className="font-extrabold text-lg text-slate-900">Counter Offers</h3>
                   <p className="text-xs text-slate-500 font-medium">
                     Manage direct price negotiations, farmer counter prices, and accepted trade agreements.
                   </p>
