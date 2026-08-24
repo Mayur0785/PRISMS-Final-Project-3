@@ -649,10 +649,10 @@ export function Index() {
       const name = commodity.name.toLowerCase();
       if (name.includes("onion") || name.includes("wheat") || name.includes("soy")) {
         setQtyUnit("Qtl");
-        if (qty === "100" || qty === "30") setQty("30");
+        if (qty === "500" || qty === "100" || qty === "30") setQty("30");
       } else if (name.includes("banana")) {
         setQtyUnit("Kg");
-        if (qty === "30") setQty("100");
+        if (qty === "30" || qty === "100") setQty("500");
       } else if (name.includes("tomato")) {
         setQtyUnit("Kg");
         if (qty === "30") setQty("100");
