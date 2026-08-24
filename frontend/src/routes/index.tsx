@@ -928,8 +928,9 @@ export function Index() {
     if (bestResult) {
       return bestResult.gross;
     }
-    return Math.round(qtyNum * 24.5);
-  }, [bestResult, qtyNum]);
+    const fallbackPricePerQtl = commodityBasePrice || 2450;
+    return Math.round((qtyKg / 100) * fallbackPricePerQtl);
+  }, [bestResult, qtyKg, commodityBasePrice]);
 
   const logisticsCost = useMemo(() => {
     if (selectedVehicle === "own_vehicle") return 0;
@@ -973,7 +974,7 @@ export function Index() {
     if (bestResult) {
       return bestResult.net;
     }
-    return Math.max(0, grossValue - totalLogisticsCost - spoilageLoss - marketHandlingCharges);
+    return grossValue - totalLogisticsCost - spoilageLoss - marketHandlingCharges;
   }, [bestResult, grossValue, totalLogisticsCost, spoilageLoss, marketHandlingCharges]);
 
   useEffect(() => {
