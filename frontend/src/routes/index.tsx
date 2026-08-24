@@ -350,12 +350,16 @@ export function Index() {
   const [newCropQty, setNewCropQty] = useState("4000");
   const [demoMode, setDemoMode] = useState(false);
 
-  // Authenticated User Crop Query from MongoDB API
-  const userCropsQ = useQuery({
-    queryKey: ["userCrops", currentUser?._id],
-    queryFn: fetchUserCrops,
+  // Authenticated User Trade Lots Query from MongoDB API
+  const userLotsQ = useQuery({
+    queryKey: ["userLots", currentUser?.id || currentUser?.email],
+    queryFn: fetchUserLots,
     enabled: Boolean(currentUser),
   });
+
+  const activeLots: TradeLot[] = useMemo(() => {
+    return userLotsQ.data ?? [];
+  }, [userLotsQ.data]);
 
   const SAMPLE_DEMO_BATCHES: CropBatchItem[] = useMemo(
     () => [
@@ -1142,8 +1146,8 @@ export function Index() {
           });
 
           if (newLot) {
-            void userCropsQ.refetch();
-            setSavedToastMsg(lang === "mr" ? `✅ टेड लॉट तयार झाला: ${newLot.lotId || "नवीन लॉट"}` : `✅ Trade Lot created successfully: ${newLot.lotId || "New Lot"}`);
+            void userLotsQ.refetch();
+            setSavedToastMsg(lang === "mr" ? `✅ ट्रेड लॉट तयार झाला: ${newLot.lotId || "नवीन लॉट"}` : `✅ Trade Lot created successfully: ${newLot.lotId || "New Lot"}`);
             setSavedToast(true);
             setTimeout(() => setSavedToast(false), 3000);
           }
@@ -1340,7 +1344,7 @@ export function Index() {
           {[
             { id: "dashboard", label: lang === "mr" ? "डॅशबोर्ड" : "Dashboard", icon: Layers },
             { id: "search", label: lang === "mr" ? "बाजार शोध" : "Market Search", icon: Search },
-            { id: "crops", label: lang === "mr" ? "व्यापार लॉट्स" : "Trade Lots", icon: Package, badge: activeBatches.length },
+            { id: "crops", label: lang === "mr" ? "व्यापार लॉट्स" : "Trade Lots", icon: Package, badge: activeLots.length },
             { id: "buyers", label: lang === "mr" ? "खरेदीदार शोध" : "Buyer Discovery", icon: Store },
             { id: "offers", label: lang === "mr" ? "डिजिटल ऑफर्स" : "Digital Offers", icon: DollarSign },
             { id: "delivery", label: lang === "mr" ? "वितरण ट्रॅकिंग" : "Delivery Tracking", icon: Truck },
