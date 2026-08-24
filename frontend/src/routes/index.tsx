@@ -1648,6 +1648,14 @@ export function Index() {
                           </div>
                           <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
                             <span className="text-[12px] text-on-surface-variant font-medium">
+                              {lang === "mr" ? "हमाली / मजुरी खर्च (Labour Charges)" : "Labour Charges"}
+                            </span>
+                            <span className={`text-[12px] font-bold ${totalLabourCost === 0 ? "text-primary font-extrabold" : "text-alert-terracotta"}`}>
+                              {totalLabourCost === 0 ? "₹0" : `-₹${totalLabourCost.toLocaleString("en-IN")}`}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                            <span className="text-[12px] text-on-surface-variant font-medium">
                               {lang === "mr" 
                                 ? `अंदाजित साठवणूक नासाडी नुकसान (${commodity?.spoilage_rate_percent || 8}%)` 
                                 : `Estimated Spoilage Loss (${commodity?.spoilage_rate_percent || 8}%)`}
