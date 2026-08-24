@@ -56,7 +56,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
+                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">KrishiSetu</span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
                   {t(lang, "agriTech")}
                 </span>
