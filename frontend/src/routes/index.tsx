@@ -73,13 +73,13 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PRISMS - Agri-Command Center & Market Discovery" },
+      { title: "KrishiSetu — Digital Agricultural Command Center" },
       {
         name: "description",
         content:
           "Digital command center and GIS market discovery for Indian farmers: compare nearby mandis, calculate true net profit, and view price analytics.",
       },
-      { property: "og:title", content: "PRISMS - Agri-Command Center" },
+      { property: "og:title", content: "KrishiSetu — Digital Agricultural Command Center" },
     ],
   }),
   component: Index,
@@ -1258,7 +1258,7 @@ export function Index() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
+                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">KrishiSetu</span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
                   Farmer Command Center
                 </span>
@@ -1747,7 +1747,7 @@ export function Index() {
                           </div>
                           <div>
                             <h4 className="text-[17px] font-extrabold text-on-surface">
-                              {lang === "mr" ? "PRISMS कृषी AI शिफारस" : "PRISMS Spatial Optimization AI"}
+                              {lang === "mr" ? "कृषीसेतू AI शिफारस" : "KrishiSetu Spatial Optimization AI"}
                             </h4>
                             <p className="text-[12px] text-on-surface-variant font-medium">
                               {lang === "mr"
@@ -2314,7 +2314,7 @@ export function Index() {
                           info
                         </span>
                         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-inverse-surface text-on-tertiary px-3 py-2 rounded-md text-[11px] opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none hidden md:block shadow-xl">
-                          {lang === "mr" ? "₹१.५० प्रति किमी/क्विंटल प्रमाणे वाहतूक खर्च." : "PRISMS benchmark rate of ₹1.50/km/Quintal."}
+                          {lang === "mr" ? "₹१.५० प्रति किमी/क्विंटल प्रमाणे वाहतूक खर्च." : "KrishiSetu benchmark rate of ₹1.50/km/Quintal."}
                         </div>
                       </div>
                       <span className="text-[14px] font-bold text-alert-terracotta">-₹{Math.round(45 * 1.5)}</span>
@@ -2944,7 +2944,7 @@ export function Index() {
               {chatModalOpen ? "close" : "smart_toy"}
             </span>
             <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-inverse-surface text-inverse-on-surface font-bold text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
-              {lang === "mr" ? "PRISMS कृषी AI सल्लागार" : "Ask PRISMS AI Advisor"}
+              {lang === "mr" ? "कृषीसेतू AI सल्लागार" : "Ask KrishiSetu AI Advisor"}
             </div>
           </button>
 
@@ -2964,7 +2964,7 @@ export function Index() {
         {activeTab !== "search" && (
           <footer className="flex flex-col sm:flex-row justify-between items-center py-5 px-10 w-full bg-surface-container-low border-t border-outline-variant mt-auto">
             <p className="text-[13px] font-medium text-on-surface-variant">
-              © 2026 PRISMS {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
+              © 2026 KrishiSetu {lang === "mr" ? "कृषी कमांड सेंटर" : "Agricultural Command Center"}
             </p>
             <div className="flex flex-wrap gap-6 mt-3 sm:mt-0 text-[13px] font-bold">
               <button
@@ -3099,8 +3099,8 @@ export function Index() {
                   </div>
                   <p className="text-[11px] text-slate-500 font-medium mt-1">
                     {lang === "mr"
-                      ? "PRISMS वाहतूक आणि निव्वळ-मिळकत गणना इंजिनद्वारे वापरले जाते. हे मूल्य बदलल्याने फ्रेट आणि अंदाजित निव्वळ मिळकतीवर परिणाम होतो."
-                      : "Used by the PRISMS transport and net-realization calculation engine. Changing this value affects freight and estimated net realization."}
+                      ? "कृषीसेतू वाहतूक आणि निव्वळ-मिळकत गणना इंजिनद्वारे वापरले जाते. हे मूल्य बदलल्याने फ्रेट आणि अंदाजित निव्वळ मिळकतीवर परिणाम होतो."
+                      : "Used by the KrishiSetu transport and net-realization calculation engine. Changing this value affects freight and estimated net realization."}
                   </p>
                 </div>
 
@@ -3116,7 +3116,7 @@ export function Index() {
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1.5">
                     <span>₹0.50 (Local Tractor)</span>
-                    <span className="text-emerald-800 font-black">₹1.50 (PRISMS Benchmark)</span>
+                    <span className="text-emerald-800 font-black">₹1.50 (KrishiSetu Benchmark)</span>
                     <span>₹5.00 (Express Reefer)</span>
                   </div>
                 </div>
@@ -3236,7 +3236,7 @@ export function Index() {
                   <p className="text-xs text-emerald-100/80 font-medium">
                     {farmerVillage ? `${farmerVillage} • ` : ""}
                     <span className="font-mono text-[11px]">
-                      ID: MH-PRISMS-2026-{currentUser?._id ? currentUser._id.slice(-4) : "8841"}
+                      ID: MH-KRISHISETU-2026-{currentUser?._id ? currentUser._id.slice(-4) : "8841"}
                     </span>
                   </p>
                 </div>
@@ -3477,7 +3477,7 @@ export function Index() {
               <div className="flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-primary text-[22px]">shield</span>
                 <h3 className="text-[17px] font-bold text-on-surface">
-                  {lang === "mr" ? "प्रिझम्स शेतकरी डेटा गोपनीयता धोरण" : "PRISMS Farmer Data Privacy Policy"}
+                  {lang === "mr" ? "कृषीसेतू शेतकरी डेटा गोपनीयता धोरण" : "KrishiSetu Farmer Data Privacy Policy"}
                 </h3>
               </div>
               <button
@@ -3493,7 +3493,7 @@ export function Index() {
                 <strong>1. Data Ownership:</strong> Your farm location, crop yields, and market calculations belong strictly to you.
               </p>
               <p>
-                <strong>2. Zero Bank/Third-Party Sharing:</strong> PRISMS does not share your crop data, landholding info, or phone number with banks, traders, or lenders without your explicit permission.
+                <strong>2. Zero Bank/Third-Party Sharing:</strong> KrishiSetu does not share your crop data, landholding info, or phone number with banks, traders, or lenders without your explicit permission.
               </p>
               <p>
                 <strong>3. Local Security:</strong> Session credentials and preferences are securely encrypted and stored locally on your device.

@@ -139,7 +139,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-slate-900 font-serif leading-tight">
-                  {mode === "login"
+                  KrishiSetu — {mode === "login"
                     ? isBuyer
                       ? lang === "mr" ? "खरेदीदार लॉग इन" : "Buyer Sign In"
                       : lang === "mr" ? "शेतकरी लॉग इन" : "Farmer Sign In"

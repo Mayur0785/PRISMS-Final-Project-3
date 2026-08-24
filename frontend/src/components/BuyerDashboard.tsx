@@ -368,7 +368,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">PRISMS</span>
+                <span className="font-black text-xl tracking-tight text-emerald-950 font-serif">KrishiSetu</span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/60 tracking-wider">
                   Buyer Command Center
                 </span>
@@ -456,7 +456,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-700/80 text-emerald-100 tracking-wider">
-                  PRISMS Procurement Lifecycle
+                  KrishiSetu Procurement Lifecycle
                 </span>
                 <h3 className="text-xl font-extrabold text-white mt-1 font-serif">Farmer Produce → Offer → Counter Offer → Purchase → Payment</h3>
                 <p className="text-xs text-emerald-200/90 mt-1 max-w-2xl font-medium">

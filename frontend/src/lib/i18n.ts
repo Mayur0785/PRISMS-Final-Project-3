@@ -2,7 +2,7 @@ export type Lang = "en" | "mr";
 
 export const STRINGS = {
   en: {
-    appName: "PRISMS",
+    appName: "KrishiSetu",
     tagline: "Know your real earning before you sell",
     crop: "Which crop?",
     qty: "How many kilos?",
@@ -79,7 +79,7 @@ export const STRINGS = {
     heroBadge: "Digital Agricultural Command Center",
     heroHeading1: "Smarter Agricultural Trading.",
     heroHeading2: "Better Market Decisions.",
-    heroDescription: "PRISMS connects farmers and buyers through intelligent market discovery, digital offers, negotiation, logistics and settlement.",
+    heroDescription: "KrishiSetu connects farmers and buyers through intelligent market discovery, digital offers, negotiation, logistics and settlement.",
     loginAsFarmer: "Login as Farmer",
     loginAsBuyer: "Login as Buyer",
     zeroBrokerage: "Zero Brokerage",
@@ -94,7 +94,7 @@ export const STRINGS = {
     featNegotiationDesc: "Submit offers, exchange counter offers and negotiate directly with buyers and farmers.",
     featExecutionTitle: "Trade Execution",
     featExecutionDesc: "Track delivery, payments and completed transactions in one connected workflow.",
-    howItWorksHeading: "How PRISMS Works",
+    howItWorksHeading: "How KrishiSetu Works",
     howItWorksSubheading: "From trade lot creation to direct settlement in 4 simple steps.",
     step1Title: "Create a Trade Lot",
     step1Desc: "Farmers list their produce with quantity, price and quality details.",
@@ -106,7 +106,7 @@ export const STRINGS = {
     step4Desc: "Delivery, payment and transaction status stay connected from one deal.",
   },
   mr: {
-    appName: "प्रिझम्स",
+    appName: "कृषीसेतू",
     tagline: "विक्रीपूर्वी आपली खरी कमाई जाणून घ्या",
     crop: "कोणते पीक?",
     qty: "किती किलो / क्विंटल?",
@@ -183,7 +183,7 @@ export const STRINGS = {
     heroBadge: "डिजिटल कृषी कमांड सेंटर",
     heroHeading1: "अधिक स्मार्ट कृषी व्यापार.",
     heroHeading2: "अधिक अचूक बाजार निर्णय.",
-    heroDescription: "PRISMS शेतकरी आणि खरेदीदारांना स्मार्ट बाजार शोध, डिजिटल ऑफर्स, थेट वाटाघाटी, वाहतूक आणि सुरक्षित पेमेंटद्वारे जोडते.",
+    heroDescription: "कृषीसेतू शेतकरी आणि खरेदीदारांना स्मार्ट बाजार शोध, डिजिटल ऑफर्स, थेट वाटाघाटी, वाहतूक आणि सुरक्षित पेमेंटद्वारे जोडते.",
     loginAsFarmer: "शेतकरी लॉग इन",
     loginAsBuyer: "खरेदीदार लॉग इन",
     zeroBrokerage: "शून्य दलाली",
@@ -198,7 +198,7 @@ export const STRINGS = {
     featNegotiationDesc: "थेट खरेदीदार आणि शेतकऱ्यांशी ऑफर्स पाठवा, काउंटर ऑफर्स द्या आणि वाटाघाटी करा.",
     featExecutionTitle: "व्यापार पूर्तता",
     featExecutionDesc: "एकाच प्रणालीमध्ये वाहतूक, सुरक्षित पेमेंट आणि व्यवहार स्थिती ट्रॅक करा.",
-    howItWorksHeading: "PRISMS कसे कार्य करते",
+    howItWorksHeading: "कृषीसेतू कसे कार्य करते",
     howItWorksSubheading: "ट्रेड लॉट तयार करण्यापासून ते थेट पेमेंटपर्यंत ४ सोपे टप्पे.",
     step1Title: "ट्रेड लॉट तयार करा",
     step1Desc: "शेतकरी प्रमाण, अपेक्षित दर आणि गुणवत्ता तपशिलांसह मालाची नोंद करतात.",
