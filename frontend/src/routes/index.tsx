@@ -407,9 +407,8 @@ export function Index() {
 
   const activeBatches: CropBatchItem[] = useMemo(() => {
     if (demoMode) return SAMPLE_DEMO_BATCHES;
-    if (!currentUser) return [];
-    return userCropsQ.data ?? [];
-  }, [demoMode, currentUser, userCropsQ.data, SAMPLE_DEMO_BATCHES]);
+    return [];
+  }, [demoMode, SAMPLE_DEMO_BATCHES]);
 
   useEffect(() => {
     const saved = localStorage.getItem("prisms-lang");
