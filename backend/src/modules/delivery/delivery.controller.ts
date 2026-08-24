@@ -306,3 +306,115 @@ export const updateDeliveryStatus = async (req: Request, res: Response, next: Ne
     next(err);
   }
 };
+
+export const advanceDemoDelivery = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
+    const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : rawUserId;
+    const { id } = req.params;
+
+    const delivery = await DeliveryOrder.findOne({
+      $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { deliveryId: id }],
+      $and: [{
+        $or: [
+          { farmerId: rawUserId },
+          { farmerId: userIdObj },
+          { farmerId: String(rawUserId) }
+        ]
+      }],
+    });
+
+    if (!delivery) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'DELIVERY_NOT_FOUND', message: 'Delivery order not found or unauthorized' },
+      });
+    }
+
+    if (delivery.deliveryStatus === 'DELIVERED') {
+      return res.status(200).json({
+        success: true,
+        data: delivery,
+      });
+    }
+
+    // Sequentially advance through valid state machine transitions
+    const sequence: DeliveryStatus[] = ['PLANNED', 'PICKUP_READY', 'DISPATCHED', 'IN_TRANSIT', 'DELIVERED'];
+    const labelMap: Record<string, string> = {
+      OFFER_ACCEPTED_PLANNED: 'Offer Accepted & Planned',
+      PLANNED: 'Planned',
+      PICKUP_READY: 'Pickup Ready',
+      DISPATCHED: 'Dispatched',
+      IN_TRANSIT: 'In Transit',
+      DELIVERED: 'Delivered to Buyer',
+    };
+
+    const now = new Date();
+    const updatedTimeline: any[] = delivery.timeline ? [...delivery.timeline] : [];
+
+    for (const st of sequence) {
+      if (!updatedTimeline.some(t => t.status === st)) {
+        updatedTimeline.push({
+          status: st,
+          label: labelMap[st] || st,
+          timestamp: now.toISOString(),
+        });
+      }
+    }
+
+    delivery.deliveryStatus = 'DELIVERED';
+    delivery.actualDeliveryDate = now;
+    delivery.timeline = updatedTimeline;
+    await delivery.save();
+
+    // Trigger downstream Transaction & Payment Ledger records
+    const transaction: any = await Transaction.findOne({ offerId: delivery.offerId as any });
+    if (transaction) {
+      transaction.transactionStatus = 'DELIVERED';
+      await transaction.save();
+
+      const existingPayment = await PaymentLedger.findOne({ transactionId: transaction._id as any });
+      if (!existingPayment) {
+        const countPmt = await PaymentLedger.countDocuments();
+        const pmtHex = (countPmt + 501).toString(16).toUpperCase().padStart(4, '0');
+        const paymentId = `PMT-2026-${pmtHex}`;
+        const refHex = (countPmt + 9001).toString(16).toUpperCase();
+        const referenceId = `DEMO-TXN-${refHex}`;
+
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 2);
+
+        const payment = await PaymentLedger.create({
+          paymentId,
+          transactionId: transaction._id as any,
+          lotId: delivery.lotId as any,
+          offerId: delivery.offerId as any,
+          farmerId: rawUserId as any,
+          buyerId: delivery.buyerId,
+          grossAmount: transaction.grossAmount,
+          deductions: transaction.totalDeductions,
+          netPayable: transaction.finalNetAmount,
+          paymentMode: 'DEMO_BANK_TRANSFER',
+          dueDate,
+          paymentStatus: 'PENDING',
+          referenceId,
+          notes: 'Simulated Escrow Settlement Pending',
+          isDemo: true,
+        });
+
+        transaction.paymentId = payment._id as any;
+        transaction.transactionStatus = 'PAYMENT_PENDING';
+        await transaction.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: delivery,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

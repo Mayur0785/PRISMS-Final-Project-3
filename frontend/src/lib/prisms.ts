@@ -2075,6 +2075,11 @@ export async function updateDeliveryStatusApi(deliveryId: string, status: string
   return res.data.data;
 }
 
+export async function advanceDemoDeliveryApi(deliveryId: string): Promise<DeliveryOrder> {
+  const res = await apiClient.post(`${API_URL}/deliveries/${deliveryId}/advance-demo`);
+  return res.data.data;
+}
+
 export async function fetchUserPayments(): Promise<PaymentLedger[]> {
   const activeUser = getCurrentUser();
   const activeUserId = activeUser?.id || "user_demo_001";

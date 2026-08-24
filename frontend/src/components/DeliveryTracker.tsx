@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, CheckCircle2, Clock, AlertCircle, MapPin, Calendar, ArrowRight, ShieldCheck, RefreshCw, PackageCheck, UserCheck, DollarSign } from 'lucide-react';
-import { DeliveryOrder, fetchUserDeliveries, updateDeliveryStatusApi, type DeliveryTimelineEvent } from '../lib/prisms';
+import { DeliveryOrder, fetchUserDeliveries, updateDeliveryStatusApi, advanceDemoDeliveryApi, type DeliveryTimelineEvent } from '../lib/prisms';
 import { t } from '../lib/i18n';
+
+function safeFormatDate(rawDate?: string | Date): string {
+  if (!rawDate) return "ETA not available";
+  const d = new Date(rawDate);
+  if (isNaN(d.getTime())) return "ETA not available";
+  return d.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+}
 
 interface DeliveryTrackerProps {
   onNavigateToPayment?: (paymentId?: string, lotId?: string) => void;
@@ -50,6 +57,8 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
         return 'Delivered to Buyer';
       case 'CANCELLED':
         return 'Cancelled';
+      default:
+        return status;
     }
   };
 
@@ -67,12 +76,12 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
       const nowIso = new Date().toISOString();
       const isBackendMode = localStorage.getItem("prisms_token") && !localStorage.getItem("prisms_token")?.startsWith("demo_token_");
 
-      // Advance delivery status directly to DELIVERED
+      let updatedRecord: DeliveryOrder | null = null;
       if (isBackendMode) {
-        await updateDeliveryStatusApi(targetDelivery.deliveryId, 'DELIVERED');
+        updatedRecord = await advanceDemoDeliveryApi(targetDelivery.deliveryId);
       }
 
-      const completeTimeline: DeliveryTimelineEvent[] = [
+      const completeTimeline: DeliveryTimelineEvent[] = updatedRecord?.timeline || [
         { status: 'OFFER_ACCEPTED_PLANNED', label: 'Offer Accepted & Planned', timestamp: targetDelivery.createdAt || nowIso },
         { status: 'PICKUP_READY', label: 'Pickup Ready', timestamp: nowIso },
         { status: 'DISPATCHED', label: 'Dispatched', timestamp: nowIso },
@@ -85,6 +94,7 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
           if (d.deliveryId === dId || d._id === dId) {
             return {
               ...d,
+              ...(updatedRecord || {}),
               deliveryStatus: 'DELIVERED',
               updatedAt: nowIso,
               actualDeliveryDate: nowIso,
@@ -335,11 +345,11 @@ export const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onNavigateToPa
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600 font-medium">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>Planned Pickup: <strong>{new Date(delivery.plannedPickupDate).toLocaleDateString()}</strong></span>
+                    <span>Planned Pickup: <strong>{safeFormatDate(delivery.plannedPickupDate)}</strong></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>Est. Delivery: <strong>{new Date(delivery.expectedDeliveryDate).toLocaleDateString()}</strong></span>
+                    <span>Est. Delivery: <strong>{safeFormatDate(delivery.expectedDeliveryDate)}</strong></span>
                   </div>
                   <div className="flex items-center gap-2 sm:justify-end">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
