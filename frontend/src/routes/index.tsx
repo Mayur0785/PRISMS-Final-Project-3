@@ -2062,8 +2062,15 @@ export function Index() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-[20px] font-extrabold ${mandiCard.tagColor} leading-none`}>₹{mandiCard.pricePerQtl?.toLocaleString("en-IN")}/Qtl</p>
-                        <p className="text-[11px] font-bold text-on-surface-variant mt-1">Gross: ₹{mandiCard.gross?.toLocaleString("en-IN")}</p>
+                        <p className="text-[11px] font-bold text-on-surface-variant">
+                          {lang === "mr" ? "बाजार भाव:" : "Modal Price:"} <span className="font-extrabold text-on-surface">₹{mandiCard.pricePerQtl?.toLocaleString("en-IN")}/Qtl</span>
+                        </p>
+                        <p className={`text-[19px] font-extrabold ${mandiCard.tagColor} leading-tight mt-0.5`}>
+                          ₹{mandiCard.gross?.toLocaleString("en-IN")}
+                        </p>
+                        <p className="text-[10px] font-bold text-outline uppercase tracking-wider">
+                          {lang === "mr" ? "एकूण बाजार मूल्य" : "Gross Market Value"}
+                        </p>
                       </div>
                     </div>
 
