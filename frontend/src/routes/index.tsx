@@ -1635,6 +1635,14 @@ export function Index() {
                         <div className="space-y-1.5 relative z-10">
                           <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
                             <span className="text-[12px] text-on-surface-variant font-medium">
+                              {lang === "mr" ? "निवडलेला मंडी भाव (Modal)" : "Selected Mandi Price (Modal)"}
+                            </span>
+                            <span className="text-[14px] font-bold text-on-surface">
+                              ₹{bestResult ? bestResult.pricePerQtl.toLocaleString("en-IN") : 0}/Qtl
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center border-b border-outline-variant/40 pb-1.5">
+                            <span className="text-[12px] text-on-surface-variant font-medium">
                               {lang === "mr" ? "एकूण विक्री मूल्य" : "Gross Market Value"}
                             </span>
                             <span className="text-[14px] font-bold text-on-surface">
