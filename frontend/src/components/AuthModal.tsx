@@ -31,22 +31,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
 
+  const [demoNotice, setDemoNotice] = useState("");
+
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
       setRole(initialRole);
       setError("");
+      setDemoNotice("");
       setOtpSent(false);
       setAuthMethod("password");
-      if (initialRole === "buyer") {
-        setEmail("buyer.nashik@prisms.gov.in");
-        setPassword("Kisan@2024");
-        setName("Nashik Agro Processors Ltd.");
-      } else {
-        setEmail("farmer.lasalgaon@prisms.gov.in");
-        setPassword("Kisan@2024");
-        setName("Mayur Kapse (नवी मुंबई)");
-      }
+      setEmail("");
+      setPassword("");
+      setName("");
     }
   }, [isOpen, initialRole, initialMode]);
 
@@ -250,6 +247,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
+          {demoNotice && (
+            <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl font-bold text-[12px] flex items-center justify-between animate-in fade-in duration-200">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                <span>{demoNotice}</span>
+              </div>
+              <button type="button" onClick={() => setDemoNotice("")} className="text-slate-400 hover:text-slate-600">
+                <span className="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            </div>
+          )}
+
           {mode === "signup" && (
             <div>
               <label className="block font-bold text-slate-700 mb-1">
@@ -396,7 +405,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             )}
           </button>
 
-          {/* Quick Demo Credentials Autofill */}
+          {/* Quick Demo Accounts Autofill */}
           <div className="pt-2 flex flex-col gap-1.5 text-center">
             <div className="text-[11px] text-slate-500 font-medium">Quick Demo Accounts:</div>
             <div className="flex flex-wrap justify-center gap-2">
@@ -404,14 +413,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 type="button"
                 onClick={() => {
                   setMode("login");
+                  setRole("farmer");
                   setEmail("farmer.lasalgaon@prisms.gov.in");
                   setPassword("Kisan@2024");
                   setName("Mayur Kapse (नवी मुंबई)");
-                  setRole("farmer");
                   setAuthMethod("password");
                   setError("");
+                  setDemoNotice(lang === "mr" ? "शेतकरी माहिती भरली गेली." : "Demo Farmer credentials filled");
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer"
+                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer flex items-center gap-1"
               >
                 🚜 Demo Farmer
               </button>
@@ -419,14 +429,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 type="button"
                 onClick={() => {
                   setMode("login");
+                  setRole("buyer");
                   setEmail("buyer.nashik@prisms.gov.in");
                   setPassword("Kisan@2024");
                   setName("Nashik Agro Processors Ltd.");
-                  setRole("buyer");
                   setAuthMethod("password");
                   setError("");
+                  setDemoNotice(lang === "mr" ? "खरेदीदार माहिती भरली गेली." : "Demo Buyer credentials filled");
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer"
+                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full hover:bg-emerald-100 font-bold transition-all cursor-pointer flex items-center gap-1"
               >
                 🏢 Demo Buyer
               </button>
