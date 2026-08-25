@@ -9,6 +9,7 @@ import { Transaction } from '../transactions/transaction.model';
 import { DeliveryOrder } from '../delivery/delivery.model';
 import { PaymentLedger } from '../payments/payment.model';
 import { User } from '../users/user.model';
+import { env } from '../../config/env';
 import { sendSystemNotification } from '../notifications/notification.controller';
 import { seedDemoOffersForLot } from './demoOfferGenerator';
 
@@ -21,18 +22,25 @@ export async function generateOfferId(): Promise<string> {
 export const getUserOffers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const rawUserId = (req as any).user._id || (req as any).user.id || (req as any).user;
-    let userEmail = (req as any).user.email;
-    let userName = (req as any).user.name;
-    if ((!userEmail || !userName) && mongoose.isValidObjectId(rawUserId)) {
+    let userEmail = (req as any).user?.email;
+    let userName = (req as any).user?.name;
+    let userRole = (req as any).user?.role;
+    let userIsDemo = (req as any).user?.isDemo;
+
+    if ((!userEmail || !userName || !userRole) && mongoose.isValidObjectId(rawUserId)) {
       const u = await User.findById(rawUserId);
       if (u) {
         if (!userEmail && u.email) userEmail = u.email;
         if (!userName && u.name) userName = u.name;
+        if (!userRole && u.role) userRole = u.role;
+        if (userIsDemo === undefined && (u as any).isDemo !== undefined) userIsDemo = (u as any).isDemo;
       }
     }
     const userIdObj = (typeof rawUserId === 'string' && mongoose.isValidObjectId(rawUserId))
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
+
+    const isDemoMode = env.NODE_ENV === 'development' || userIsDemo === true || (userEmail && userEmail.includes('@prisms.gov.in'));
 
     const orConditions: any[] = [
       { sellerUserId: rawUserId },
@@ -47,6 +55,11 @@ export const getUserOffers = async (req: Request, res: Response, next: NextFunct
       orConditions.push({ sellerUserId: userEmail });
     }
     if (userName) orConditions.push({ buyerId: userName });
+
+    // In DEMO MODE, allow buyer to also see showcase demo negotiations (isDemo: true)
+    if (isDemoMode && (userRole === 'buyer' || !userRole)) {
+      orConditions.push({ isDemo: true });
+    }
 
     const offers = await Offer.find({
       $or: orConditions,
@@ -325,6 +338,21 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
 
     const { id } = req.params;
 
+    const isDemoMode = env.NODE_ENV === 'development' || (userEmail && userEmail.includes('@prisms.gov.in'));
+
+    const authConditions: any[] = [
+      { sellerUserId: rawUserId },
+      { sellerUserId: userIdObj },
+      { sellerUserId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: userIdObj },
+      { buyerId: String(rawUserId) },
+      ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
+    ];
+    if (isDemoMode) {
+      authConditions.push({ isDemo: true });
+    }
+
     const offer = await Offer.findOne({
       $or: [
         { _id: mongoose.isValidObjectId(id) ? id : null },
@@ -332,15 +360,7 @@ export const acceptOffer = async (req: Request, res: Response, next: NextFunctio
       ],
       $and: [
         {
-          $or: [
-            { sellerUserId: rawUserId },
-            { sellerUserId: userIdObj },
-            { sellerUserId: String(rawUserId) },
-            { buyerId: rawUserId },
-            { buyerId: userIdObj },
-            { buyerId: String(rawUserId) },
-            ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
-          ],
+          $or: authConditions,
         },
       ],
     });
@@ -594,18 +614,24 @@ export const rejectOffer = async (req: Request, res: Response, next: NextFunctio
       ? new mongoose.Types.ObjectId(rawUserId)
       : rawUserId;
     const { id } = req.params;
+    const isDemoMode = env.NODE_ENV === 'development' || (userEmail && userEmail.includes('@prisms.gov.in'));
+
+    const authConditions: any[] = [
+      { sellerUserId: rawUserId },
+      { sellerUserId: userIdObj },
+      { sellerUserId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: String(rawUserId) },
+      ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
+    ];
+    if (isDemoMode) {
+      authConditions.push({ isDemo: true });
+    }
 
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
       $and: [{
-        $or: [
-          { sellerUserId: rawUserId },
-          { sellerUserId: userIdObj },
-          { sellerUserId: String(rawUserId) },
-          { buyerId: rawUserId },
-          { buyerId: String(rawUserId) },
-          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
-        ]
+        $or: authConditions
       }],
     });
 
@@ -689,17 +715,24 @@ export const counterOffer = async (req: Request, res: Response, next: NextFuncti
       });
     }
 
+    const isDemoMode = env.NODE_ENV === 'development' || (userEmail && userEmail.includes('@prisms.gov.in'));
+
+    const authConditions: any[] = [
+      { sellerUserId: rawUserId },
+      { sellerUserId: userIdObj },
+      { sellerUserId: String(rawUserId) },
+      { buyerId: rawUserId },
+      { buyerId: String(rawUserId) },
+      ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
+    ];
+    if (isDemoMode) {
+      authConditions.push({ isDemo: true });
+    }
+
     const offer = await Offer.findOne({
       $or: [{ _id: mongoose.isValidObjectId(id) ? id : null }, { offerId: id }],
       $and: [{
-        $or: [
-          { sellerUserId: rawUserId },
-          { sellerUserId: userIdObj },
-          { sellerUserId: String(rawUserId) },
-          { buyerId: rawUserId },
-          { buyerId: String(rawUserId) },
-          ...(userEmail ? [{ buyerId: userEmail }, { sellerUserId: userEmail }] : []),
-        ]
+        $or: authConditions
       }],
     });
 

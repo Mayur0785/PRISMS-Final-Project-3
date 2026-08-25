@@ -841,23 +841,31 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         </span>
                         <h4 className="font-extrabold text-base text-slate-900">{b.commodity}</h4>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider self-start sm:self-auto ${
-                          b.offerStatus === "ACCEPTED"
-                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                            : b.offerStatus === "COUNTERED"
-                            ? b.counterBy === "BUYER"
-                              ? "bg-slate-100 text-slate-800 border border-slate-300"
-                              : "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
-                            : b.offerStatus === "REJECTED"
-                            ? "bg-red-100 text-red-800 border border-red-200"
-                            : "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                        }`}
-                      >
-                        {b.offerStatus === "COUNTERED" && b.counterBy === "BUYER"
-                          ? "AWAITING FARMER RESPONSE"
-                          : b.offerStatus}
-                      </span>
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        {b.isDemo && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-900 border border-purple-300 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-purple-700" />
+                            DEMO NEGOTIATION
+                          </span>
+                        )}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                            b.offerStatus === "ACCEPTED"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              : b.offerStatus === "COUNTERED"
+                              ? b.counterBy === "BUYER"
+                                ? "bg-slate-100 text-slate-800 border border-slate-300"
+                                : "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
+                              : b.offerStatus === "REJECTED"
+                              ? "bg-red-100 text-red-800 border border-red-200"
+                              : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          }`}
+                        >
+                          {b.offerStatus === "COUNTERED" && b.counterBy === "BUYER"
+                            ? "AWAITING FARMER RESPONSE"
+                            : b.offerStatus}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-xl border border-slate-100">
